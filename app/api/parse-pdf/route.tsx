@@ -82,8 +82,7 @@ export async function POST(request: NextRequest) {
     console.log("Uint8Array length:", uint8Array.length);
 
     try {
-      const buffer = Buffer.from(uint8Array);
-      const data = await pdf(buffer);
+      const data = await pdf(uint8Array as Buffer);
       console.log("PDF parsed successfully. Text length:", data.text.length);
 
       // Convert the extracted text to optimized markdown

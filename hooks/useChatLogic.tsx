@@ -28,6 +28,7 @@ type ResponseMetadata = {
 };
 
 export const useChatLogic = () => {
+  const [isPdfParsing, setIsPdfParsing] = useState(false);
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -63,7 +64,33 @@ export const useChatLogic = () => {
       console.error("Error fetching models:", error);
     }
   };
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsPdfParsing(true);
+      const formData = new FormData();
+      formData.append("pdf", file);
 
+      try {
+        const response = await fetch("/api/parse-pdf", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to parse PDF");
+        }
+
+        const { markdown } = await response.json();
+        setInput(markdown);
+      } catch (error) {
+        console.error("Error parsing PDF:", error);
+        alert("Failed to parse PDF. Please try again.");
+      } finally {
+        setIsPdfParsing(false);
+      }
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !selectedModel) return;
@@ -106,30 +133,33 @@ export const useChatLogic = () => {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
-        console.log(chunk);
 
-        try {
-          const jsonChunk = JSON.parse(chunk);
-
-          if (jsonChunk.done) {
-            // Set the response metadata when the response is complete
-
-            setResponseMetadata({
-              total_duration: jsonChunk.total_duration,
-              load_duration: jsonChunk.load_duration,
-              prompt_eval_count: jsonChunk.prompt_eval_count,
-              prompt_eval_duration: jsonChunk.prompt_eval_duration,
-              eval_count: jsonChunk.eval_count,
-              eval_duration: jsonChunk.eval_duration,
-            });
-          } else {
-            accumulatedResponse += jsonChunk.response;
-            updateAssistantMessage(accumulatedResponse);
-          }
-        } catch (error) {
-          // If JSON parsing fails, treat the chunk as plain text
+        // Check if the chunk is only digits
+        if (/^\d+$/.test(chunk.trim())) {
           accumulatedResponse += chunk;
           updateAssistantMessage(accumulatedResponse);
+        } else {
+          try {
+            const jsonChunk = JSON.parse(chunk);
+
+            if (jsonChunk.done) {
+              setResponseMetadata({
+                total_duration: jsonChunk.total_duration,
+                load_duration: jsonChunk.load_duration,
+                prompt_eval_count: jsonChunk.prompt_eval_count,
+                prompt_eval_duration: jsonChunk.prompt_eval_duration,
+                eval_count: jsonChunk.eval_count,
+                eval_duration: jsonChunk.eval_duration,
+              });
+            } else {
+              accumulatedResponse += jsonChunk.response;
+              updateAssistantMessage(accumulatedResponse);
+            }
+          } catch (error) {
+            // If JSON parsing fails, treat the chunk as plain text
+            accumulatedResponse += chunk;
+            updateAssistantMessage(accumulatedResponse);
+          }
         }
       }
     } catch (error) {
@@ -184,7 +214,9 @@ export const useChatLogic = () => {
     options,
     setOptions,
     handleSubmit,
+    handleFileChange,
     regenerateResponse,
+    isPdfParsing,
     responseMetadata,
     clearChat,
     stopGenerating,
