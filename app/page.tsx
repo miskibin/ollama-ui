@@ -1,101 +1,172 @@
-import Image from "next/image";
+"use client";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Send, RefreshCw, Trash2, StopCircle } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { useChatLogic } from "@/hooks/useChatLogic";
+import MarkdownResponse from "@/components/markdownResponse";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const {
+    input,
+    setInput,
+    messages,
+    isLoading,
+    models,
+    selectedModel,
+    setSelectedModel,
+    customTemplate,
+    setCustomTemplate,
+    options,
+    setOptions,
+    handleSubmit,
+    regenerateResponse,
+    clearChat,
+    stopGenerating,
+  } = useChatLogic();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<Element>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-100 p-4 gap-4">
+      {/* Settings Card */}
+      <Card className="w-80 h-full overflow-auto">
+        <CardHeader>
+          <CardTitle>Ollama Chat Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Model</label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="w-full p-2 rounded border border-gray-300"
+            >
+              {models.map((model) => (
+                <option key={model.name} value={model.name}>
+                  {model.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Custom Template
+            </label>
+            <Textarea
+              placeholder="Enter custom template..."
+              value={customTemplate}
+              onChange={(e) => setCustomTemplate(e.target.value)}
+              className="w-full p-2 rounded border border-gray-300"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Temperature: {options.temperature.toFixed(1)}
+            </label>
+            <Slider
+              min={0}
+              max={1}
+              step={0.1}
+              value={[options.temperature]}
+              onValueChange={([temperature]) =>
+                setOptions({ ...options, temperature })
+              }
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Top P: {options.topP.toFixed(1)}
+            </label>
+            <Slider
+              min={0}
+              max={1}
+              step={0.1}
+              value={[options.topP]}
+              onValueChange={([topP]) => setOptions({ ...options, topP })}
+            />
+          </div>
+          <Button onClick={clearChat} variant="outline" className="w-full">
+            <Trash2 className="w-4 h-4 mr-2" />
+            Clear Chat
+          </Button>
+        </CardContent>
+      </Card>
+      <Card className="flex-1 flex flex-col">
+        <CardHeader>
+          <CardTitle>Chat</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 overflow-auto">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`mb-4 ${
+                message.role === "user" ? "text-right" : "text-left"
+              }`}
+            >
+              <Card
+                className={`inline-block p-3 ${
+                  message.role === "user" ? "bg-blue-100" : "bg-gray-100"
+                }`}
+              >
+                <CardContent>
+                  {message.role === "user" ? (
+                    <p>{message.content}</p>
+                  ) : (
+                    <MarkdownResponse content={message.content} />
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </CardContent>
+        <CardContent className="border-t pt-6">
+          <form onSubmit={handleSubmit} className="flex space-x-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message... (Shift+Enter for new line)"
+              disabled={isLoading}
+              className="flex-1 min-h-[100px]"
+            />
+            <div className="flex flex-col space-y-2">
+              <Button type="submit" disabled={isLoading || !selectedModel}>
+                <Send className="w-4 h-4 mr-2" />
+                {isLoading ? "Sending..." : "Send"}
+              </Button>
+              {isLoading && (
+                <Button onClick={stopGenerating} variant="destructive">
+                  <StopCircle className="w-4 h-4 mr-2" />
+                  Stop
+                </Button>
+              )}
+              <Button
+                onClick={regenerateResponse}
+                disabled={isLoading || messages.length < 2}
+                variant="outline"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Regenerate
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
