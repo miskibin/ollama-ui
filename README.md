@@ -1,8 +1,12 @@
 # Ollama Chat Interface
 
+![image](https://github.com/user-attachments/assets/89439c2e-0a80-45d9-80a8-53f3ae303276)
+![image](https://github.com/user-attachments/assets/b1ddb3d9-96b1-4ff1-a2a5-d5d4e049b1d2)
+
+
 ## Overview
 
-This project is a web-based chat interface that interacts with Ollama, an open-source large language model runner. It allows users to chat with AI models, upload and parse PDFs, and customize various settings for the AI interactions.
+This project is a web-based chat interface that interacts with Ollama, an open-source large language model runner. It allows users to chat with AI models, upload and parse PDFs (to markdown) , and customize various settings for the AI interactions.
 
 ## Prerequisites
 
