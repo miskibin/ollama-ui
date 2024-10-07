@@ -15,6 +15,16 @@ type ChatOptions = {
   topP: number;
   topK: number;
   repeatPenalty: number;
+  stream: boolean;
+};
+
+type ResponseMetadata = {
+  total_duration: number;
+  load_duration: number;
+  prompt_eval_count: number;
+  prompt_eval_duration: number;
+  eval_count: number;
+  eval_duration: number;
 };
 
 export const useChatLogic = () => {
@@ -25,11 +35,14 @@ export const useChatLogic = () => {
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("Ogólny");
   const [customTemplate, setCustomTemplate] = useState<string>("");
+  const [responseMetadata, setResponseMetadata] =
+    useState<ResponseMetadata | null>(null);
   const [options, setOptions] = useState<ChatOptions>({
     temperature: 0.7,
     topP: 0.9,
     topK: 40,
     repeatPenalty: 1.1,
+    stream: true,
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -55,12 +68,9 @@ export const useChatLogic = () => {
     e.preventDefault();
     if (!input.trim() || !selectedModel) return;
 
-    // Convert newline characters to \n
-    const formattedInput = input.replace(/\n/g, "\\n");
-
     const newMessages: Message[] = [
       ...messages,
-      { role: "user", content: formattedInput },
+      { role: "user", content: input },
     ];
     setMessages(newMessages);
     setInput("");
@@ -69,6 +79,7 @@ export const useChatLogic = () => {
 
   const getResponse = async (messageHistory: Message[]) => {
     setIsLoading(true);
+    setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
 
     try {
@@ -95,29 +106,49 @@ export const useChatLogic = () => {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
-        accumulatedResponse += chunk;
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          { role: "assistant", content: accumulatedResponse },
-        ]);
+        console.log(chunk);
+
+        try {
+          const jsonChunk = JSON.parse(chunk);
+
+          if (jsonChunk.done) {
+            // Set the response metadata when the response is complete
+
+            setResponseMetadata({
+              total_duration: jsonChunk.total_duration,
+              load_duration: jsonChunk.load_duration,
+              prompt_eval_count: jsonChunk.prompt_eval_count,
+              prompt_eval_duration: jsonChunk.prompt_eval_duration,
+              eval_count: jsonChunk.eval_count,
+              eval_duration: jsonChunk.eval_duration,
+            });
+          } else {
+            accumulatedResponse += jsonChunk.response;
+            updateAssistantMessage(accumulatedResponse);
+          }
+        } catch (error) {
+          // If JSON parsing fails, treat the chunk as plain text
+          accumulatedResponse += chunk;
+          updateAssistantMessage(accumulatedResponse);
+        }
       }
     } catch (error) {
       if ((error as any).name === "AbortError") {
         console.log("Request aborted");
       } else {
         console.error("Error:", error);
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: "Wystąpił błąd podczas pobierania odpowiedzi.",
-          },
-        ]);
+        updateAssistantMessage("Wystąpił błąd podczas pobierania odpowiedzi.");
       }
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
+  };
+  const updateAssistantMessage = (content: string) => {
+    setMessages((prev) => [
+      ...prev.slice(0, -1),
+      { role: "assistant", content },
+    ]);
   };
   const regenerateResponse = async () => {
     if (messages.length < 2) return;
@@ -128,6 +159,7 @@ export const useChatLogic = () => {
 
   const clearChat = () => {
     setMessages([]);
+    setResponseMetadata(null);
   };
 
   const stopGenerating = () => {
@@ -153,6 +185,7 @@ export const useChatLogic = () => {
     setOptions,
     handleSubmit,
     regenerateResponse,
+    responseMetadata,
     clearChat,
     stopGenerating,
   };

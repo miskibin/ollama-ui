@@ -7,27 +7,7 @@ interface MarkdownResponseProps {
 }
 
 const MarkdownResponse: React.FC<MarkdownResponseProps> = ({ content }) => {
-  return (
-    <ReactMarkdown
-      className={"prose"}
-      components={{
-        code({
-          inline,
-          className,
-          children,
-          ...props
-        }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) {
-          return (
-            <code className={className} {...props}>
-              {children}
-            </code>
-          );
-        },
-      }}
-    >
-      {content}
-    </ReactMarkdown>
-  );
+  return <ReactMarkdown className={"prose"}>{content}</ReactMarkdown>;
 };
 
 export default MarkdownResponse;

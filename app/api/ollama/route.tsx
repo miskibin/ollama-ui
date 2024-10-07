@@ -1,4 +1,3 @@
-// app/api/ollama/route.ts
 import { NextResponse } from "next/server";
 
 type OllamaRequestBody = {
@@ -20,34 +19,43 @@ export async function POST(request: Request) {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
-  try {
-    const ollamaResponse = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        prompt: template ? `${template}\n\n${prompt}` : prompt,
-        options,
-      }),
-    });
+  let ollamaController: AbortController | null = null;
 
-    const stream = new ReadableStream({
-      async start(controller) {
+  const stream = new ReadableStream({
+    async start(controller) {
+      ollamaController = new AbortController();
+
+      try {
+        const ollamaResponse = await fetch(
+          "http://localhost:11434/api/generate",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model,
+              prompt: template ? `${template}\n\n${prompt}` : prompt,
+              options,
+              stream: true,
+            }),
+            signal: ollamaController.signal,
+          }
+        );
+
         const reader = ollamaResponse.body!.getReader();
-        let accumulatedResponse = "";
+        let buffer = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
 
-          for (const line of lines) {
-            if (line.trim() !== "") {
+          for (let i = 0; i < lines.length - 1; i++) {
+            const line = lines[i].trim();
+            if (line) {
               try {
                 const data = JSON.parse(line);
-                accumulatedResponse += data.response;
                 controller.enqueue(encoder.encode(data.response));
 
                 if (data.done) {
@@ -60,18 +68,31 @@ export async function POST(request: Request) {
               }
             }
           }
-        }
-      },
-    });
 
-    return new NextResponse(stream);
-  } catch (error) {
-    console.error("Error:", error);
-    return NextResponse.json(
-      { error: "An error occurred while processing your request." },
-      { status: 500 }
-    );
-  }
+          buffer = lines[lines.length - 1];
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          console.log("Ollama request was aborted");
+        } else {
+          console.error("Error in Ollama stream:", error);
+          controller.error(error);
+        }
+      } finally {
+        if (ollamaController) {
+          ollamaController.abort();
+        }
+      }
+    },
+    cancel() {
+      console.log("Stream cancelled by the client");
+      if (ollamaController) {
+        ollamaController.abort();
+      }
+    },
+  });
+
+  return new NextResponse(stream);
 }
 
 export async function GET() {
