@@ -1,8 +1,8 @@
+![image](https://github.com/user-attachments/assets/efd76b53-181c-4f8e-b841-200b5079e5ef)
+
+
 ![image](https://github.com/user-attachments/assets/19af0df8-2be3-42fa-91c5-93dadbab1e9d)# Ollama Chat Interface
 
-## Lots of options and settings
-
-![image](https://github.com/user-attachments/assets/2e087650-debc-43d0-8a30-6f4a87619dbe)
 
 ## Dark mode and automatic prmot testing 
 
