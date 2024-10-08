@@ -1,7 +1,8 @@
-"use client";
+"use client"
 import { useState, useEffect, useRef } from "react";
 
 type Message = {
+  id: string;
   role: "user" | "assistant";
   content: string;
 };
@@ -34,10 +35,10 @@ export const useChatLogic = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("Ogólny");
-  const [customTemplate, setCustomTemplate] = useState<string>("");
+  const [customSystem, setCustomSystem] = useState<string>("");
   const [responseMetadata, setResponseMetadata] =
     useState<ResponseMetadata | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [options, setOptions] = useState<ChatOptions>({
     temperature: 0.7,
     topP: 0.9,
@@ -64,6 +65,7 @@ export const useChatLogic = () => {
       console.error("Error fetching models:", error);
     }
   };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -91,14 +93,17 @@ export const useChatLogic = () => {
       }
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !selectedModel) return;
 
-    const newMessages: Message[] = [
-      ...messages,
-      { role: "user", content: input },
-    ];
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input,
+    };
+    const newMessages: Message[] = [...messages, newMessage];
     setMessages(newMessages);
     setInput("");
     await getResponse(newMessages);
@@ -116,8 +121,7 @@ export const useChatLogic = () => {
         body: JSON.stringify({
           model: selectedModel,
           prompt: messageHistory.map((m) => m.content).join("\n"),
-          template:
-            selectedTemplate === "Custom" ? customTemplate : selectedTemplate,
+          system: customSystem,
           options,
         }),
         signal: abortControllerRef.current.signal,
@@ -127,14 +131,18 @@ export const useChatLogic = () => {
       const decoder = new TextDecoder();
       let accumulatedResponse = "";
 
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: "",
+      };
+      setMessages((prev) => [...prev, newMessage]);
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
 
-        // Check if the chunk is only digits
         if (/^\d+$/.test(chunk.trim())) {
           accumulatedResponse += chunk;
           updateAssistantMessage(accumulatedResponse);
@@ -156,7 +164,6 @@ export const useChatLogic = () => {
               updateAssistantMessage(accumulatedResponse);
             }
           } catch (error) {
-            // If JSON parsing fails, treat the chunk as plain text
             accumulatedResponse += chunk;
             updateAssistantMessage(accumulatedResponse);
           }
@@ -167,19 +174,40 @@ export const useChatLogic = () => {
         console.log("Request aborted");
       } else {
         console.error("Error:", error);
-        updateAssistantMessage("Wystąpił błąd podczas pobierania odpowiedzi.");
+        updateAssistantMessage(
+          "An error occurred while fetching the response."
+        );
       }
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
   };
+
   const updateAssistantMessage = (content: string) => {
     setMessages((prev) => [
       ...prev.slice(0, -1),
-      { role: "assistant", content },
+      { ...prev[prev.length - 1], content },
     ]);
   };
+
+  const editMessage = (id: string, newContent: string) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, content: newContent } : msg))
+    );
+    setEditingMessageId(null);
+  };
+
+  const regenerateMessage = async (id: string) => {
+    const messageIndex = messages.findIndex((msg) => msg.id === id);
+    if (messageIndex === -1 || messages[messageIndex].role !== "assistant")
+      return;
+
+    const newMessages = messages.slice(0, messageIndex);
+    setMessages(newMessages);
+    await getResponse(newMessages);
+  };
+
   const regenerateResponse = async () => {
     if (messages.length < 2) return;
     const newMessages = messages.slice(0, -1);
@@ -207,10 +235,8 @@ export const useChatLogic = () => {
     models,
     selectedModel,
     setSelectedModel,
-    selectedTemplate,
-    setSelectedTemplate,
-    customTemplate,
-    setCustomTemplate,
+    customSystem,
+    setCustomSystem,
     options,
     setOptions,
     handleSubmit,
@@ -220,5 +246,9 @@ export const useChatLogic = () => {
     responseMetadata,
     clearChat,
     stopGenerating,
+    editMessage,
+    editingMessageId,
+    setEditingMessageId,
+    regenerateMessage,
   };
 };

@@ -16,6 +16,9 @@ import {
   Settings,
   Zap,
   FileText,
+  Edit,
+  Check,
+  X,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -31,8 +34,8 @@ export default function Home() {
     models,
     selectedModel,
     setSelectedModel,
-    customTemplate,
-    setCustomTemplate,
+    customSystem,
+    setCustomSystem,
     options,
     setOptions,
     handleSubmit,
@@ -42,10 +45,15 @@ export default function Home() {
     isPdfParsing,
     handleFileChange,
     responseMetadata,
+    editMessage,
+    editingMessageId,
+    setEditingMessageId,
+    regenerateMessage,
   } = useChatLogic();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const [editInput, setEditInput] = useState("");
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -56,6 +64,20 @@ export default function Home() {
       e.preventDefault();
       handleSubmit(e);
     }
+  };
+
+  const handleEditStart = (id: string, content: string) => {
+    setEditingMessageId(id);
+    setEditInput(content);
+  };
+
+  const handleEditSave = (id: string) => {
+    editMessage(id, editInput);
+  };
+
+  const handleEditCancel = () => {
+    setEditingMessageId(null);
+    setEditInput("");
   };
 
   return (
@@ -83,13 +105,11 @@ export default function Home() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Custom Template
-            </label>
+            <label className="block text-sm font-medium mb-1">System</label>
             <Textarea
-              placeholder="Enter custom template..."
-              value={customTemplate}
-              onChange={(e) => setCustomTemplate(e.target.value)}
+              placeholder="You are experienced software engenieer..."
+              value={customSystem}
+              onChange={(e) => setCustomSystem(e.target.value)}
               className="w-full p-2 rounded border"
             />
           </div>
@@ -146,21 +166,67 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent className="h-full overflow-auto">
-              {messages.map((message, index) => (
+              {messages.map((message) => (
                 <div
-                  key={index}
+                  key={message.id}
                   className={`mt-2 mb-0 ${
                     message.role === "user" ? "flex justify-end" : ""
                   }`}
                 >
                   <div
-                    className={`inline-block p-3 shadow-md rounded-md max-w-[80%] ${
+                    className={`inline-block pt-3 px-3 shadow-md rounded-md max-w-[80%] ${
                       message.role === "user" ? "bg-blue-100" : "bg-green-100"
                     }`}
                   >
-                    <div className="text-left">
-                      <MarkdownResponse content={message.content} />
-                    </div>
+                    {editingMessageId === message.id ? (
+                      <div className="min-w-[300px]">
+                        <Textarea
+                          value={editInput}
+                          onChange={(e) => setEditInput(e.target.value)}
+                          className="mb-2 min-w-[300px]"
+                        />
+                        <div className="flex justify-end space-x-2 p-0 m-0">
+                          <Button
+                            onClick={() => handleEditSave(message.id)}
+                            size="sm"
+                            variant={"ghost"}
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={handleEditCancel}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-left">
+                        <MarkdownResponse content={message.content} />
+                        <div className="flex justify-end mt-2 space-x-2">
+                          <Button
+                            variant={"ghost"}
+                            onClick={() =>
+                              handleEditStart(message.id, message.content)
+                            }
+                            size="sm"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          {message.role === "assistant" && (
+                            <Button
+                              onClick={() => regenerateMessage(message.id)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -169,7 +235,6 @@ export default function Home() {
           </Card>
         </ResizablePanel>
         <ResizableHandle />
-
         <ResizablePanel defaultSize={25} minSize={15}>
           <Card className="h-full bg-white/80 backdrop-blur-sm">
             <CardContent className="h-full flex flex-col pt-6">
