@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 type OllamaRequestBody = {
   model: string;
   prompt: string;
-  template?: string;
+  system?: string;
   options?: {
     temperature?: number;
     top_p?: number;
@@ -13,7 +13,7 @@ type OllamaRequestBody = {
 };
 
 export async function POST(request: Request) {
-  const { model, prompt, template, options } =
+  const { model, prompt, system, options } =
     (await request.json()) as OllamaRequestBody;
 
   const encoder = new TextEncoder();
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               model,
-              //   template: template || "",
+              system: system,
               prompt: prompt,
               options,
               stream: true,
