@@ -7,13 +7,11 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Send,
   RefreshCw,
   StopCircle,
-  Zap,
   FileText,
   Edit,
   Check,
@@ -23,6 +21,14 @@ import {
 import MarkdownResponse from "@/components/markdownResponse";
 import InitialChatContent from "@/components/initial-page";
 import { useChatContext } from "@/app/ChatContext";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function ChatCard() {
   const {
@@ -39,6 +45,9 @@ export function ChatCard() {
     isPdfParsing,
     isClient,
     stopGenerating,
+    models,
+    selectedModel,
+    setSelectedModel,
   } = useChatContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,20 +89,30 @@ export function ChatCard() {
   const handleStarterClick = (text: string) => {
     setInput(text);
   };
-  useEffect(() => {
-    if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
+
   if (!isClient) return null;
 
   return (
     <Card className="h-full overflow-hidden flex flex-col items-center">
-      <CardHeader className="flex-shrink-0 w-3/4">
-        <CardTitle className="flex items-center">
-          <Zap className="w-6 h-6 mr-2 text-blue-500" />
-          Ollama Chat
-        </CardTitle>
+      <CardHeader className="flex-shrink-0 w-full">
+        <div className="flex justify-between items-center w-full">
+          <Select value={selectedModel} onValueChange={setSelectedModel}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select a model" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {models.map((model) => (
+                  <SelectItem key={model.name} value={model.name}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <h2 className="text-2xl font-bold">Ollama Prompt Engineer</h2>
+          <div className="w-[200px]"></div> {/* Spacer for alignment */}
+        </div>
       </CardHeader>
       <CardContent className="flex-grow container container-fluid overflow-auto 2xl:w-3/4 w-full">
         {messages.length === 0 ? (

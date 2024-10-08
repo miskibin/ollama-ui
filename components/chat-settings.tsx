@@ -3,7 +3,14 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CardContent, CardFooter } from "@/components/ui/card";
-import { Thermometer, BarChart, RepeatIcon, Zap, Sprout } from "lucide-react";
+import {
+  Thermometer,
+  BarChart,
+  RepeatIcon,
+  Zap,
+  Sprout,
+  Syringe,
+} from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -34,28 +41,12 @@ const ChatSettings = () => {
 
   return (
     <>
-      <CardContent className="space-y-8">
+      <CardContent className="space-y-8 pt-8">
         <div>
-          <label className="block text-sm font-medium mb-1">Model</label>
-          <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a model" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Models</SelectLabel>
-                {models.map((model) => (
-                  <SelectItem key={model.name} value={model.name}>
-                    {model.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">System</label>
+          <label className="flex items-center text-sm font-medium mb-1">
+            <Syringe className="w-4 h-4 mr-2 text-blue-500" />
+            System prompt
+          </label>
           <Textarea
             placeholder="You are experienced software engineer..."
             value={customSystem}
