@@ -1,13 +1,21 @@
-"use client"
-import { ChatOptions, Model, Message, ResponseMetadata } from "@/lib/chat-store";
+"use client";
+import {
+  ChatOptions,
+  Model,
+  Message,
+  ResponseMetadata,
+} from "@/lib/chat-store";
 import { useState, useEffect, useRef } from "react";
 
 export const useChatLogic = () => {
   const [isPdfParsing, setIsPdfParsing] = useState(false);
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>(() => {
-    const savedMessages = localStorage.getItem("messages");
-    return savedMessages ? JSON.parse(savedMessages) : [];
+    if (typeof window !== "undefined") {
+      const savedMessages = localStorage.getItem("messages");
+      return savedMessages ? JSON.parse(savedMessages) : [];
+    }
+    return [];
   });
   const [streamResponse, setStreamResponse] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -26,7 +34,9 @@ export const useChatLogic = () => {
     num_ctx: 4096,
   });
   useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("messages", JSON.stringify(messages));
+    }
   }, [messages]);
   const abortControllerRef = useRef<AbortController | null>(null);
 

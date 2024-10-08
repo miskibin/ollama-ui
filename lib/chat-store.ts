@@ -20,6 +20,13 @@ export type ChatOptions = {
   num_ctx?: number;
 };
 
+export interface Test {
+  id: string;
+  systemPrompt: string;
+  condition: string;
+  model: string;
+  result?: boolean;
+}
 export type ResponseMetadata = {
   total_duration: number;
   load_duration: number;

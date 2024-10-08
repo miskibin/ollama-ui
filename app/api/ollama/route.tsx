@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-type OllamaRequestBody = {
+export type OllamaRequestBody = {
   model: string;
   prompt: string;
   system?: string;
@@ -9,7 +9,7 @@ type OllamaRequestBody = {
     temperature?: number;
     top_p?: number;
     top_k?: number;
-
+    seed?: number;
     repeat_penalty?: number;
   };
 };
@@ -17,32 +17,37 @@ type OllamaRequestBody = {
 export async function POST(request: Request) {
   const { model, prompt, system, stream, options } =
     (await request.json()) as OllamaRequestBody;
-  console.log(model, prompt, system, stream, options)
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
+  console.log(model, prompt, system, stream, options);
 
-  let ollamaController: AbortController | null = null;
+  const ollamaController = new AbortController();
 
-  const AIstream = new ReadableStream({
-    async start(controller) {
-      ollamaController = new AbortController();
-      try {
-        const ollamaResponse = await fetch(
-          "http://localhost:11434/api/generate",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model,
-              system: system,
-              prompt: prompt,
-              stream: stream,
-              options,
-            }),
-            signal: ollamaController.signal,
-          }
-        );
+  try {
+    const ollamaResponse = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        system,
+        prompt,
+        stream,
+        options,
+      }),
+      signal: ollamaController.signal,
+    });
 
+    if (!stream) {
+      // Handle non-streaming response
+      const data = await ollamaResponse.json();
+      console.log(data)
+      return NextResponse.json(data);
+    }
+
+    // Handle streaming response
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const AIstream = new ReadableStream({
+      async start(controller) {
         const reader = ollamaResponse.body!.getReader();
         let buffer = "";
 
@@ -73,28 +78,25 @@ export async function POST(request: Request) {
 
           buffer = lines[lines.length - 1];
         }
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          console.log("Ollama request was aborted");
-        } else {
-          console.error("Error in Ollama stream:", error);
-          controller.error(error);
-        }
-      } finally {
-        if (ollamaController) {
-          ollamaController.abort();
-        }
-      }
-    },
-    cancel() {
-      console.log("Stream cancelled by the client");
-      if (ollamaController) {
+      },
+      cancel() {
+        console.log("Stream cancelled by the client");
         ollamaController.abort();
-      }
-    },
-  });
+      },
+    });
 
-  return new NextResponse(AIstream);
+    return new NextResponse(AIstream);
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      console.log("Ollama request was aborted");
+    } else {
+      console.error("Error in Ollama request:", error);
+    }
+    return NextResponse.json(
+      { error: "An error occurred while processing the request." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function GET() {
