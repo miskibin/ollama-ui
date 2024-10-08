@@ -1,19 +1,20 @@
-# Ollama Chat Interface
+![image](https://github.com/user-attachments/assets/19af0df8-2be3-42fa-91c5-93dadbab1e9d)# Ollama Chat Interface
 
 ## Lots of options and settings
 
 ![image](https://github.com/user-attachments/assets/2e087650-debc-43d0-8a30-6f4a87619dbe)
 
-## Dark mode and example prompts 
+## Dark mode and automatic prmot testing 
 
-![image](https://github.com/user-attachments/assets/e9792096-15b3-4677-b8a5-e50ba88e0d17)
+![image](https://github.com/user-attachments/assets/edc3da6c-9990-41f3-bc00-0bc79e3b6425)
+
 
 ## Pdf parsing 
 
 ![image](https://github.com/user-attachments/assets/2101fb10-c2b1-4b2f-ac38-9a0f5602819b)
 
 
-## Propmpt testing
+## Propmpt testing creation
 
 ![image](https://github.com/user-attachments/assets/7b5f3dcb-69cf-4f4d-9e8f-ede1c1e7d23e)
 
