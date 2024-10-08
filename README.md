@@ -4,10 +4,6 @@
 ![image](https://github.com/user-attachments/assets/19af0df8-2be3-42fa-91c5-93dadbab1e9d)# Ollama Chat Interface
 
 
-## Dark mode and automatic prmot testing 
-
-![image](https://github.com/user-attachments/assets/edc3da6c-9990-41f3-bc00-0bc79e3b6425)
-
 
 ## Pdf parsing 
 
