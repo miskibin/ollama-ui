@@ -41,7 +41,7 @@ const ChatSettings = () => {
 
   return (
     <>
-      <CardContent className="space-y-8 pt-8">
+      <CardContent className="space-y-6 pt-4">
         <div>
           <label className="flex items-center text-sm font-medium mb-1">
             <Syringe className="w-4 h-4 mr-2 text-blue-500" />
