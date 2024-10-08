@@ -2,7 +2,8 @@
 import React from "react";
 import { Sidebar } from "@/components/sidebar";
 import { ChatCard } from "@/components/chatCard";
-import { ChatProvider } from "./ChatContext";
+import { ChatProvider, useChatContext } from "./ChatContext";
+import { PromptTestDialog } from "@/components/createTestDialog";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
           <ChatCard />
         </div>
       </div>
+      <PromptTestDialog />
     </ChatProvider>
   );
 }

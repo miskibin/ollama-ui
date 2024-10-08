@@ -1,3 +1,4 @@
+"use client";
 import React, { createContext, useContext, ReactNode, useState } from "react";
 import { useChatLogic } from "@/hooks/useChatLogic";
 import {
@@ -39,6 +40,13 @@ interface ChatContextType {
   isRunningTest: boolean;
   testResult: TestResult | null;
   runTest: (test: Test, lastModelResponse: string) => void;
+  updateTest: (id: string, updates: Partial<Test>) => void;
+  removeTest: (id: string) => void;
+  isClient: boolean;
+  isPromptDialogOpen: boolean;
+  setIsPromptDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  currentTest: Test | undefined;
+  setCurrentTest: React.Dispatch<React.SetStateAction<Test | undefined>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -48,14 +56,20 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const chatLogic = useChatLogic();
   const testLogic = useTestLogic();
-  const [promptTests, setPromptTests] = useState<Test[]>([]);
-  const addTest = (test: Test) => {
-    setPromptTests((prevTests) => [...prevTests, test]);
-  };
+
+  const [currentTest, setCurrentTest] = useState<Test>();
+  const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
 
   return (
     <ChatContext.Provider
-      value={{ ...chatLogic, ...testLogic, promptTests, addTest }}
+      value={{
+        ...chatLogic,
+        ...testLogic,
+        isPromptDialogOpen,
+        setIsPromptDialogOpen,
+        currentTest,
+        setCurrentTest,
+      }}
     >
       {children}
     </ChatContext.Provider>

@@ -10,13 +10,7 @@ import { useState, useEffect, useRef } from "react";
 export const useChatLogic = () => {
   const [isPdfParsing, setIsPdfParsing] = useState(false);
   const [input, setInput] = useState<string>("");
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (typeof window !== "undefined") {
-      const savedMessages = localStorage.getItem("messages");
-      return savedMessages ? JSON.parse(savedMessages) : [];
-    }
-    return [];
-  });
+  const [messages, setMessages] = useState<Message[]>([]);
   const [streamResponse, setStreamResponse] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [models, setModels] = useState<Model[]>([]);
@@ -33,11 +27,23 @@ export const useChatLogic = () => {
     seed: null,
     num_ctx: 4096,
   });
+
+  const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    setIsClient(true);
+    const savedMessages = localStorage.getItem("messages");
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
       localStorage.setItem("messages", JSON.stringify(messages));
     }
-  }, [messages]);
+  }, [messages, isClient]);
+
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -245,5 +251,6 @@ export const useChatLogic = () => {
     editingMessageId,
     setEditingMessageId,
     regenerateMessage,
+    isClient,
   };
 };

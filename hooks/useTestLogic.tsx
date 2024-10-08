@@ -2,25 +2,23 @@ import { useState } from "react";
 import { Test, Message } from "@/lib/chat-store";
 import { OllamaRequestBody } from "@/app/api/ollama/route";
 
-export type TestResult = "true" | "false" | "invalid" | "error";
+export type TestResult = "pass" | "fail" | "error" | undefined;
 
 export const useTestLogic = () => {
   const [isRunningTest, setIsRunningTest] = useState(false);
-  const [testResult, setTestResult] = useState<TestResult | null>(null);
-
+  const [testResult, setTestResult] = useState<TestResult>();
+  const [promptTests, setPromptTests] = useState<Test[]>([]);
   const runTest = async (test: Test, lastModelResponse: string) => {
     setIsRunningTest(true);
-    setTestResult(null);
+    setTestResult(undefined);
 
     const requestBody: OllamaRequestBody = {
       model: test.model,
-      prompt: `${test.condition}\n\nText: ${lastModelResponse}`,
+      prompt: `Text: ${lastModelResponse}\n\n${test.condition}`,
       system: test.systemPrompt,
       stream: false,
       options: {
-        temperature: 0, // Use temperature 0 for deterministic output
-        top_p: 1,
-        top_k: 1,
+        temperature: 0.5, // Use temperature 0 for deterministic output
         seed: 42,
         repeat_penalty: 1,
       },
@@ -40,41 +38,42 @@ export const useTestLogic = () => {
       const data = await response.json();
       const result = data.response.trim().toLowerCase();
       if (["no", "false"].includes(result)) {
-        setTestResult("false");
+        setTestResult("fail");
       } else if (["yes", "true"].includes(result)) {
-        setTestResult("true");
+        setTestResult("pass");
       } else {
         console.error("Invalid test result:", result);
-        setTestResult(`invalid`);
+        setTestResult(`error`);
       }
     } catch (error) {
       console.error("Error running test:", error);
       setTestResult("error");
     } finally {
       setIsRunningTest(false);
+      // set test.result
+      test.result = testResult;
     }
   };
-
-  const addTest = async (test: Omit<Test, "id">, messages: Message[]) => {
-    const lastModelResponse =
-      messages
-        .slice()
-        .reverse()
-        .find((message) => message.role === "assistant")?.content || "";
-
-    const newTest: Test = {
-      ...test,
-      id: Date.now().toString(),
-    };
-
-    await runTest(newTest, lastModelResponse);
-
-    return newTest;
+  const addTest = (test: Test) => {
+    setPromptTests((prevTests) => [...prevTests, test]);
+  };
+  const removeTest = (id: string) => {
+    setPromptTests((prevTests) => prevTests.filter((test) => test.id !== id));
   };
 
+  const updateTest = (id: string, updates: Partial<Test>) => {
+    setPromptTests((prevTests) =>
+      prevTests.map((test) => (test.id === id ? { ...test, ...updates } : test))
+    );
+  };
   return {
+    promptTests,
+    setPromptTests,
     isRunningTest,
     testResult,
+    addTest,
+    removeTest,
+    updateTest,
     runTest,
   };
 };

@@ -1,10 +1,10 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,20 +19,45 @@ import { Label } from "@/components/ui/label";
 import { useChatContext } from "@/app/ChatContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { TestResult } from "@/hooks/useTestLogic";
+import { Textarea } from "./ui/textarea";
 
 const truncateText = (text: string, maxLength = 100) => {
   if (text.length <= maxLength) return text;
   return text.substr(0, maxLength) + "...";
 };
 
+const SYSTEM_PROMPT = `Respond to all queries with only a single word: either 'No' or 'Yes'. Do not include any other text in your response.`;
+
 export function PromptTestDialog() {
-  const { models, messages,isRunningTest, testResult, runTest } = useChatContext();
+  const {
+    models,
+    messages,
+    isRunningTest,
+    testResult,
+    setIsPromptDialogOpen,
+    runTest,
+    currentTest,
+    addTest,
+    updateTest,
+    isPromptDialogOpen,
+    setCurrentTest,
+  } = useChatContext();
+
   const [condition, setCondition] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
-  const [open, setOpen] = useState(false);
   const [lastModelResponse, setLastModelResponse] = useState("");
+
+  useEffect(() => {
+    if (currentTest) {
+      setCondition(currentTest.condition);
+      setSelectedModel(currentTest.model);
+    } else {
+      setCondition("");
+      setSelectedModel("");
+    }
+  }, [currentTest]);
 
   useEffect(() => {
     const updateLastResponse = () => {
@@ -50,27 +75,45 @@ export function PromptTestDialog() {
     return () => clearInterval(intervalId);
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateOrUpdateTest = () => {
+    if (currentTest) {
+      updateTest(currentTest.id, {
+        condition,
+        model: selectedModel,
+      });
+    } else {
+      addTest({
+        systemPrompt: SYSTEM_PROMPT,
+        condition,
+        model: selectedModel,
+        enabled: true,
+        id: Date.now().toString(),
+      });
+    }
+    setIsPromptDialogOpen(false);
+    setCurrentTest(undefined);
+  };
+
+  const handleTestPrompt = async () => {
     if (!selectedModel || !condition) return;
 
-    const newTest = {
-      systemPrompt: "Respond with one word. True or False",
+    const testToRun = currentTest || {
+      systemPrompt: SYSTEM_PROMPT,
       condition,
       model: selectedModel,
+      enabled: true,
       id: Date.now().toString(),
     };
 
-    await runTest(newTest, lastModelResponse);
+    await runTest(testToRun, lastModelResponse);
   };
 
   const getResultIcon = (result: TestResult | null) => {
     switch (result) {
-      case "true":
+      case "pass":
         return <CheckCircle className="text-green-500" />;
-      case "false":
+      case "fail":
         return <XCircle className="text-red-500" />;
-      case "invalid":
       case "error":
         return <AlertCircle className="text-yellow-500" />;
       default:
@@ -79,30 +122,32 @@ export function PromptTestDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Create New Test</Button>
-      </DialogTrigger>
+    <Dialog
+      open={isPromptDialogOpen}
+      onOpenChange={(open) => {
+        if (!open) setCurrentTest(undefined);
+        setIsPromptDialogOpen(open);
+      }}
+    >
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
-            Create New Prompt Test
+            {currentTest ? "Edit Test" : "Create New Test"}
           </DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-          
+          <div className="space-y-4">
             <div>
               <Label htmlFor="condition" className="text-sm font-medium">
                 Condition
               </Label>
-              <Input
+              <Textarea
                 id="condition"
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
-                placeholder="e.g., Has positive attitude?"
+                placeholder="e.g., Determine if the given text contains exactly 4 sentences. Count complete thoughts ending with '.', '?', or '!'."
                 required
-                className="mt-1"
+                className="mt-1 h-32"
               />
             </div>
             <div>
@@ -126,10 +171,7 @@ export function PromptTestDialog() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full" disabled={isRunningTest}>
-              {isRunningTest ? "Running Test..." : "Run Test"}
-            </Button>
-          </form>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle>Test Preview</CardTitle>
@@ -138,9 +180,7 @@ export function PromptTestDialog() {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium">System Prompt</h4>
-                  <p className="text-sm text-gray-500">
-                    Respond only with True or False
-                  </p>
+                  <p className="text-sm text-gray-500">{SYSTEM_PROMPT}</p>
                 </div>
                 <Separator />
                 <div>
@@ -153,13 +193,13 @@ export function PromptTestDialog() {
                 <div>
                   <h4 className="font-medium">Condition</h4>
                   <p className="text-sm text-gray-500">
-                    {condition || "No condition set"}
+                    {truncateText(condition, 300) || "No condition set"}
                   </p>
                 </div>
                 <Separator />
                 <div>
                   <h4 className="font-medium">Expected Output</h4>
-                  <p className="text-sm text-gray-500">True or False</p>
+                  <p className="text-sm text-gray-500">Yes or No</p>
                 </div>
                 <Separator />
                 <div>
@@ -171,10 +211,24 @@ export function PromptTestDialog() {
                     </p>
                   </div>
                 </div>
+                <Button
+                  onClick={handleTestPrompt}
+                  className="w-full"
+                  disabled={isRunningTest}
+                >
+                  {isRunningTest ? "Running Test..." : "Test Prompt"}
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
+        <Button
+          onClick={handleCreateOrUpdateTest}
+          className="w-full mt-4"
+          disabled={isRunningTest || !selectedModel || !condition}
+        >
+          {currentTest ? "Update Test" : "Create Test"}
+        </Button>
       </DialogContent>
     </Dialog>
   );

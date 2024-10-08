@@ -37,6 +37,7 @@ export function ChatCard() {
     regenerateMessage,
     handleFileChange,
     isPdfParsing,
+    isClient,
     stopGenerating,
   } = useChatContext();
 
@@ -84,16 +85,17 @@ export function ChatCard() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+  if (!isClient) return null;
 
   return (
-    <Card className="h-full overflow-hidden flex flex-col">
-      <CardHeader className="flex-shrink-0">
+    <Card className="h-full overflow-hidden flex flex-col items-center">
+      <CardHeader className="flex-shrink-0 w-3/4">
         <CardTitle className="flex items-center">
           <Zap className="w-6 h-6 mr-2 text-blue-500" />
           Ollama Chat
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow overflow-auto">
+      <CardContent className="flex-grow container container-fluid overflow-auto 2xl:w-3/4 w-full">
         {messages.length === 0 ? (
           <InitialChatContent onStarterClick={handleStarterClick} />
         ) : (
@@ -181,9 +183,9 @@ export function ChatCard() {
             e.preventDefault();
             handleSubmit(e);
           }}
-          className="flex flex-col space-y-2 w-3/4  h-full "
+          className="flex flex-col space-y-2 2xl:w-3/5 w-full h-full"
         >
-          <div className="relative flex-1 m-2">
+          <div className="relative flex-1 m-2 rounded-full">
             <Textarea
               value={input}
               onChange={(e) => {
@@ -197,17 +199,10 @@ export function ChatCard() {
               onKeyDown={handleKeyDown}
               placeholder="Type your message... (Shift+Enter for new line)"
               disabled={isLoading}
-              className="pr-20 resize-none  min-h-[56px] max-h-[350px]"
+              className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[350px] rounded-[1rem] "
               rows={1}
             />
             <div className="absolute bottom-2 right-2 flex space-x-2">
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-                className="hidden"
-              />
               <Button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -218,6 +213,14 @@ export function ChatCard() {
               >
                 <FileText className="h-5 w-5" />
               </Button>
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                className="hidden"
+              />
+
               {isLoading ? (
                 <Button
                   type="button"

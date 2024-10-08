@@ -24,8 +24,9 @@ export interface Test {
   id: string;
   systemPrompt: string;
   condition: string;
+  enabled: boolean;
   model: string;
-  result?: boolean;
+  result?: "pass" | "fail" | "error";
 }
 export type ResponseMetadata = {
   total_duration: number;
