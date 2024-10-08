@@ -15,7 +15,8 @@
 
 ## Propmpt testing
 
-![image](https://github.com/user-attachments/assets/4c5115ba-2181-4072-a127-3f792ca81331)
+![image](https://github.com/user-attachments/assets/7b5f3dcb-69cf-4f4d-9e8f-ede1c1e7d23e)
+
 
 ## Overview
 
