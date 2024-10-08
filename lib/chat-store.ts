@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type Message = {
   id: string;
@@ -7,19 +7,20 @@ export type Message = {
   content: string;
 };
 
-type Model = {
+export type Model = {
   name: string;
 };
 
 export type ChatOptions = {
   temperature: number;
   topP: number;
+  seed: number | null;
   topK: number;
   repeatPenalty: number;
-  stream: boolean;
+  num_ctx?: number;
 };
 
-type ResponseMetadata = {
+export type ResponseMetadata = {
   total_duration: number;
   load_duration: number;
   prompt_eval_count: number;
@@ -28,7 +29,7 @@ type ResponseMetadata = {
   eval_duration: number;
 };
 
-type ChatState = {
+export type ChatState = {
   isPdfParsing: boolean;
   input: string;
   messages: Message[];
@@ -39,9 +40,6 @@ type ChatState = {
   responseMetadata: ResponseMetadata | null;
   editingMessageId: string | null;
   options: ChatOptions;
-};
-
-type ChatActions = {
   setIsPdfParsing: (isPdfParsing: boolean) => void;
   setInput: (input: string) => void;
   setMessages: (messages: Message[]) => void;
@@ -54,7 +52,7 @@ type ChatActions = {
   setOptions: (options: Partial<ChatOptions>) => void;
 };
 
-export const useChatStore = create<ChatState & ChatActions>()(
+export const useChatStore = create<ChatState>()(
   persist(
     (set) => ({
       isPdfParsing: false,
@@ -71,6 +69,7 @@ export const useChatStore = create<ChatState & ChatActions>()(
         topP: 0.9,
         topK: 40,
         repeatPenalty: 1.1,
+        seed: null,
         stream: true,
       },
       setIsPdfParsing: (isPdfParsing) => set({ isPdfParsing }),
@@ -82,15 +81,11 @@ export const useChatStore = create<ChatState & ChatActions>()(
       setCustomSystem: (customSystem) => set({ customSystem }),
       setResponseMetadata: (responseMetadata) => set({ responseMetadata }),
       setEditingMessageId: (editingMessageId) => set({ editingMessageId }),
-      setOptions: (newOptions) => set((state) => ({ options: { ...state.options, ...newOptions } })),
+      setOptions: (newOptions) =>
+        set((state) => ({ options: { ...state.options, ...newOptions } })),
     }),
     {
-      name: 'chat-storage',
-      partialize: (state) => ({
-        selectedModel: state.selectedModel,
-        customSystem: state.customSystem,
-        options: state.options,
-      }),
+      name: "chat-storage",
     }
   )
 );

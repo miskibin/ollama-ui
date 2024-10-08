@@ -1,37 +1,15 @@
 "use client"
+import { ChatOptions, Model, Message, ResponseMetadata } from "@/lib/chat-store";
 import { useState, useEffect, useRef } from "react";
-
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
-
-type Model = {
-  name: string;
-};
-
-type ChatOptions = {
-  temperature: number;
-  topP: number;
-  topK: number;
-  repeatPenalty: number;
-  stream: boolean;
-};
-
-type ResponseMetadata = {
-  total_duration: number;
-  load_duration: number;
-  prompt_eval_count: number;
-  prompt_eval_duration: number;
-  eval_count: number;
-  eval_duration: number;
-};
 
 export const useChatLogic = () => {
   const [isPdfParsing, setIsPdfParsing] = useState(false);
   const [input, setInput] = useState<string>("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const savedMessages = localStorage.getItem("messages");
+    return savedMessages ? JSON.parse(savedMessages) : [];
+  });
+  const [streamResponse, setStreamResponse] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
@@ -44,9 +22,12 @@ export const useChatLogic = () => {
     topP: 0.9,
     topK: 40,
     repeatPenalty: 1.1,
-    stream: true,
+    seed: null,
+    num_ctx: 4096,
   });
-
+  useEffect(() => {
+    localStorage.setItem("messages", JSON.stringify(messages));
+  }, [messages]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -122,6 +103,7 @@ export const useChatLogic = () => {
           model: selectedModel,
           prompt: messageHistory.map((m) => m.content).join("\n"),
           system: customSystem,
+          stream: streamResponse,
           options,
         }),
         signal: abortControllerRef.current.signal,
@@ -234,8 +216,11 @@ export const useChatLogic = () => {
     isLoading,
     models,
     selectedModel,
+    fetchModels,
     setSelectedModel,
     customSystem,
+    streamResponse,
+    setStreamResponse,
     setCustomSystem,
     options,
     setOptions,

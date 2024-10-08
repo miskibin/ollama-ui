@@ -4,27 +4,28 @@ type OllamaRequestBody = {
   model: string;
   prompt: string;
   system?: string;
+  stream?: boolean;
   options?: {
     temperature?: number;
     top_p?: number;
     top_k?: number;
+
     repeat_penalty?: number;
   };
 };
 
 export async function POST(request: Request) {
-  const { model, prompt, system, options } =
+  const { model, prompt, system, stream, options } =
     (await request.json()) as OllamaRequestBody;
-
+  console.log(model, prompt, system, stream, options)
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
   let ollamaController: AbortController | null = null;
 
-  const stream = new ReadableStream({
+  const AIstream = new ReadableStream({
     async start(controller) {
       ollamaController = new AbortController();
-
       try {
         const ollamaResponse = await fetch(
           "http://localhost:11434/api/generate",
@@ -35,8 +36,8 @@ export async function POST(request: Request) {
               model,
               system: system,
               prompt: prompt,
+              stream: stream,
               options,
-              stream: true,
             }),
             signal: ollamaController.signal,
           }
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
     },
   });
 
-  return new NextResponse(stream);
+  return new NextResponse(AIstream);
 }
 
 export async function GET() {

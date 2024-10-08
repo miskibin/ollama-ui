@@ -7,7 +7,7 @@ interface MarkdownResponseProps {
 }
 
 const MarkdownResponse: React.FC<MarkdownResponseProps> = ({ content }) => {
-  return <ReactMarkdown className={"prose"}>{content}</ReactMarkdown>;
+  return <ReactMarkdown className={"prose dark:prose-invert"}>{content}</ReactMarkdown>;
 };
 
 export default MarkdownResponse;
