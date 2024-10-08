@@ -1,6 +1,11 @@
 # Ollama Chat Interface
 
-![image](https://github.com/user-attachments/assets/89439c2e-0a80-45d9-80a8-53f3ae303276)
+
+![image](https://github.com/user-attachments/assets/2e087650-debc-43d0-8a30-6f4a87619dbe)
+
+![image](https://github.com/user-attachments/assets/e9792096-15b3-4677-b8a5-e50ba88e0d17)
+
+
 ![image](https://github.com/user-attachments/assets/b1ddb3d9-96b1-4ff1-a2a5-d5d4e049b1d2)
 
 
