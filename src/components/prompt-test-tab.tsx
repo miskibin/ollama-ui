@@ -51,7 +51,7 @@ export const TestsTab = () => {
         return "border-gray-200";
     }
   };
-  if(!isClient) return null;
+  if (!isClient) return null;
   return (
     <CardContent className="space-y-6 relative pb-16">
       <div className="space-y-4">
@@ -117,7 +117,7 @@ export const TestsTab = () => {
         className="absolute bottom-4 left-4 right-4 text-white"
         variant="default"
       >
-        <PlusCircle className="mr-2 h-4 w-4" /> Create Test
+        <PlusCircle className="mr-2 h-4 w-4" /> Create Criteria evaluation
       </Button>
     </CardContent>
   );

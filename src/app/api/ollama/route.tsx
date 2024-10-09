@@ -1,3 +1,4 @@
+import { Model } from "@/lib/chat-store";
 import { NextResponse } from "next/server";
 
 export type OllamaRequestBody = {
@@ -17,10 +18,10 @@ export type OllamaRequestBody = {
 export async function POST(request: Request) {
   const { model, prompt, system, stream, options } =
     (await request.json()) as OllamaRequestBody;
-  console.log("model: ",model)
-  console.log("prompt:", prompt)
-  console.log("system:", system)
-  console.log("options:", options)
+  console.log("model: ", model);
+  console.log("prompt:", prompt);
+  console.log("system:", system);
+  console.log("options:", options);
   const ollamaController = new AbortController();
 
   try {
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     if (!stream) {
       // Handle non-streaming response
       const data = await ollamaResponse.json();
-      console.log(data)
+      console.log(data);
       return NextResponse.json(data);
     }
 
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const response = await fetch("http://localhost:11434/api/tags");
-    const data = await response.json();
+    const data: Model[] = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching models:", error);

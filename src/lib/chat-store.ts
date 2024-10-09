@@ -9,6 +9,16 @@ export type Message = {
 
 export type Model = {
   name: string;
+  modified_at: string;
+  size: number;
+  digest: string;
+  details: {
+    format: string;
+    family: string;
+    families: string | null;
+    parameter_size: string;
+    quantization_level: string;
+  };
 };
 
 export type ChatOptions = {
@@ -29,12 +39,12 @@ export interface Test {
   result?: "pass" | "fail" | "error";
 }
 export type ResponseMetadata = {
-  total_duration: number;
-  load_duration: number;
-  prompt_eval_count: number;
-  prompt_eval_duration: number;
-  eval_count: number;
-  eval_duration: number;
+  load_duration?: number;
+  total_duration?: number;
+  prompt_eval_count?: number;
+  prompt_eval_duration?: number;
+  eval_count?: number;
+  eval_duration?: number;
 };
 
 export type ChatState = {

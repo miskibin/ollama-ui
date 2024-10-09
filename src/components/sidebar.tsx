@@ -42,11 +42,13 @@ export function Sidebar() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid mx-4 grid-cols-2">
           <TabsTrigger value="chat">
-            <Cog className="h-4 w-4 mr-2 text-teal-400"/>Settings
+            <Cog className="h-4 w-4 mr-2 text-teal-400" />
+            Settings
           </TabsTrigger>
           <TabsTrigger value="tests">
-            <TestTube className="h-4 w-4 mr-2 text-blue-400"/>Prompt Tests
-            </TabsTrigger>
+            <TestTube className="h-4 w-4 mr-2 text-blue-400" />
+            Evaluation
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="chat">
           <ChatSettings />

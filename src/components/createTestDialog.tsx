@@ -180,11 +180,12 @@ export function PromptTestDialog() {
                   <SelectValue placeholder="Select a model" />
                 </SelectTrigger>
                 <SelectContent>
-                  {models && models.map((model) => (
-                    <SelectItem key={model.name} value={model.name}>
-                      {model.name}
-                    </SelectItem>
-                  ))}
+                  {models &&
+                    models.map((model) => (
+                      <SelectItem key={model.name} value={model.name}>
+                        {model.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -237,7 +238,7 @@ export function PromptTestDialog() {
           className="w-full mt-4"
           disabled={isRunningTest || !selectedModel || !condition}
         >
-          {currentTest ? "Update Test" : "Create Test"}
+          {currentTest ? "Update Test" : "Create Criteria evaluation"}
         </Button>
       </DialogContent>
     </Dialog>

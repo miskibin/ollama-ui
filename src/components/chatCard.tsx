@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import LoadingDots from "./loadingDots";
+import ModelSelector from "./model-selector";
 
 export function ChatCard() {
   const {
@@ -48,9 +49,6 @@ export function ChatCard() {
     isClient,
     stopGenerating,
     setMessages,
-    models,
-    selectedModel,
-    setSelectedModel,
   } = useChatContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,7 +56,7 @@ export function ChatCard() {
   const [editTextareaHeight, setEditTextareaHeight] = useState("auto");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editInput, setEditInput] = useState("");
-
+  console.log("messages", messages);
   useEffect(() => {
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -136,21 +134,7 @@ export function ChatCard() {
     <Card className="h-full overflow-hidden flex flex-col items-center">
       <CardHeader className="flex-shrink-0 w-full">
         <div className="flex justify-between items-center w-full">
-          <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select a model" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {models &&
-                  models.map((model) => (
-                    <SelectItem key={model.name} value={model.name}>
-                      {model.name}
-                    </SelectItem>
-                  ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <ModelSelector />
           <h2 className="text-2xl font-bold">Ollama Prompt Engineer</h2>
           <div className="w-[200px]"></div> {/* Spacer for alignment */}
         </div>
@@ -200,6 +184,11 @@ export function ChatCard() {
                   </div>
                 ) : (
                   <div className="text-left">
+                    {isLoading &&
+                      messages.length > 0 &&
+                      messages[messages.length - 1].content === "" && (
+                        <LoadingDots />
+                      )}
                     <MarkdownResponse content={message.content} />
                     <div className="flex justify-start mt-2 space-x-2">
                       <Button
@@ -244,10 +233,6 @@ export function ChatCard() {
           ))
         )}
         <div ref={messagesEndRef} />
-        {isLoading 
-        
-        && <LoadingDots />}
-
       </CardContent>
       <CardFooter className="w-full mt-3 items-center justify-center">
         <form

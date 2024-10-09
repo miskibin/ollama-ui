@@ -1,11 +1,16 @@
-"use client";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ChatOptions,
   Model,
   Message,
   ResponseMetadata,
 } from "@/lib/chat-store";
-import { useState, useEffect, useRef } from "react";
+import { ChatOllama, Ollama } from "@langchain/ollama";
+import {
+  HumanMessage,
+  AIMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
 
 export const useChatLogic = () => {
   const [isPdfParsing, setIsPdfParsing] = useState(false);
@@ -29,13 +34,18 @@ export const useChatLogic = () => {
   });
 
   const [isClient, setIsClient] = useState(false);
-
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const chatModelRef = useRef<ChatOllama | null>(null);
+  const generateUniqueId = () => {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };
   useEffect(() => {
     setIsClient(true);
     const savedMessages = localStorage.getItem("messages");
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
     }
+    fetchModels();
   }, []);
 
   useEffect(() => {
@@ -44,11 +54,17 @@ export const useChatLogic = () => {
     }
   }, [messages, isClient]);
 
-  const abortControllerRef = useRef<AbortController | null>(null);
-
   useEffect(() => {
-    fetchModels();
-  }, []);
+    if (selectedModel) {
+      chatModelRef.current = new ChatOllama({
+        model: selectedModel,
+        temperature: options.temperature,
+        topP: options.topP,
+        topK: options.topK,
+        repeatPenalty: options.repeatPenalty,
+      });
+    }
+  }, [selectedModel, options]);
 
   const fetchModels = async () => {
     try {
@@ -96,83 +112,65 @@ export const useChatLogic = () => {
     if (!input.trim() || !selectedModel) return;
 
     const newMessage: Message = {
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       role: "user",
       content: input,
     };
-    const newMessages: Message[] = [...messages, newMessage];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, newMessage]);
     setInput("");
-    await getResponse(newMessages);
+    await getResponse([...messages, newMessage]);
   };
 
   const getResponse = async (messageHistory: Message[]) => {
+    if (!chatModelRef.current) return;
+
     setIsLoading(true);
     setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
 
     try {
-      const res = await fetch("/api/ollama", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: selectedModel,
-          prompt: messageHistory.map((m) => m.content).join("\n"),
-          system: customSystem,
-          stream: streamResponse,
-          options,
-        }),
+      const langChainMessages = messageHistory.map((msg) =>
+        msg.role === "user"
+          ? new HumanMessage(msg.content)
+          : new AIMessage(msg.content)
+      );
+
+      if (customSystem) {
+        langChainMessages.unshift(new SystemMessage(customSystem));
+      }
+
+      const newMessageId = generateUniqueId();
+      setMessages((prev) => [
+        ...prev,
+        { id: newMessageId, role: "assistant", content: "" },
+      ]);
+
+      let accumulatedResponse = "";
+      const response = await chatModelRef.current.invoke(langChainMessages, {
+        callbacks: [
+          {
+            handleLLMNewToken(token: string) {
+              accumulatedResponse += token;
+              updateAssistantMessage(newMessageId, accumulatedResponse);
+            },
+          },
+        ],
         signal: abortControllerRef.current.signal,
       });
 
-      const reader = res.body!.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedResponse = "";
-
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: "",
-      };
-      setMessages((prev) => [...prev, newMessage]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-
-        if (/^\d+$/.test(chunk.trim())) {
-          accumulatedResponse += chunk;
-          updateAssistantMessage(accumulatedResponse);
-        } else {
-          try {
-            const jsonChunk = JSON.parse(chunk);
-
-            if (jsonChunk.done) {
-              setResponseMetadata({
-                total_duration: jsonChunk.total_duration,
-                load_duration: jsonChunk.load_duration,
-                prompt_eval_count: jsonChunk.prompt_eval_count,
-                prompt_eval_duration: jsonChunk.prompt_eval_duration,
-                eval_count: jsonChunk.eval_count,
-                eval_duration: jsonChunk.eval_duration,
-              });
-            } else {
-              accumulatedResponse += jsonChunk.response;
-              updateAssistantMessage(accumulatedResponse);
-            }
-          } catch (error) {
-            accumulatedResponse += chunk;
-            updateAssistantMessage(accumulatedResponse);
-          }
-        }
-      }
+      setResponseMetadata({
+        total_duration: response.response_metadata.total_duration,
+        load_duration: response.response_metadata.load_duration,
+        prompt_eval_count: response.response_metadata.prompt_eval_count,
+        prompt_eval_duration: response.response_metadata.prompt_eval_duration,
+      });
     } catch (error) {
       if ((error as any).name === "AbortError") {
         console.log("Request aborted");
       } else {
         console.error("Error:", error);
         updateAssistantMessage(
+          generateUniqueId(),
           "An error occurred while fetching the response."
         );
       }
@@ -182,12 +180,11 @@ export const useChatLogic = () => {
     }
   };
 
-  const updateAssistantMessage = (content: string) => {
-    setMessages((prev) => [
-      ...prev.slice(0, -1),
-      { ...prev[prev.length - 1], content },
-    ]);
-  };
+  const updateAssistantMessage = useCallback((id: string, content: string) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, content } : msg))
+    );
+  }, []);
 
   const editMessage = (id: string, newContent: string) => {
     setMessages((prev) =>
@@ -202,13 +199,6 @@ export const useChatLogic = () => {
       return;
 
     const newMessages = messages.slice(0, messageIndex);
-    setMessages(newMessages);
-    await getResponse(newMessages);
-  };
-
-  const regenerateResponse = async () => {
-    if (messages.length < 2) return;
-    const newMessages = messages.slice(0, -1);
     setMessages(newMessages);
     await getResponse(newMessages);
   };
@@ -242,7 +232,6 @@ export const useChatLogic = () => {
     setOptions,
     handleSubmit,
     handleFileChange,
-    regenerateResponse,
     isPdfParsing,
     responseMetadata,
     clearChat,

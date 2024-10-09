@@ -16,8 +16,16 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Ollama UI",
-  description: "A simple UI for the Ollama API",
+  title: "Ollama Prompt Engineer",
+  description:
+    "A simple and powerful UI for interacting with the Ollama API, enabling seamless AI-powered conversations and tasks.",
+  keywords: [
+    "Ollama",
+    "AI",
+    "chatbot",
+    "natural language processing",
+    "machine learning",
+  ],
 };
 
 export default function RootLayout({
@@ -30,12 +38,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-200 dark:bg-gray-800`}
       >
-         <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-          >
-            {children}
-          </ThemeProvider>
+        <ThemeProvider attribute="class" defaultTheme="light">
+          {children}
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>
