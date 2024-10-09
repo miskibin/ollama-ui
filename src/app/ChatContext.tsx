@@ -40,7 +40,7 @@ interface ChatContextType {
   addTest: (test: Test) => void;
   isRunningTest: boolean;
   testResult: TestResult | null;
-  runTest: (test: Test,userPrompt:string, lastModelResponse: string) => void;
+  runTest: (test: Test, userPrompt: string, lastModelResponse: string) => void;
   updateTest: (id: string, updates: Partial<Test>) => void;
   removeTest: (id: string) => void;
   isClient: boolean;
