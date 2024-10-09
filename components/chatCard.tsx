@@ -52,6 +52,7 @@ export function ChatCard() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editInput, setEditInput] = useState("");
 
   useEffect(() => {
@@ -89,7 +90,29 @@ export function ChatCard() {
   const handleStarterClick = (text: string) => {
     setInput(text);
   };
+  const adjustTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "56px"; // Reset to min height
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(
+        Math.max(scrollHeight, 56),
+        350
+      )}px`;
+    }
+  };
 
+  const handlePdfFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    await handleFileChange(e);
+    // Use a small delay to ensure the input has been updated with the PDF content
+    setTimeout(adjustTextareaHeight, 0);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    adjustTextareaHeight();
+  };
   if (!isClient) return null;
 
   return (
@@ -206,19 +229,13 @@ export function ChatCard() {
         >
           <div className="relative flex-1 m-2 rounded-full">
             <Textarea
+              ref={textareaRef}
               value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                e.target.style.height = "auto";
-                e.target.style.height = `${Math.min(
-                  e.target.scrollHeight,
-                  200
-                )}px`;
-              }}
+              onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="Type your message... (Shift+Enter for new line)"
               disabled={isLoading}
-              className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[350px] rounded-[1rem] "
+              className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[350px] rounded-[1rem]"
               rows={1}
             />
             <div className="absolute bottom-2 right-2 flex space-x-2">
@@ -235,7 +252,7 @@ export function ChatCard() {
               <input
                 type="file"
                 accept=".pdf"
-                onChange={handleFileChange}
+                onChange={handlePdfFileChange}
                 ref={fileInputRef}
                 className="hidden"
               />
