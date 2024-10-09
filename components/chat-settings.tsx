@@ -14,16 +14,27 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useChatContext } from "@/app/ChatContext";
+
+import { LucideIcon } from "lucide-react";
+
+const LabelWithIcon = ({
+  icon: Icon,
+  text,
+  value,
+}: {
+  icon: LucideIcon;
+  text: string;
+  value?: string;
+}) => (
+  <label className="flex w-full items-center justify-between text-sm font-medium mb-1">
+    <div className="flex items-center">
+      <Icon className="w-4 h-4 mr-2" />
+      {text}
+    </div>
+    {value && <span className="font-semibold">{value}</span>}
+  </label>
+);
 
 const ChatSettings = () => {
   const {
@@ -43,10 +54,7 @@ const ChatSettings = () => {
     <>
       <CardContent className="space-y-6 pt-4">
         <div>
-          <label className="flex items-center text-sm font-medium mb-1">
-            <Syringe className="w-4 h-4 mr-2 text-blue-500" />
-            System prompt
-          </label>
+          <LabelWithIcon icon={Syringe} text="System prompt" />
           <Textarea
             placeholder="You are experienced software engineer..."
             value={customSystem}
@@ -56,10 +64,11 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <label className="flex items-center text-sm font-medium mb-1">
-            <Thermometer className="w-4 h-4 mr-2 text-red-500" />
-            Temperature: {options.temperature.toFixed(1)}
-          </label>
+          <LabelWithIcon
+            icon={Thermometer}
+            text="Temperature"
+            value={options.temperature.toFixed(1)}
+          />
           <Slider
             min={0}
             max={1}
@@ -72,10 +81,11 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <label className="flex items-center text-sm font-medium mb-1">
-            <BarChart className="w-4 h-4 mr-2 text-green-500" />
-            Top P: {options.topP.toFixed(1)}
-          </label>
+          <LabelWithIcon
+            icon={BarChart}
+            text="Top P"
+            value={options.topP.toFixed(1)}
+          />
           <Slider
             min={0}
             max={1}
@@ -86,10 +96,11 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <label className="flex items-center text-sm font-medium mb-1">
-            <RepeatIcon className="w-4 h-4 mr-2 text-purple-500" />
-            Repeat Penalty: {options.repeatPenalty.toFixed(1)}
-          </label>
+          <LabelWithIcon
+            icon={RepeatIcon}
+            text="Repeat Penalty"
+            value={options.repeatPenalty.toFixed(1)}
+          />
           <Slider
             min={1}
             max={2}
@@ -102,10 +113,7 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <label className="flex items-center text-sm font-medium mb-1">
-            <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-            Top K: {options.topK}
-          </label>
+          <LabelWithIcon icon={Zap} text="Top K" />
           <Input
             type="number"
             value={options.topK}
@@ -117,10 +125,7 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <label className="flex items-center text-sm font-medium mb-1">
-            <Sprout className="w-4 h-4 mr-2 text-green-500" />
-            Seed
-          </label>
+          <LabelWithIcon icon={Sprout} text="Seed" />
           <Input
             type="number"
             value={options.seed || ""}
@@ -136,10 +141,7 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <label className="flex items-center text-sm font-medium mb-1">
-            <Zap className="w-4 h-4 mr-2 text-blue-500" />
-            Context length (input)
-          </label>
+          <LabelWithIcon icon={Zap} text="Context length (input)" />
           <Input
             type="number"
             value={options.num_ctx || ""}
@@ -155,10 +157,7 @@ const ChatSettings = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <label className="flex items-center text-sm font-medium">
-            <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-            Stream Responses
-          </label>
+          <LabelWithIcon icon={Zap} text="Stream Responses" />
           <Switch
             checked={streamResponse}
             onCheckedChange={setStreamResponse}
@@ -167,7 +166,7 @@ const ChatSettings = () => {
       </CardContent>
 
       <CardFooter>
-        <Button onClick={clearChat} variant="outline" className="w-full">
+        <Button onClick={clearChat} variant="destructive" className="w-full">
           Clear Chat
         </Button>
       </CardFooter>

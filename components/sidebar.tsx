@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings, Sun, Moon } from "lucide-react";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TestsTab } from "./prompt-test-tab";
@@ -15,9 +16,15 @@ export function Sidebar() {
     <Card className="w-96 h-full overflow-auto">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Settings className="w-6 h-6 mr-2 text-blue-500" />
-            Sidebar
+          <div className="flex items-center space-x-2">
+            <Image
+              src="/ollama.png"
+              alt="Logo"
+              width={42}
+              height={426}
+              className="rounded-md "
+            />
+            <h2 className="text-lg font-semibold">Ollama chat</h2>
           </div>
           <Button
             variant="ghost"

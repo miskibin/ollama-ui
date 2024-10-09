@@ -18,6 +18,7 @@ import {
   Utensils,
   Wrench,
 } from "lucide-react";
+import Image from "next/image";
 
 interface InitialChatContentProps {
   onStarterClick: (text: string) => void;
@@ -132,13 +133,13 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
   return (
     <div className="flex flex-col items-center justify-center h-full p-4">
       <div className="mb-8">
-        <svg
-          className="w-16 h-16 text-primary"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-        >
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
-        </svg>
+        <Image
+          src="/ollama.png"
+          alt="Ollama Logo"
+          width={200}
+          height={200}
+          className="rounded-md "
+        />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl w-full">
         {randomStarters.map((starter, index) => (

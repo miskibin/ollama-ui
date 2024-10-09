@@ -58,8 +58,8 @@ body {
     --secondary-foreground: 334 0% 100%;
     --accent: 217.5 9.09% 17.25%;
     --accent-foreground: 226.73 58.43% 65.1%;
-    --destructive: 0 86.89% 48.16%;
-    --destructive-foreground: 334 34% 98%;
+    --destructive: 0 86.89% 38%; 
+    --destructive-foreground: 334 34% 92%; 
     --ring: 217.5 9.09% 17.25%;
   }
 }
