@@ -56,7 +56,6 @@ export function ChatCard() {
   const [editTextareaHeight, setEditTextareaHeight] = useState("auto");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editInput, setEditInput] = useState("");
-  console.log("messages", messages);
   useEffect(() => {
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -11,6 +11,8 @@ import {
   AIMessage,
   SystemMessage,
 } from "@langchain/core/messages";
+import { searchWikipedia } from "@/tools/wikipedia-search";
+import { createWikipediaSearchChain } from "@/tools/is-wikipedia-relevant";
 
 export const useChatLogic = () => {
   const [isPdfParsing, setIsPdfParsing] = useState(false);
@@ -21,6 +23,10 @@ export const useChatLogic = () => {
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [customSystem, setCustomSystem] = useState<string>("");
+  const [useWikipedia, setUseWikipedia] = useState(true);
+  const wikipediaChainRef = useRef<ReturnType<
+    typeof createWikipediaSearchChain
+  > | null>(null);
   const [responseMetadata, setResponseMetadata] =
     useState<ResponseMetadata | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -63,9 +69,11 @@ export const useChatLogic = () => {
         topK: options.topK,
         repeatPenalty: options.repeatPenalty,
       });
+      wikipediaChainRef.current = createWikipediaSearchChain(
+        chatModelRef.current
+      );
     }
   }, [selectedModel, options]);
-
   const fetchModels = async () => {
     try {
       const response = await fetch("/api/ollama");
@@ -120,63 +128,75 @@ export const useChatLogic = () => {
     setInput("");
     await getResponse([...messages, newMessage]);
   };
-
   const getResponse = async (messageHistory: Message[]) => {
-    if (!chatModelRef.current) return;
+    if (!chatModelRef.current || !wikipediaChainRef.current) return;
 
     setIsLoading(true);
     setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
 
     try {
-      const langChainMessages = messageHistory.map((msg) =>
-        msg.role === "user"
-          ? new HumanMessage(msg.content)
-          : new AIMessage(msg.content)
-      );
+      const lastUserMessage = messageHistory[messageHistory.length - 1].content;
 
-      if (customSystem) {
-        langChainMessages.unshift(new SystemMessage(customSystem));
-      }
+      // Use the Wikipedia chain
+      const wikipediaResult = await wikipediaChainRef.current.invoke(
+        lastUserMessage
+      );
 
       const newMessageId = generateUniqueId();
       setMessages((prev) => [
         ...prev,
-        { id: newMessageId, role: "assistant", content: "" },
+        { id: newMessageId, role: "assistant", content: wikipediaResult },
       ]);
-
-      let accumulatedResponse = "";
-      const response = await chatModelRef.current.invoke(langChainMessages, {
-        callbacks: [
-          {
-            handleLLMNewToken(token: string) {
-              accumulatedResponse += token;
-              updateAssistantMessage(newMessageId, accumulatedResponse);
-            },
-          },
-        ],
-        signal: abortControllerRef.current.signal,
-      });
-
-      setResponseMetadata({
-        total_duration: response.response_metadata.total_duration,
-        load_duration: response.response_metadata.load_duration,
-        prompt_eval_count: response.response_metadata.prompt_eval_count,
-        prompt_eval_duration: response.response_metadata.prompt_eval_duration,
-      });
-    } catch (error) {
-      if ((error as any).name === "AbortError") {
-        console.log("Request aborted");
-      } else {
-        console.error("Error:", error);
-        updateAssistantMessage(
-          generateUniqueId(),
-          "An error occurred while fetching the response."
+      // If Wikipedia search was not needed, use the chat model
+      if (wikipediaResult === "Wikipedia search not needed.") {
+        const langChainMessages = messageHistory.map((msg) =>
+          msg.role === "user"
+            ? new HumanMessage(msg.content)
+            : new AIMessage(msg.content)
         );
+
+        if (customSystem) {
+          langChainMessages.unshift(new SystemMessage(customSystem));
+        }
+
+        let accumulatedResponse = "";
+        const response = await chatModelRef.current.invoke(langChainMessages, {
+          callbacks: [
+            {
+              handleLLMNewToken(token: string) {
+                accumulatedResponse += token;
+                updateAssistantMessage(newMessageId, accumulatedResponse);
+              },
+            },
+          ],
+          signal: abortControllerRef.current.signal,
+        });
+
+        setResponseMetadata({
+          total_duration: response.response_metadata.total_duration,
+          load_duration: response.response_metadata.load_duration,
+          prompt_eval_count: response.response_metadata.prompt_eval_count,
+          prompt_eval_duration: response.response_metadata.prompt_eval_duration,
+        });
       }
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
+    }
+  };
+
+  const handleError = (error: any) => {
+    if (error.name === "AbortError") {
+      console.log("Request aborted");
+    } else {
+      console.error("Error:", error);
+      updateAssistantMessage(
+        generateUniqueId(),
+        "An error occurred while fetching the response."
+      );
     }
   };
 
