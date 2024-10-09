@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Sun, Moon } from "lucide-react";
+import { Settings, Sun, Moon, Cog, TestTube } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -40,9 +40,13 @@ export function Sidebar() {
         </CardTitle>
       </CardHeader>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="chat">Chat Settings</TabsTrigger>
-          <TabsTrigger value="tests">Tests</TabsTrigger>
+        <TabsList className="grid mx-4 grid-cols-2">
+          <TabsTrigger value="chat">
+            <Cog className="h-4 w-4 mr-2 text-teal-400"/>Settings
+          </TabsTrigger>
+          <TabsTrigger value="tests">
+            <TestTube className="h-4 w-4 mr-2 text-blue-400"/>Prompt Tests
+            </TabsTrigger>
         </TabsList>
         <TabsContent value="chat">
           <ChatSettings />

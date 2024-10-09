@@ -1,26 +1,53 @@
-import { useState } from "react";
-import { Test, Message } from "@/lib/chat-store";
+import { useState, useEffect } from "react";
+import { Test } from "@/lib/chat-store";
 import { OllamaRequestBody } from "@/app/api/ollama/route";
+import { TEST_PROMPT_STRUCTURE } from "@/components/createTestDialog";
 
 export type TestResult = "pass" | "fail" | "error" | undefined;
+
+const STORAGE_KEY = "promptTests";
 
 export const useTestLogic = () => {
   const [isRunningTest, setIsRunningTest] = useState(false);
   const [testResult, setTestResult] = useState<TestResult>();
   const [promptTests, setPromptTests] = useState<Test[]>([]);
-  const runTest = async (test: Test, lastModelResponse: string) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const storedTests = localStorage.getItem(STORAGE_KEY);
+    if (storedTests) {
+      setPromptTests(JSON.parse(storedTests));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(promptTests));
+    }
+  }, [promptTests, isClient]);
+
+  const runTest = async (
+    test: Test,
+    userPrompt: string,
+    lastModelResponse: string
+  ) => {
     setIsRunningTest(true);
     setTestResult(undefined);
 
     const requestBody: OllamaRequestBody = {
       model: test.model,
-      prompt: `Text: ${lastModelResponse}\n\n${test.condition}`,
+      prompt: TEST_PROMPT_STRUCTURE.replace("{userPrompt}", userPrompt)
+        .replace("{modelResponse}", lastModelResponse)
+        .replace("{condition}", test.condition),
       system: test.systemPrompt,
       stream: false,
       options: {
-        temperature: 0.5, // Use temperature 0 for deterministic output
+        temperature: 0.1,
+        top_p: 0.95,
+        top_k: 2,
+        repeat_penalty: 1.1,
         seed: 42,
-        repeat_penalty: 1,
       },
     };
 
@@ -36,27 +63,29 @@ export const useTestLogic = () => {
       }
 
       const data = await response.json();
-      const result = data.response.trim().toLowerCase();
+      const result = data.response.trim().toLowerCase().replace(/\./g, "");
       if (["no", "false"].includes(result)) {
         setTestResult("fail");
       } else if (["yes", "true"].includes(result)) {
         setTestResult("pass");
       } else {
         console.error("Invalid test result:", result);
-        setTestResult(`error`);
+        setTestResult("error");
       }
     } catch (error) {
       console.error("Error running test:", error);
       setTestResult("error");
     } finally {
       setIsRunningTest(false);
-      // set test.result
-      test.result = testResult;
+      // Update test result
+      updateTest(test.id, { result: testResult });
     }
   };
+
   const addTest = (test: Test) => {
     setPromptTests((prevTests) => [...prevTests, test]);
   };
+
   const removeTest = (id: string) => {
     setPromptTests((prevTests) => prevTests.filter((test) => test.id !== id));
   };
@@ -66,6 +95,7 @@ export const useTestLogic = () => {
       prevTests.map((test) => (test.id === id ? { ...test, ...updates } : test))
     );
   };
+
   return {
     promptTests,
     setPromptTests,

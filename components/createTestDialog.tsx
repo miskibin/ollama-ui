@@ -23,12 +23,16 @@ import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { TestResult } from "@/hooks/useTestLogic";
 import { Textarea } from "./ui/textarea";
 
+const SYSTEM_PROMPT = `You are a binary decision-making assistant. Your task is to answer given question with 'Yes' or 'No', nothing else.`;
+
+const TEST_PROMPT_STRUCTURE = `User question: {userPrompt}\n\n
+Model answer: {modelResponse}\n\n
+{condition}`;
+
 const truncateText = (text: string, maxLength = 100) => {
   if (text.length <= maxLength) return text;
   return text.substr(0, maxLength) + "...";
 };
-
-const SYSTEM_PROMPT = `Respond to all queries with only a single word: either 'No' or 'Yes'. Do not include any other text in your response.`;
 
 export function PromptTestDialog() {
   const {
@@ -47,6 +51,7 @@ export function PromptTestDialog() {
 
   const [condition, setCondition] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
+  const [lastUserPrompt, setLastUserPrompt] = useState("");
   const [lastModelResponse, setLastModelResponse] = useState("");
 
   useEffect(() => {
@@ -60,17 +65,22 @@ export function PromptTestDialog() {
   }, [currentTest]);
 
   useEffect(() => {
-    const updateLastResponse = () => {
+    const updateLastMessages = () => {
+      const lastUserMessage = messages
+        .slice()
+        .reverse()
+        .find((message) => message.role === "user");
       const lastAssistantMessage = messages
         .slice()
         .reverse()
         .find((message) => message.role === "assistant");
 
+      setLastUserPrompt(lastUserMessage?.content || "");
       setLastModelResponse(lastAssistantMessage?.content || "");
     };
 
-    updateLastResponse();
-    const intervalId = setInterval(updateLastResponse, 1000);
+    updateLastMessages();
+    const intervalId = setInterval(updateLastMessages, 1000);
 
     return () => clearInterval(intervalId);
   }, [messages]);
@@ -105,7 +115,7 @@ export function PromptTestDialog() {
       id: Date.now().toString(),
     };
 
-    await runTest(testToRun, lastModelResponse);
+    await runTest(testToRun, lastUserPrompt, lastModelResponse);
   };
 
   const getResultIcon = (result: TestResult | null) => {
@@ -120,6 +130,13 @@ export function PromptTestDialog() {
         return null;
     }
   };
+
+  const fullPrompt = TEST_PROMPT_STRUCTURE.replace(
+    "{userPrompt}",
+    lastUserPrompt
+  )
+    .replace("{modelResponse}", lastModelResponse)
+    .replace("{condition}", condition);
 
   return (
     <Dialog
@@ -163,7 +180,7 @@ export function PromptTestDialog() {
                   <SelectValue placeholder="Select a model" />
                 </SelectTrigger>
                 <SelectContent>
-                  {models.map((model) => (
+                  {models && models.map((model) => (
                     <SelectItem key={model.name} value={model.name}>
                       {model.name}
                     </SelectItem>
@@ -184,16 +201,9 @@ export function PromptTestDialog() {
                 </div>
                 <Separator />
                 <div>
-                  <h4 className="font-medium">Model Response</h4>
-                  <p className="text-sm text-gray-500">
-                    {truncateText(lastModelResponse, 150) || "No response yet"}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h4 className="font-medium">Condition</h4>
-                  <p className="text-sm text-gray-500">
-                    {truncateText(condition, 300) || "No condition set"}
+                  <h4 className="font-medium">Full Prompt</h4>
+                  <p className="text-sm text-gray-500 whitespace-pre-wrap">
+                    {truncateText(fullPrompt, 300)}
                   </p>
                 </div>
                 <Separator />
@@ -233,3 +243,5 @@ export function PromptTestDialog() {
     </Dialog>
   );
 }
+
+export { TEST_PROMPT_STRUCTURE, SYSTEM_PROMPT };

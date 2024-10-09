@@ -17,8 +17,10 @@ export type OllamaRequestBody = {
 export async function POST(request: Request) {
   const { model, prompt, system, stream, options } =
     (await request.json()) as OllamaRequestBody;
-  console.log(model, prompt, system, stream, options);
-
+  console.log("model: ",model)
+  console.log("prompt:", prompt)
+  console.log("system:", system)
+  console.log("options:", options)
   const ollamaController = new AbortController();
 
   try {

@@ -249,6 +249,7 @@ export const useChatLogic = () => {
     stopGenerating,
     editMessage,
     editingMessageId,
+    setMessages,
     setEditingMessageId,
     regenerateMessage,
     isClient,

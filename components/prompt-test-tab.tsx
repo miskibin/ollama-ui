@@ -18,6 +18,7 @@ export const TestsTab = () => {
     setCurrentTest,
     updateTest,
     messages,
+    isClient,
   } = useChatContext();
 
   const handleToggleTest = (id: string, enabled: boolean) => {
@@ -29,9 +30,13 @@ export const TestsTab = () => {
       .slice()
       .reverse()
       .find((message) => message.role === "assistant");
-
+    const lastUserMessage =
+      messages
+        .slice()
+        .reverse()
+        .find((message) => message.role === "user")?.content || "";
     const lastModelResponse = lastAssistantMessage?.content || "";
-    await runTest(test, lastModelResponse);
+    runTest(test, lastUserMessage, lastModelResponse);
   };
 
   const getBorderColor = (result?: "pass" | "fail" | "error") => {
@@ -46,10 +51,9 @@ export const TestsTab = () => {
         return "border-gray-200";
     }
   };
-
+  if(!isClient) return null;
   return (
     <CardContent className="space-y-6 relative pb-16">
-      <h3 className="text-lg font-semibold">Prompt Tests</h3>
       <div className="space-y-4">
         {promptTests.map((test) => (
           <Card

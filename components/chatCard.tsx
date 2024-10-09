@@ -17,6 +17,7 @@ import {
   Check,
   X,
   Copy,
+  Trash2,
 } from "lucide-react";
 import MarkdownResponse from "@/components/markdownResponse";
 import InitialChatContent from "@/components/initial-page";
@@ -45,6 +46,7 @@ export function ChatCard() {
     isPdfParsing,
     isClient,
     stopGenerating,
+    setMessages,
     models,
     selectedModel,
     setSelectedModel,
@@ -52,6 +54,7 @@ export function ChatCard() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [editTextareaHeight, setEditTextareaHeight] = useState("auto");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editInput, setEditInput] = useState("");
 
@@ -65,12 +68,18 @@ export function ChatCard() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "56px";
+      }
     }
   };
-
+  const removeMessage = (id: string) => {
+    setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== id));
+  };
   const handleEditStart = (id: string, content: string) => {
     setEditingMessageId(id);
     setEditInput(content);
+    setEditTextareaHeight("auto"); // Reset height when starting edit
   };
 
   const handleEditSave = (id: string) => {
@@ -89,6 +98,13 @@ export function ChatCard() {
 
   const handleStarterClick = (text: string) => {
     setInput(text);
+  };
+  const adjustEditTextareaHeight = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setEditInput(e.target.value);
+    setEditTextareaHeight("auto");
+    setEditTextareaHeight(`${e.target.scrollHeight}px`);
   };
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
@@ -125,7 +141,7 @@ export function ChatCard() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {models.map((model) => (
+                {models && models.map((model) => (
                   <SelectItem key={model.name} value={model.name}>
                     {model.name}
                   </SelectItem>
@@ -156,11 +172,12 @@ export function ChatCard() {
                 }`}
               >
                 {editingMessageId === message.id ? (
-                  <div className="min-w-[300px]">
+                  <div className="min-w-[500px]">
                     <Textarea
                       value={editInput}
-                      onChange={(e) => setEditInput(e.target.value)}
-                      className="mb-2 min-w-[300px]"
+                      onChange={adjustEditTextareaHeight}
+                      className="mb-2 min-w-[500px]  min-h-[300px] max-h-[500px] "
+                      style={{ height: editTextareaHeight }}
                     />
                     <div className="flex justify-end space-x-2 p-0 m-0">
                       <Button
@@ -210,6 +227,13 @@ export function ChatCard() {
                           </Button>
                         </>
                       )}
+                      <Button
+                        onClick={() => removeMessage(message.id)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 )}
