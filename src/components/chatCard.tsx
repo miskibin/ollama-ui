@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import LoadingDots from "./loadingDots";
 
 export function ChatCard() {
   const {
@@ -141,11 +142,12 @@ export function ChatCard() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {models && models.map((model) => (
-                  <SelectItem key={model.name} value={model.name}>
-                    {model.name}
-                  </SelectItem>
-                ))}
+                {models &&
+                  models.map((model) => (
+                    <SelectItem key={model.name} value={model.name}>
+                      {model.name}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -242,6 +244,10 @@ export function ChatCard() {
           ))
         )}
         <div ref={messagesEndRef} />
+        {isLoading 
+        
+        && <LoadingDots />}
+
       </CardContent>
       <CardFooter className="w-full mt-3 items-center justify-center">
         <form
