@@ -1,6 +1,6 @@
 # Ollama Prompt Engineer
 
-![Ollama Chat Interface](https://github.com/user-attachments/assets/efd76b53-181c-4f8e-b841-200b5079e5ef)
+![image](https://github.com/user-attachments/assets/d50c6e53-30cd-4ca8-a2d8-8ac876d9c4f6)
 
 ## Overview
 
