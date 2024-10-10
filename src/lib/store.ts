@@ -46,6 +46,24 @@ export const useChatStore = create<ChatState>()(
             "Determine if the following question requires a Wikipedia search. Respond with only 'Yes' or 'No'.\n\nQuestion: {question}\nAnswer:",
           enabled: true,
         },
+        {
+          name: "Python",
+          relevancePrompt: `Determine if the following question requires Python code execution. Answer 'Yes' or 'No' only.
+          
+          Consider:
+          1. Calculations or data manipulation
+          2. Python explicitly mentioned
+          3. Complex operations (beyond basic math)
+          4. Data structures (lists, dictionaries, etc.)
+          5. String manipulation or pattern matching
+          6. Iteration or looping
+          7. Use of Python libraries
+          8. Code generation or debugging
+          
+          Question: {question}
+          Answer:`,
+          enabled: true,
+        },
       ],
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
@@ -78,6 +96,14 @@ export const useChatStore = create<ChatState>()(
     }),
     {
       name: "chat-storage",
+      partialize: (state) => ({
+        messages: state.messages,
+        options: state.options,
+        selectedModel: state.selectedModel,
+        models: state.models,
+        systemPrompt: state.systemPrompt,
+        input: state.input,
+      }),
     }
   )
 );

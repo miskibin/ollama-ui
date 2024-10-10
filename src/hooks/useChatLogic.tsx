@@ -12,6 +12,7 @@ import { useInitialLoad } from "./useInitialLoad";
 import { useChatStore } from "@/lib/store";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { createPythonExecutionChain } from "@/tools/python";
 
 export const useChatLogic = () => {
   const { fetchModels } = useInitialLoad();
@@ -52,6 +53,12 @@ export const useChatLogic = () => {
           pluginChainsRef.current.set(
             plugin.name,
             createWikipediaSearchChain(chatModelRef.current!)
+          );
+        }
+        if (plugin.name === "Python") {
+          pluginChainsRef.current.set(
+            plugin.name,
+            createPythonExecutionChain(chatModelRef.current!)
           );
         }
         // Add other plugin initializations here
@@ -105,7 +112,9 @@ export const useChatLogic = () => {
       );
 
       let finalResponse = "";
-
+      if (relevantPlugins.length === 0) {
+        setPromptStatus("Decided to use the chat model directly");
+      }
       for (const plugin of relevantPlugins.filter(Boolean) as ChatPlugin[]) {
         setPromptStatus(`Gathering data from ${plugin.name}`);
         const pluginChain = pluginChainsRef.current.get(plugin.name);
@@ -188,7 +197,6 @@ export const useChatLogic = () => {
     updateMessage(id, newContent);
     setEditingMessageId(null);
     if (messages[messageIndex].role === "user") {
-
       const newMessages = messages.slice(0, messageIndex + 1);
       clearMessages();
       newMessages.forEach((msg) => addMessage(msg));
