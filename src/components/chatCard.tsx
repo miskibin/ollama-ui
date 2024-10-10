@@ -148,9 +148,7 @@ export function ChatCard() {
             >
               <div
                 className={`inline-block pt-3 px-3 shadow-md rounded-md max-w-[80%] ${
-                  message.role === "user"
-                    ? "bg-primary/10"
-                    : "border-0 shadow-none"
+                  message.role === "user" ? "bg-primary/10" : "border-0 shadow-none"
                 }`}
               >
                 {editingMessageId === message.id ? (
@@ -158,7 +156,7 @@ export function ChatCard() {
                     <Textarea
                       value={editInput}
                       onChange={adjustEditTextareaHeight}
-                      className="mb-2 min-w-[500px]  min-h-[300px] max-h-[500px] "
+                      className="mb-2 min-w-[500px] min-h-[300px] max-h-[500px]"
                       style={{ height: editTextareaHeight }}
                     />
                     <div className="flex justify-end space-x-2 p-0 m-0">
@@ -179,45 +177,47 @@ export function ChatCard() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-left">
-                    <MarkdownResponse content={message.content} />
-                    <div className="flex justify-start mt-2 space-x-2">
-                      <Button
-                        variant="ghost"
-                        onClick={() =>
-                          handleEditStart(message.id, message.content)
-                        }
-                        size="sm"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      {message.role === "assistant" && (
-                        <>
-                          <Button
-                            onClick={() => regenerateMessage(message.id)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <RefreshCw className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            onClick={() => copyToClipboard(message.content)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
-                      <Button
-                        onClick={() => deleteMessage(message.id)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                  message.content !== "" && (
+                    <div className="text-left">
+                      <MarkdownResponse content={message.content} />
+                      <div className="flex justify-start mt-2 space-x-2">
+                        <Button
+                          variant="ghost"
+                          onClick={() =>
+                            handleEditStart(message.id, message.content)
+                          }
+                          size="sm"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        {message.role === "assistant" && (
+                          <>
+                            <Button
+                              onClick={() => regenerateMessage(message.id)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => copyToClipboard(message.content)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          onClick={() => deleteMessage(message.id)}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )
                 )}
               </div>
             </div>
@@ -226,9 +226,11 @@ export function ChatCard() {
         <div ref={messagesEndRef} />
         {isLoading && messages[messages.length - 1].role === "user" && (
           <div className="flex flex-col items-center mt-4">
-            <p className="text-sm text-gray-500 mb-2">{promptStatus}</p>
             <LoadingDots />
           </div>
+        )}
+        {isLoading && (
+          <p className="text-sm text-gray-500 italic mb-2">{promptStatus}</p>
         )}
       </CardContent>
       <CardFooter className="w-full mt-3 items-center justify-center">

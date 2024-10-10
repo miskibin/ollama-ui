@@ -60,6 +60,7 @@ interface ChatContextType {
   setIsPromptDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   currentTest: Test | undefined;
   setCurrentTest: React.Dispatch<React.SetStateAction<Test | undefined>>;
+  togglePlugin: any; // TODO fix type
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);

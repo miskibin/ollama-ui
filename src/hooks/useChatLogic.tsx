@@ -85,7 +85,7 @@ export const useChatLogic = () => {
       addMessage({
         id: newMessageId,
         role: "assistant",
-        content: "Thinking...",
+        content: "",
       });
 
       setPromptStatus("Analyzing the question");
@@ -188,8 +188,7 @@ export const useChatLogic = () => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     if (messageIndex === -1 || messages[messageIndex].role !== "assistant")
       return;
-
-    const newMessages = messages.slice(0, messageIndex);
+    const newMessages = messages.slice(0, messageIndex - 1);
     await getResponse(newMessages);
   };
 
