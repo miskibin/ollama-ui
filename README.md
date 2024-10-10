@@ -1,7 +1,7 @@
 # Ollama Prompt Engineer
 
 
-![image](https://github.com/user-attachments/assets/f1ee8836-5ffb-4ddf-921d-998de22c2895)
+![image](https://github.com/user-attachments/assets/e3ae0a70-81e3-46d9-b460-d34aee5cfa68)
 
 ## Overview
 
