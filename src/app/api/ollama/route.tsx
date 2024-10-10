@@ -1,4 +1,4 @@
-import { Model } from "@/lib/chat-store";
+import { Model } from "@/lib/types";
 import { NextResponse } from "next/server";
 
 export type OllamaRequestBody = {

@@ -46,7 +46,7 @@ const ChatSettings = () => {
     options,
     setOptions,
     streamResponse,
-    clearChat,
+    clearMessages,
     setStreamResponse,
   } = useChatContext();
 
@@ -141,14 +141,16 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <LabelWithIcon icon={Zap} text="Context length (input)" />
+          <LabelWithIcon icon={Zap} text="Max tokens to generate" />
           <Input
             type="number"
-            value={options.num_ctx || ""}
+            value={options.num_predict || ""}
             onChange={(e) =>
               setOptions({
                 ...options,
-                num_ctx: e.target.value ? parseInt(e.target.value) : undefined,
+                num_predict: e.target.value
+                  ? parseInt(e.target.value)
+                  : undefined,
               })
             }
             className="w-full"
@@ -166,7 +168,11 @@ const ChatSettings = () => {
       </CardContent>
 
       <CardFooter>
-        <Button onClick={clearChat} variant="destructive" className="w-full">
+        <Button
+          onClick={clearMessages}
+          variant="destructive"
+          className="w-full"
+        >
           Clear Chat
         </Button>
       </CardFooter>

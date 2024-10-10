@@ -1,4 +1,4 @@
-import { Message } from "@/lib/chat-store";
+import { Message } from "@/lib/types";
 import { useState } from "react";
 
 export const useFileHandling = (

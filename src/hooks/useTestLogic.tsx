@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Test } from "@/lib/chat-store";
+import { Test } from "@/lib/types";
 import { OllamaRequestBody } from "@/app/api/ollama/route";
 import { TEST_PROMPT_STRUCTURE } from "@/components/createTestDialog";
 

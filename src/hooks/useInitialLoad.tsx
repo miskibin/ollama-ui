@@ -1,19 +1,9 @@
+import { useChatStore } from "@/lib/store";
 import { useState, useEffect } from "react";
-import { Message, Model } from "@/lib/chat-store";
 
 export const useInitialLoad = () => {
-  const [isClient, setIsClient] = useState(false);
-  const [models, setModels] = useState<Model[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("");
-
-  useEffect(() => {
-    setIsClient(true);
-    const savedMessages = localStorage.getItem("messages");
-    if (savedMessages) {
-      return JSON.parse(savedMessages);
-    }
-    return [];
-  }, []);
+  const setModels = useChatStore((state) => state.setModels);
+  const setSelectedModel = useChatStore((state) => state.setSelectedModel);
 
   const fetchModels = async () => {
     try {
@@ -33,10 +23,6 @@ export const useInitialLoad = () => {
   }, []);
 
   return {
-    isClient,
-    models,
-    selectedModel,
-    setSelectedModel,
     fetchModels,
   };
 };

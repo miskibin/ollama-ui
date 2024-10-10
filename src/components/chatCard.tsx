@@ -41,14 +41,13 @@ export function ChatCard() {
     setInput,
     handleSubmit,
     editingMessageId,
-    editMessage,
+    updateMessage,
     setEditingMessageId,
     regenerateMessage,
     handleFileChange,
     isPdfParsing,
-    isClient,
     stopGenerating,
-    setMessages,
+    deleteMessage,
   } = useChatContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -71,9 +70,7 @@ export function ChatCard() {
       }
     }
   };
-  const removeMessage = (id: string) => {
-    setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== id));
-  };
+
   const handleEditStart = (id: string, content: string) => {
     setEditingMessageId(id);
     setEditInput(content);
@@ -81,7 +78,7 @@ export function ChatCard() {
   };
 
   const handleEditSave = (id: string) => {
-    editMessage(id, editInput);
+    updateMessage(id, editInput);
     setEditingMessageId(null);
   };
 
@@ -127,7 +124,6 @@ export function ChatCard() {
     setInput(e.target.value);
     adjustTextareaHeight();
   };
-  if (!isClient) return null;
 
   return (
     <Card className="h-full overflow-hidden flex flex-col items-center">
@@ -213,7 +209,7 @@ export function ChatCard() {
                         </>
                       )}
                       <Button
-                        onClick={() => removeMessage(message.id)}
+                        onClick={() => deleteMessage(message.id)}
                         size="sm"
                         variant="ghost"
                       >

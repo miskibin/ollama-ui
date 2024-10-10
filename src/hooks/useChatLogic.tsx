@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ChatOptions, Message, ResponseMetadata } from "@/lib/chat-store";
+import { ChatOptions, ResponseMetadata } from "@/lib/types";
 import { ChatOllama } from "@langchain/ollama";
 import {
   HumanMessage,
@@ -9,16 +9,24 @@ import {
 import { createWikipediaSearchChain } from "@/tools/is-wikipedia-relevant";
 import { generateUniqueId } from "@/utils/common";
 import { useInitialLoad } from "./useInitialLoad";
+import { useChatStore } from "@/lib/store";
 
 export const useChatLogic = () => {
-  const { isClient, models, selectedModel, setSelectedModel, fetchModels } =
-    useInitialLoad();
+  const { fetchModels } = useInitialLoad();
+  const {
+    messages,
+    addMessage,
+    updateMessage,
+    clearMessages,
+    models,
+    selectedModel,
+    setSelectedModel,
+  } = useChatStore();
 
   const [input, setInput] = useState<string>("");
-  const [messages, setMessages] = useState<Message[]>([]);
   const [streamResponse, setStreamResponse] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [customSystem, setCustomSystem] = useState<string>("");
+  const [systemPrompt, setSystemPrompt] = useState<string>(""); //will be set for every ChatPromptTemplate
   const wikipediaChainRef = useRef<ReturnType<
     typeof createWikipediaSearchChain
   > | null>(null);
@@ -31,25 +39,22 @@ export const useChatLogic = () => {
     topK: 40,
     repeatPenalty: 1.1,
     seed: null,
-    num_ctx: 4096,
+    num_predict: 4096,
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatModelRef = useRef<ChatOllama | null>(null);
 
   useEffect(() => {
-    if (isClient) {
-      localStorage.setItem("messages", JSON.stringify(messages));
-    }
-  }, [messages, isClient]);
-
-  useEffect(() => {
     if (selectedModel) {
       chatModelRef.current = new ChatOllama({
         model: selectedModel,
+        seed: options.seed || undefined,  
+        streaming: streamResponse,
         temperature: options.temperature,
         topP: options.topP,
         topK: options.topK,
+        numPredict: options.num_predict,
         repeatPenalty: options.repeatPenalty,
       });
       wikipediaChainRef.current = createWikipediaSearchChain(
@@ -62,23 +67,22 @@ export const useChatLogic = () => {
     e.preventDefault();
     if (!input.trim() || !selectedModel) return;
 
-    const newMessage: Message = {
+    const newMessage = {
       id: generateUniqueId(),
-      role: "user",
+      role: "user" as const,
       content: input,
     };
-    setMessages((prev) => [...prev, newMessage]);
+    addMessage(newMessage);
     setInput("");
     await getResponse([...messages, newMessage]);
   };
 
-  const getResponse = async (messageHistory: Message[]) => {
+  const getResponse = async (messageHistory: typeof messages) => {
     if (!chatModelRef.current || !wikipediaChainRef.current) return;
 
     setIsLoading(true);
     setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
-
     try {
       const lastUserMessage = messageHistory[messageHistory.length - 1].content;
 
@@ -88,10 +92,11 @@ export const useChatLogic = () => {
       );
 
       const newMessageId = generateUniqueId();
-      setMessages((prev) => [
-        ...prev,
-        { id: newMessageId, role: "assistant", content: wikipediaResult },
-      ]);
+      addMessage({
+        id: newMessageId,
+        role: "assistant",
+        content: wikipediaResult,
+      });
       // If Wikipedia search was not needed, use the chat model
       if (wikipediaResult === "Wikipedia search not needed.") {
         const langChainMessages = messageHistory.map((msg) =>
@@ -100,8 +105,8 @@ export const useChatLogic = () => {
             : new AIMessage(msg.content)
         );
 
-        if (customSystem) {
-          langChainMessages.unshift(new SystemMessage(customSystem));
+        if (systemPrompt) {
+          langChainMessages.unshift(new SystemMessage(systemPrompt));
         }
 
         let accumulatedResponse = "";
@@ -110,7 +115,7 @@ export const useChatLogic = () => {
             {
               handleLLMNewToken(token: string) {
                 accumulatedResponse += token;
-                updateAssistantMessage(newMessageId, accumulatedResponse);
+                updateMessage(newMessageId, accumulatedResponse);
               },
             },
           ],
@@ -134,23 +139,16 @@ export const useChatLogic = () => {
 
   const handleError = (error: any) => {
     if (error.name !== "AbortError") {
-      updateAssistantMessage(
-        generateUniqueId(),
-        "An error occurred while fetching the response."
-      );
+      addMessage({
+        id: generateUniqueId(),
+        role: "assistant",
+        content: "An error occurred while fetching the response.",
+      });
     }
   };
 
-  const updateAssistantMessage = useCallback((id: string, content: string) => {
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, content } : msg))
-    );
-  }, []);
-
   const editMessage = (id: string, newContent: string) => {
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, content: newContent } : msg))
-    );
+    updateMessage(id, newContent);
     setEditingMessageId(null);
   };
 
@@ -160,13 +158,7 @@ export const useChatLogic = () => {
       return;
 
     const newMessages = messages.slice(0, messageIndex);
-    setMessages(newMessages);
     await getResponse(newMessages);
-  };
-
-  const clearChat = () => {
-    setMessages([]);
-    setResponseMetadata(null);
   };
 
   const stopGenerating = () => {
@@ -175,6 +167,7 @@ export const useChatLogic = () => {
       setIsLoading(false);
     }
   };
+
   return {
     input,
     setInput,
@@ -184,21 +177,19 @@ export const useChatLogic = () => {
     selectedModel,
     fetchModels,
     setSelectedModel,
-    customSystem,
+    customSystem: systemPrompt,
     streamResponse,
     setStreamResponse,
-    setCustomSystem,
+    setCustomSystem: setSystemPrompt,
     options,
     setOptions,
     handleSubmit,
     responseMetadata,
-    clearChat,
+    clearChat: clearMessages,
     stopGenerating,
     editMessage,
     editingMessageId,
-    setMessages,
     setEditingMessageId,
     regenerateMessage,
-    isClient,
   };
 };

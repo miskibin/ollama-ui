@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { PlusCircle, Edit, Trash2, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Test } from "@/lib/chat-store";
+import { Test } from "@/lib/types";
 
 export const TestsTab = () => {
   const {
