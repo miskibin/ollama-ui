@@ -19,6 +19,7 @@ export const useChatLogic = () => {
     messages,
     addMessage,
     updateMessage,
+    deleteMessage,
     clearMessages,
     selectedModel,
     options,
@@ -179,16 +180,34 @@ export const useChatLogic = () => {
     }
   };
 
-  const editMessage = (id: string, newContent: string) => {
+  const editMessage = async (id: string, newContent: string) => {
+    const messageIndex = messages.findIndex((msg) => msg.id === id);
+    console.log("Editing message", id, messages[messageIndex]);
+    if (messageIndex === -1) return;
+
     updateMessage(id, newContent);
     setEditingMessageId(null);
+    if (messages[messageIndex].role === "user") {
+
+      const newMessages = messages.slice(0, messageIndex + 1);
+      clearMessages();
+      newMessages.forEach((msg) => addMessage(msg));
+
+      await getResponse(newMessages);
+    }
   };
 
   const regenerateMessage = async (id: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     if (messageIndex === -1 || messages[messageIndex].role !== "assistant")
       return;
-    const newMessages = messages.slice(0, messageIndex - 1);
+
+    // Remove all subsequent messages
+    const newMessages = messages.slice(0, messageIndex);
+    clearMessages();
+    newMessages.forEach((msg) => addMessage(msg));
+
+    // Generate a new assistant message
     await getResponse(newMessages);
   };
 

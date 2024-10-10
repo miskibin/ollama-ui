@@ -10,7 +10,6 @@ import {
   Zap,
   Sprout,
   Syringe,
-  ToggleLeft,
   Settings2,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -60,8 +59,8 @@ const ChatSettings = () => {
   } = useChatContext();
 
   return (
-    <>
-      <CardContent className="space-y-8 pt-4">
+    <div className="flex flex-col h-[80vh]">
+      <CardContent className="space-y-8 pt-4 flex-grow overflow-auto">
         <div>
           <LabelWithIcon icon={Syringe} text="System prompt" />
           <Textarea
@@ -98,26 +97,6 @@ const ChatSettings = () => {
             }
           />
         </div>
-
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Plugins</h2>
-          <hr className="pb-3"/>
-          <div className="space-y-2">
-            {plugins.map((plugin: ChatPlugin) => (
-              <div
-                key={plugin.name}
-                className="flex items-center justify-between"
-              >
-                <span className="text-sm">{plugin.name}</span>
-                <Switch
-                  checked={plugin.enabled}
-                  onCheckedChange={() => togglePlugin(plugin.name)}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full">
@@ -209,9 +188,27 @@ const ChatSettings = () => {
             </div>
           </PopoverContent>
         </Popover>
+        <div>
+          <h2 className="text-lg font-semibold mb-2">Plugins</h2>
+          <hr className="pb-3"/>
+          <div className="space-y-2">
+            {plugins.map((plugin: ChatPlugin) => (
+              <div
+                key={plugin.name}
+                className="flex items-center justify-between"
+              >
+                <span className="text-sm">{plugin.name}</span>
+                <Switch
+                  checked={plugin.enabled}
+                  onCheckedChange={() => togglePlugin(plugin.name)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="flex-shrink-0">
         <Button
           onClick={clearMessages}
           variant="destructive"
@@ -220,7 +217,7 @@ const ChatSettings = () => {
           Clear Chat
         </Button>
       </CardFooter>
-    </>
+    </div>
   );
 };
 

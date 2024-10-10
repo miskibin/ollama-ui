@@ -41,7 +41,7 @@ export function ChatCard() {
     setInput,
     handleSubmit,
     editingMessageId,
-    updateMessage,
+    editMessage,
     setEditingMessageId,
     regenerateMessage,
     handleFileChange,
@@ -79,7 +79,7 @@ export function ChatCard() {
   };
 
   const handleEditSave = (id: string) => {
-    updateMessage(id, editInput);
+    editMessage(id, editInput);
     setEditingMessageId(null);
   };
 
@@ -148,7 +148,9 @@ export function ChatCard() {
             >
               <div
                 className={`inline-block pt-3 px-3 shadow-md rounded-md max-w-[80%] ${
-                  message.role === "user" ? "bg-primary/10" : "border-0 shadow-none"
+                  message.role === "user"
+                    ? "bg-primary/10"
+                    : "border-0 shadow-none"
                 }`}
               >
                 {editingMessageId === message.id ? (
@@ -224,13 +226,11 @@ export function ChatCard() {
           ))
         )}
         <div ref={messagesEndRef} />
-        {isLoading && messages[messages.length - 1].role === "user" && (
+        {isLoading && messages[messages.length - 1].content === "" && (
           <div className="flex flex-col items-center mt-4">
             <LoadingDots />
+            <p className="text-sm text-gray-500 italic mt-2">{promptStatus}</p>
           </div>
-        )}
-        {isLoading && (
-          <p className="text-sm text-gray-500 italic mb-2">{promptStatus}</p>
         )}
       </CardContent>
       <CardFooter className="w-full mt-3 items-center justify-center">

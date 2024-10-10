@@ -19,6 +19,7 @@ interface ChatContextType {
   messages: Message[];
   addMessage: (message: Message) => void;
   updateMessage: (id: string, content: string) => void;
+  editMessage: (id: string, content: string) => void;
   deleteMessage: (id: string) => void;
   clearMessages: () => void;
   models: Model[];
