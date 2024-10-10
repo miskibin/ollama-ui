@@ -1,15 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { ChatOptions, ResponseMetadata } from "@/lib/types";
+import { useEffect, useRef, useCallback, useState } from "react";
+import { ChatPlugin, ResponseMetadata } from "@/lib/types";
 import { ChatOllama } from "@langchain/ollama";
 import {
   HumanMessage,
   AIMessage,
   SystemMessage,
 } from "@langchain/core/messages";
-import { createWikipediaSearchChain } from "@/tools/is-wikipedia-relevant";
+import { createWikipediaSearchChain } from "@/tools/wikipedia";
 import { generateUniqueId } from "@/utils/common";
 import { useInitialLoad } from "./useInitialLoad";
 import { useChatStore } from "@/lib/store";
+import { PromptTemplate } from "@langchain/core/prompts";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 
 export const useChatLogic = () => {
   const { fetchModels } = useInitialLoad();
@@ -18,50 +20,43 @@ export const useChatLogic = () => {
     addMessage,
     updateMessage,
     clearMessages,
-    models,
     selectedModel,
-    setSelectedModel,
+    options,
+    systemPrompt,
+    setSystemPrompt,
+    input,
+    setInput,
+    plugins,
   } = useChatStore();
 
-  const [input, setInput] = useState<string>("");
-  const [streamResponse, setStreamResponse] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [systemPrompt, setSystemPrompt] = useState<string>(""); //will be set for every ChatPromptTemplate
-  const wikipediaChainRef = useRef<ReturnType<
-    typeof createWikipediaSearchChain
-  > | null>(null);
+  const [promptStatus, setPromptStatus] = useState<string>("");
   const [responseMetadata, setResponseMetadata] =
     useState<ResponseMetadata | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [options, setOptions] = useState<ChatOptions>({
-    temperature: 0.7,
-    topP: 0.9,
-    topK: 40,
-    repeatPenalty: 1.1,
-    seed: null,
-    num_predict: 4096,
-  });
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatModelRef = useRef<ChatOllama | null>(null);
+  const pluginChainsRef = useRef<Map<string, any>>(new Map());
 
   useEffect(() => {
     if (selectedModel) {
       chatModelRef.current = new ChatOllama({
         model: selectedModel,
-        seed: options.seed || undefined,  
-        streaming: streamResponse,
-        temperature: options.temperature,
-        topP: options.topP,
-        topK: options.topK,
-        numPredict: options.num_predict,
-        repeatPenalty: options.repeatPenalty,
+        ...options,
       });
-      wikipediaChainRef.current = createWikipediaSearchChain(
-        chatModelRef.current
-      );
+      // Initialize plugin chains
+      plugins.forEach((plugin) => {
+        if (plugin.name === "Wikipedia") {
+          pluginChainsRef.current.set(
+            plugin.name,
+            createWikipediaSearchChain(chatModelRef.current!)
+          );
+        }
+        // Add other plugin initializations here
+      });
     }
-  }, [selectedModel, options]);
+  }, [selectedModel, options, plugins]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,27 +73,51 @@ export const useChatLogic = () => {
   };
 
   const getResponse = async (messageHistory: typeof messages) => {
-    if (!chatModelRef.current || !wikipediaChainRef.current) return;
+    if (!chatModelRef.current) return;
 
     setIsLoading(true);
     setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
+
     try {
       const lastUserMessage = messageHistory[messageHistory.length - 1].content;
-
-      // Use the Wikipedia chain
-      const wikipediaResult = await wikipediaChainRef.current.invoke(
-        lastUserMessage
-      );
-
       const newMessageId = generateUniqueId();
       addMessage({
         id: newMessageId,
         role: "assistant",
-        content: wikipediaResult,
+        content: "Thinking...",
       });
-      // If Wikipedia search was not needed, use the chat model
-      if (wikipediaResult === "Wikipedia search not needed.") {
+
+      setPromptStatus("Analyzing the question");
+
+      // Check relevance for each enabled plugin
+      const relevantPlugins = await Promise.all(
+        plugins
+          .filter((plugin) => plugin.enabled)
+          .map(async (plugin) => {
+            const isRelevant = await checkPluginRelevance(
+              plugin,
+              lastUserMessage
+            );
+            return isRelevant ? plugin : null;
+          })
+      );
+
+      let finalResponse = "";
+
+      for (const plugin of relevantPlugins.filter(Boolean) as ChatPlugin[]) {
+        setPromptStatus(`Gathering data from ${plugin.name}`);
+        const pluginChain = pluginChainsRef.current.get(plugin.name);
+        if (pluginChain) {
+          const pluginResponse = await pluginChain.invoke(lastUserMessage);
+          finalResponse += `${pluginResponse}\n\n`;
+        }
+      }
+
+      setPromptStatus("Analyzing gathered data");
+
+      if (!finalResponse) {
+        // If no plugin was used, use the chat model directly
         const langChainMessages = messageHistory.map((msg) =>
           msg.role === "user"
             ? new HumanMessage(msg.content)
@@ -109,13 +128,13 @@ export const useChatLogic = () => {
           langChainMessages.unshift(new SystemMessage(systemPrompt));
         }
 
-        let accumulatedResponse = "";
+        setPromptStatus("Generating response");
         const response = await chatModelRef.current.invoke(langChainMessages, {
           callbacks: [
             {
               handleLLMNewToken(token: string) {
-                accumulatedResponse += token;
-                updateMessage(newMessageId, accumulatedResponse);
+                finalResponse += token;
+                updateMessage(newMessageId, finalResponse);
               },
             },
           ],
@@ -128,13 +147,26 @@ export const useChatLogic = () => {
           prompt_eval_count: response.response_metadata.prompt_eval_count,
           prompt_eval_duration: response.response_metadata.prompt_eval_duration,
         });
+      } else {
+        updateMessage(newMessageId, finalResponse.trim());
       }
+
+      setPromptStatus("");
     } catch (error) {
       handleError(error);
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
+  };
+
+  const checkPluginRelevance = async (plugin: ChatPlugin, question: string) => {
+    const prompt = PromptTemplate.fromTemplate(plugin.relevancePrompt);
+    const chain = prompt
+      .pipe(chatModelRef.current!)
+      .pipe(new StringOutputParser());
+    const response = await chain.invoke({ question });
+    return response.toLowerCase().includes("yes");
   };
 
   const handleError = (error: any) => {
@@ -165,24 +197,16 @@ export const useChatLogic = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setIsLoading(false);
+      setPromptStatus("");
     }
   };
 
   return {
-    input,
-    setInput,
-    messages,
     isLoading,
-    models,
-    selectedModel,
+    promptStatus,
     fetchModels,
-    setSelectedModel,
     customSystem: systemPrompt,
-    streamResponse,
-    setStreamResponse,
     setCustomSystem: setSystemPrompt,
-    options,
-    setOptions,
     handleSubmit,
     responseMetadata,
     clearChat: clearMessages,

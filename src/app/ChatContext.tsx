@@ -9,6 +9,7 @@ import {
   Message,
   Test,
   ResponseMetadata,
+  ChatPlugin,
 } from "@/lib/types";
 import { TestResult } from "@/hooks/useTestLogic";
 import { useChatStore } from "@/lib/store";
@@ -23,22 +24,21 @@ interface ChatContextType {
   models: Model[];
   selectedModel: string;
   setSelectedModel: (model: string) => void;
-
-  // From useChatLogic
+  options: ChatOptions;
+  setOptions: (options: Partial<ChatOptions>) => void;
+  systemPrompt: string;
+  setSystemPrompt: (prompt: string) => void;
   input: string;
   setInput: (input: string) => void;
+  plugins: ChatPlugin[];
+  promptStatus: string;
+  // From useChatLogic
   isLoading: boolean;
-  customSystem: string;
-  setCustomSystem: (system: string) => void;
-  options: ChatOptions;
-  setOptions: React.Dispatch<React.SetStateAction<ChatOptions>>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   stopGenerating: () => void;
   responseMetadata: ResponseMetadata | null;
   editingMessageId: string | null;
   setEditingMessageId: React.Dispatch<React.SetStateAction<string | null>>;
-  streamResponse: boolean;
-  setStreamResponse: (stream: boolean) => void;
   regenerateMessage: (id: string) => Promise<void>;
   fetchModels: () => Promise<void>;
 
@@ -70,7 +70,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const chatStore = useChatStore();
   const chatLogic = useChatLogic();
   const testLogic = useTestLogic();
-  const fileLogic = useFileHandling(chatLogic.setInput);
+  const fileLogic = useFileHandling(chatStore.setInput);
   const [currentTest, setCurrentTest] = useState<Test>();
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
 

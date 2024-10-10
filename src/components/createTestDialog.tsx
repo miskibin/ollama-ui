@@ -50,17 +50,17 @@ export function PromptTestDialog() {
   } = useChatContext();
 
   const [condition, setCondition] = useState("");
-  const [selectedModel, setSelectedModel] = useState("");
+  const [selectedTestModel, setTestSelectedModel] = useState("");
   const [lastUserPrompt, setLastUserPrompt] = useState("");
   const [lastModelResponse, setLastModelResponse] = useState("");
 
   useEffect(() => {
     if (currentTest) {
       setCondition(currentTest.condition);
-      setSelectedModel(currentTest.model);
+      setTestSelectedModel(currentTest.model);
     } else {
       setCondition("");
-      setSelectedModel("");
+      setTestSelectedModel("");
     }
   }, [currentTest]);
 
@@ -89,13 +89,13 @@ export function PromptTestDialog() {
     if (currentTest) {
       updateTest(currentTest.id, {
         condition,
-        model: selectedModel,
+        model: selectedTestModel,
       });
     } else {
       addTest({
         systemPrompt: SYSTEM_PROMPT,
         condition,
-        model: selectedModel,
+        model: selectedTestModel,
         enabled: true,
         id: Date.now().toString(),
       });
@@ -105,12 +105,12 @@ export function PromptTestDialog() {
   };
 
   const handleTestPrompt = async () => {
-    if (!selectedModel || !condition) return;
+    if (!selectedTestModel || !condition) return;
 
     const testToRun = currentTest || {
       systemPrompt: SYSTEM_PROMPT,
       condition,
-      model: selectedModel,
+      model: selectedTestModel,
       enabled: true,
       id: Date.now().toString(),
     };
@@ -172,8 +172,8 @@ export function PromptTestDialog() {
                 Model
               </Label>
               <Select
-                value={selectedModel}
-                onValueChange={setSelectedModel}
+                value={selectedTestModel}
+                onValueChange={setTestSelectedModel}
                 required
               >
                 <SelectTrigger id="model" className="mt-1">
@@ -236,7 +236,7 @@ export function PromptTestDialog() {
         <Button
           onClick={handleCreateOrUpdateTest}
           className="w-full mt-4"
-          disabled={isRunningTest || !selectedModel || !condition}
+          disabled={isRunningTest || !selectedTestModel || !condition}
         >
           {currentTest ? "Update Test" : "Create Criteria evaluation"}
         </Button>

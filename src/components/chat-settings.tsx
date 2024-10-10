@@ -37,18 +37,8 @@ const LabelWithIcon = ({
 );
 
 const ChatSettings = () => {
-  const {
-    models,
-    selectedModel,
-    setSelectedModel,
-    customSystem,
-    setCustomSystem,
-    options,
-    setOptions,
-    streamResponse,
-    clearMessages,
-    setStreamResponse,
-  } = useChatContext();
+  const { systemPrompt, setSystemPrompt, options, setOptions, clearMessages } =
+    useChatContext();
 
   return (
     <>
@@ -57,8 +47,8 @@ const ChatSettings = () => {
           <LabelWithIcon icon={Syringe} text="System prompt" />
           <Textarea
             placeholder="You are experienced software engineer..."
-            value={customSystem}
-            onChange={(e) => setCustomSystem(e.target.value)}
+            value={systemPrompt}
+            onChange={(e) => setSystemPrompt(e.target.value)}
             className="w-full p-2 rounded border"
           />
         </div>
@@ -132,7 +122,7 @@ const ChatSettings = () => {
             onChange={(e) =>
               setOptions({
                 ...options,
-                seed: e.target.value ? parseInt(e.target.value) : null,
+                seed: e.target.value ? parseInt(e.target.value) : undefined,
               })
             }
             className="w-full"
@@ -161,8 +151,10 @@ const ChatSettings = () => {
         <div className="flex items-center justify-between">
           <LabelWithIcon icon={Zap} text="Stream Responses" />
           <Switch
-            checked={streamResponse}
-            onCheckedChange={setStreamResponse}
+            checked={options.streaming}
+            onCheckedChange={(streaming) =>
+              setOptions({ ...options, streaming })
+            }
           />
         </div>
       </CardContent>

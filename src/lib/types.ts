@@ -24,11 +24,17 @@ export type Model = {
 export type ChatOptions = {
   temperature: number;
   topP: number;
-  seed: number | null;
+  seed?: number;
   topK: number;
+  streaming: boolean;
   repeatPenalty: number;
   num_predict?: number;
 };
+export interface ChatPlugin {
+  name: string;
+  relevancePrompt: string;
+  enabled: boolean;
+}
 
 export interface Test {
   id: string;

@@ -47,6 +47,7 @@ export function ChatCard() {
     handleFileChange,
     isPdfParsing,
     stopGenerating,
+    promptStatus,
     deleteMessage,
   } = useChatContext();
 
@@ -224,7 +225,10 @@ export function ChatCard() {
         )}
         <div ref={messagesEndRef} />
         {isLoading && messages[messages.length - 1].role === "user" && (
-          <LoadingDots />
+          <div className="flex flex-col items-center mt-4">
+            <p className="text-sm text-gray-500 mb-2">{promptStatus}</p>
+            <LoadingDots />
+          </div>
         )}
       </CardContent>
       <CardFooter className="w-full mt-3 items-center justify-center">
