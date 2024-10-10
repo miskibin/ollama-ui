@@ -9,6 +9,7 @@ import {
   ResponseMetadata,
 } from "@/lib/chat-store";
 import { TestResult, useTestLogic } from "@/hooks/useTestLogic";
+import { useFileHandling } from "@/hooks/useFileHandling";
 
 interface ChatContextType {
   input: string;
@@ -40,7 +41,7 @@ interface ChatContextType {
   addTest: (test: Test) => void;
   isRunningTest: boolean;
   testResult: TestResult | null;
-  runTest: (test: Test,userPrompt:string, lastModelResponse: string) => void;
+  runTest: (test: Test, userPrompt: string, lastModelResponse: string) => void;
   updateTest: (id: string, updates: Partial<Test>) => void;
   removeTest: (id: string) => void;
   isClient: boolean;
@@ -57,7 +58,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const chatLogic = useChatLogic();
   const testLogic = useTestLogic();
-
+  const fileLogic = useFileHandling(chatLogic.setInput);
   const [currentTest, setCurrentTest] = useState<Test>();
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
 
@@ -66,6 +67,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
       value={{
         ...chatLogic,
         ...testLogic,
+        ...fileLogic,
         isPromptDialogOpen,
         setIsPromptDialogOpen,
         currentTest,

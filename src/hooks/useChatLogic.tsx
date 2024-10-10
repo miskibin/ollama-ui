@@ -1,29 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  ChatOptions,
-  Model,
-  Message,
-  ResponseMetadata,
-} from "@/lib/chat-store";
-import { ChatOllama, Ollama } from "@langchain/ollama";
+import { ChatOptions, Message, ResponseMetadata } from "@/lib/chat-store";
+import { ChatOllama } from "@langchain/ollama";
 import {
   HumanMessage,
   AIMessage,
   SystemMessage,
 } from "@langchain/core/messages";
-import { searchWikipedia } from "@/tools/wikipedia-search";
 import { createWikipediaSearchChain } from "@/tools/is-wikipedia-relevant";
+import { generateUniqueId } from "@/utils/common";
+import { useInitialLoad } from "./useInitialLoad";
 
 export const useChatLogic = () => {
-  const [isPdfParsing, setIsPdfParsing] = useState(false);
+  const { isClient, models, selectedModel, setSelectedModel, fetchModels } =
+    useInitialLoad();
+
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [streamResponse, setStreamResponse] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [models, setModels] = useState<Model[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("");
   const [customSystem, setCustomSystem] = useState<string>("");
-  const [useWikipedia, setUseWikipedia] = useState(true);
   const wikipediaChainRef = useRef<ReturnType<
     typeof createWikipediaSearchChain
   > | null>(null);
@@ -39,20 +34,8 @@ export const useChatLogic = () => {
     num_ctx: 4096,
   });
 
-  const [isClient, setIsClient] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatModelRef = useRef<ChatOllama | null>(null);
-  const generateUniqueId = () => {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  };
-  useEffect(() => {
-    setIsClient(true);
-    const savedMessages = localStorage.getItem("messages");
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    }
-    fetchModels();
-  }, []);
 
   useEffect(() => {
     if (isClient) {
@@ -74,46 +57,6 @@ export const useChatLogic = () => {
       );
     }
   }, [selectedModel, options]);
-  const fetchModels = async () => {
-    try {
-      const response = await fetch("/api/ollama");
-      const data = await response.json();
-      setModels(data.models);
-      if (data.models.length > 0) {
-        setSelectedModel(data.models[0].name);
-      }
-    } catch (error) {
-      console.error("Error fetching models:", error);
-    }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsPdfParsing(true);
-      const formData = new FormData();
-      formData.append("pdf", file);
-
-      try {
-        const response = await fetch("/api/parse-pdf", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to parse PDF");
-        }
-
-        const { markdown } = await response.json();
-        setInput(markdown);
-      } catch (error) {
-        console.error("Error parsing PDF:", error);
-        alert("Failed to parse PDF. Please try again.");
-      } finally {
-        setIsPdfParsing(false);
-      }
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +71,7 @@ export const useChatLogic = () => {
     setInput("");
     await getResponse([...messages, newMessage]);
   };
+
   const getResponse = async (messageHistory: Message[]) => {
     if (!chatModelRef.current || !wikipediaChainRef.current) return;
 
@@ -189,10 +133,7 @@ export const useChatLogic = () => {
   };
 
   const handleError = (error: any) => {
-    if (error.name === "AbortError") {
-      console.log("Request aborted");
-    } else {
-      console.error("Error:", error);
+    if (error.name !== "AbortError") {
       updateAssistantMessage(
         generateUniqueId(),
         "An error occurred while fetching the response."
@@ -234,7 +175,6 @@ export const useChatLogic = () => {
       setIsLoading(false);
     }
   };
-
   return {
     input,
     setInput,
@@ -251,8 +191,6 @@ export const useChatLogic = () => {
     options,
     setOptions,
     handleSubmit,
-    handleFileChange,
-    isPdfParsing,
     responseMetadata,
     clearChat,
     stopGenerating,

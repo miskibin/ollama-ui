@@ -183,11 +183,6 @@ export function ChatCard() {
                   </div>
                 ) : (
                   <div className="text-left">
-                    {isLoading &&
-                      messages.length > 0 &&
-                      messages[messages.length - 1].content === "" && (
-                        <LoadingDots />
-                      )}
                     <MarkdownResponse content={message.content} />
                     <div className="flex justify-start mt-2 space-x-2">
                       <Button
@@ -232,6 +227,9 @@ export function ChatCard() {
           ))
         )}
         <div ref={messagesEndRef} />
+        {isLoading && messages[messages.length - 1].role === "user" && (
+          <LoadingDots />
+        )}
       </CardContent>
       <CardFooter className="w-full mt-3 items-center justify-center">
         <form
