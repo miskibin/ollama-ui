@@ -62,7 +62,7 @@ export const useChatStore = create<ChatState>()(
           
           Question: {question}
           Answer:`,
-          enabled: true,
+          enabled: false,
         },
       ],
       addMessage: (message) =>

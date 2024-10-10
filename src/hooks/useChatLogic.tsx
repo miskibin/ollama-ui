@@ -193,13 +193,13 @@ export const useChatLogic = () => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     console.log("Editing message", id, messages[messageIndex]);
     if (messageIndex === -1) return;
-
     updateMessage(id, newContent);
     setEditingMessageId(null);
     if (messages[messageIndex].role === "user") {
       const newMessages = messages.slice(0, messageIndex + 1);
       clearMessages();
       newMessages.forEach((msg) => addMessage(msg));
+      updateMessage(id, newContent);
 
       await getResponse(newMessages);
     }

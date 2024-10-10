@@ -3,7 +3,7 @@ import { WikipediaQueryRun } from "@langchain/community/tools/wikipedia_query_ru
 
 const wikipediaTool = new WikipediaQueryRun({
   topKResults: 1,
-  maxDocContentLength: 2000,
+  maxDocContentLength: 1000,
 });
 
 async function searchWikipedia(question: string): Promise<string> {
