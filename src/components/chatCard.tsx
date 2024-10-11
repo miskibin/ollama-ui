@@ -138,7 +138,7 @@ export function ChatCard() {
       <CardHeader className="flex-shrink-0 w-full">
         <div className="flex justify-between items-center w-full">
           <ModelSelector />
-          <h2 className="text-2xl font-bold">Ollama Prompt Engineer</h2>
+          <h2 className="text-2xl font-bold">Sejm stats assistant</h2>
           <div className="w-[200px]"></div>
         </div>
       </CardHeader>

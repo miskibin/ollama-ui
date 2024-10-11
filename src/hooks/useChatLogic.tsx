@@ -12,9 +12,8 @@ import { useInitialLoad } from "./useInitialLoad";
 import { useChatStore } from "@/lib/store";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { createPythonExecutionChain } from "@/tools/python";
-import { createPolishParliamentClubsTool as createSejmStatsTool } from "@/tools/sejmstats";
 import { PluginNames } from "@/lib/plugins";
+import { createSejmStatsTool } from "@/tools/sejmstats";
 
 export const useChatLogic = () => {
   const { fetchModels } = useInitialLoad();
@@ -48,7 +47,6 @@ export const useChatLogic = () => {
     [key in PluginNames]: (model: ChatOllama) => any;
   } = {
     [PluginNames.Wikipedia]: createWikipediaSearchChain,
-    [PluginNames.Python]: createPythonExecutionChain,
     [PluginNames.SejmStats]: createSejmStatsTool,
   };
 

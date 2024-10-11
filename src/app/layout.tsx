@@ -16,7 +16,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Ollama Prompt Engineer",
+  title: "Sejm stats assistant",
   description:
     "A simple and powerful UI for interacting with the Ollama API, enabling seamless AI-powered conversations and tasks.",
   keywords: [

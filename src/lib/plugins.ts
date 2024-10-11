@@ -3,8 +3,7 @@ import { ChatPlugin } from "./types";
 // FILE: pluginEnums.ts
 export enum PluginNames {
   Wikipedia = "Wikipedia",
-  SejmStats = "sejm-stats",
-  Python = "Python",
+  SejmStats = "sejm-stats.pl",
 }
 
 export const plugins: ChatPlugin[] = [
@@ -16,34 +15,22 @@ export const plugins: ChatPlugin[] = [
   },
   {
     name: PluginNames.SejmStats,
-    relevancePrompt: `Determine if the following question is about Polish parliamentary clubs or requires information from the Polish Parliament API. Answer 'Yes' or 'No' only.
+    relevancePrompt: `Determine if the question requires information from the Polish Parliament API (SejmStats). Answer 'Yes' or 'No' only.
 
-    Consider:
-    1. Mentions of Polish political parties or clubs
-    2. Questions about members, contact information, or structure of Polish parliament
-    3. Specific inquiries about Sejm (lower house of Polish parliament)
-    4. Requests for current data on Polish parliamentary representation
+      Consider if the question involves:
+      1. Polish political parties, parliamentary clubs, or coalitions
+      2. Members of Sejm or Senat (Polish parliament)
+      3. Legislative processes, bills, or acts in Polish parliament
+      4. Voting records or results in Polish parliament
+      5. Interpellations or parliamentary inquiries
+      6. Statistics or data related to Polish parliament
+      7. Parliamentary committees or their activities
+      8. Composition or changes in parliamentary fractions
+      9. Parliamentary debates or discussions
+      10. Specific mention of "sejm-stats" or Polish Parliament API
 
-    Question: {question}
-    Answer:`,
+      Question: {question}
+      Use SejmStats plugin (Yes/No):`,
     enabled: true,
-  },
-  {
-    name: PluginNames.Python,
-    relevancePrompt: `Determine if the following question requires Python code execution. Answer 'Yes' or 'No' only.
-    
-    Consider:
-    1. Calculations or data manipulation
-    2. Python explicitly mentioned
-    3. Complex operations (beyond basic math)
-    4. Data structures (lists, dictionaries, etc.)
-    5. String manipulation or pattern matching
-    6. Iteration or looping
-    7. Use of Python libraries
-    8. Code generation or debugging
-    
-    Question: {question}
-    Answer:`,
-    enabled: false,
   },
 ];
