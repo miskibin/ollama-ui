@@ -52,8 +52,8 @@ export class SejmStatsCommunicator {
     const optimizedResults = data.results.map((item: any) => {
       const optimizedItem: any = {};
       for (const [key, value] of Object.entries(item)) {
-        // Skip fields containing 'photo', 'url', or 'link'
-        if (!/photo|url|link/i.test(key)) {
+        // Skip fields containing 'photo', 'url', 'link', 'id', or 'pk'
+        if (!/photo|url|link|id|pk/i.test(key)) {
           // Convert dates to ISO format for consistency
           if (value instanceof Date) {
             optimizedItem[key] = value.toISOString();

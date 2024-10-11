@@ -7,7 +7,6 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { SejmStatsCommunicator, SejmStatsEndpoint } from "./sejmstats-server";
 
-// Consolidated prompts
 const PROMPTS = {
   extractQueryInfo: PromptTemplate.fromTemplate(`
     Zadanie: Wyodrębnij kluczowe informacje z pytania o polskim parlamencie.
@@ -22,50 +21,45 @@ const PROMPTS = {
     Kluczowe informacje:`),
 
   selectEndpoint: PromptTemplate.fromTemplate(`
-    Zadanie: Wybierz najbardziej odpowiedni endpoint API do uzyskania informacji.
-    Pytanie: {question}
-    Kluczowe informacje: {keyInfo}
-    Dostępne endpointy:
-    - interpellations (interpelacje)
-    - clubs (kluby parlamentarne)
-    - envoys (posłowie)
-    - acts (ustawy)
-    - votings (głosowania)
-
-    Instrukcje:
-    1. Przeanalizuj pytanie i kluczowe informacje.
-    2. Wybierz endpoint najlepiej pasujący do zapytania.
-    3. Podaj tylko nazwę wybranego endpointu, bez dodatkowych informacji.
-
-    Wybrany endpoint:`),
+      Zadanie: Wybierz najbardziej odpowiedni endpoint API do uzyskania informacji.
+      Pytanie: {question}
+      Kluczowe informacje: {keyInfo}
+      Dostępne endpointy:
+      - interpellations (interpelacje)
+      - clubs (kluby parlamentarne)
+      - envoys (posłowie)
+      - acts (ustawy)
+      - votings (głosowania)
+  
+      Instrukcje:
+      1. Przeanalizuj pytanie i kluczowe informacje.
+      2. Wybierz endpoint najlepiej pasujący do zapytania.
+      3. Podaj tylko nazwę wybranego endpointu, bez dodatkowych informacji.
+  
+      Wybrany endpoint:`),
 
   processData: PromptTemplate.fromTemplate(`
     Zadanie: Odpowiedz na pytanie o polskim parlamencie na podstawie dostarczonych danych.
     Pytanie: {question}
     Źródło danych: {endpoint}
     Dane: {dataString}
-
-    Instrukcje:
-    1. Przeanalizuj dane i znajdź odpowiednie informacje.
-    2. Udziel zwięzłej i konkretnej odpowiedzi.
-    3. Jeśli informacja nie jest dostępna, wyraźnie to zaznacz.
-    4. Użyj maksymalnie 3-4 zdań.
-
+    Uwaga: Dla większości endpointów analizujesz tylko ostatnie 20 obiektów, z wyjątkiem endpointu 'clubs', gdzie analizujesz wszystkie kluby.
+    Instrukcje: Przeanalizuj dane, udziel zwięzłej odpowiedzi (maks. 3-4 zdania). Zaznacz, jeśli informacja jest niedostępna.
     Odpowiedź:`),
 };
 
-// Logging function
 const log = (step: string, message: string, data?: any) => {
-  console.log(`[${step}] ${message}`);
-  if (data) console.log(JSON.stringify(data, null, 2));
+  console.log(
+    `[${step}] ${message}${data ? ": " + JSON.stringify(data, null, 2) : ""}`
+  );
 };
 
 const extractQueryInfo = async (input: string, model: ChatOllama) => {
-  log("EXTRACT_QUERY", "Starting query information extraction", { input });
-  const chain = PROMPTS.extractQueryInfo
+  log("EXTRACT_QUERY", "Extracting query information", { input });
+  const keyInfo = await PROMPTS.extractQueryInfo
     .pipe(model)
-    .pipe(new StringOutputParser());
-  const keyInfo = await chain.invoke({ question: input });
+    .pipe(new StringOutputParser())
+    .invoke({ question: input });
   log("EXTRACT_QUERY", "Extracted key information", { keyInfo });
   return keyInfo;
 };
@@ -83,17 +77,18 @@ const selectEndpoint = async (
   log("SELECT_ENDPOINT", "Selected endpoint", { selectedEndpoint });
   return selectedEndpoint.trim().toLowerCase() as SejmStatsEndpoint;
 };
-
 const processData = async (
   data: any,
   question: string,
   endpoint: SejmStatsEndpoint,
   model: ChatOllama
 ) => {
-  log("PROCESS_DATA", "Starting data processing", { question, endpoint });
+  log("PROCESS_DATA", "Processing data", { question, endpoint });
   const dataString = JSON.stringify(data);
-  const chain = PROMPTS.processData.pipe(model).pipe(new StringOutputParser());
-  const answer = await chain.invoke({ question, endpoint, dataString });
+  const answer = await PROMPTS.processData
+    .pipe(model)
+    .pipe(new StringOutputParser())
+    .invoke({ question, endpoint, dataString });
   log("PROCESS_DATA", "Processed answer", { answer });
   return answer;
 };
@@ -104,34 +99,31 @@ export const createSejmStatsTool = (model: ChatOllama) => {
       original_input: new RunnablePassthrough(),
       key_info: (input) => extractQueryInfo(input, model),
     },
-    async (input) => ({
-      ...input,
-      selected_endpoint: await selectEndpoint(
+    async (input) => {
+      const endpoint = await selectEndpoint(
         input.original_input,
         input.key_info,
         model
-      ),
-    }),
-    async (input) => {
-      const endpoint = input.selected_endpoint as SejmStatsEndpoint;
+      );
 
       if (!Object.values(SejmStatsEndpoint).includes(endpoint)) {
-        log("ERROR", `Invalid endpoint: ${endpoint}`);
+        log("ERROR", "Invalid endpoint", { endpoint });
         return "Przepraszam, nie mogę uzyskać odpowiednich informacji w tym momencie.";
       }
 
-      log("FETCH_DATA", `Fetching data from ${endpoint}`);
       const communicator = new SejmStatsCommunicator();
       const data = await communicator.fetchOptimizedData(endpoint);
+      log("FETCH_DATA", "Fetched data from endpoint", {
+        endpoint,
+        dataLength: data.results ? data.results.length : 0,
+      });
 
-      log("PROCESS_ANSWER", "Processing fetched data");
       const answer = await processData(
         data,
         input.original_input,
         endpoint,
         model
       );
-
       return `Oto informacje o polskim parlamencie: ${answer}`;
     },
     new StringOutputParser(),
