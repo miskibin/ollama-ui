@@ -1,5 +1,0 @@
-pydantic
-fastapi
-ragas
-langchain-ollama
-langchain
