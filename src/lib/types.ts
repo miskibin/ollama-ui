@@ -5,6 +5,7 @@ export type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  plugins?: string[];
 };
 
 export type Model = {

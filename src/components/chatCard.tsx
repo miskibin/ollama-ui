@@ -32,6 +32,13 @@ import {
 } from "@/components/ui/select";
 import LoadingDots from "./loadingDots";
 import ModelSelector from "./model-selector";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
+import { Badge } from "./ui/badge";
 
 export function ChatCard() {
   const {
@@ -125,14 +132,14 @@ export function ChatCard() {
     setInput(e.target.value);
     adjustTextareaHeight();
   };
-
+  console.log("messages", messages);
   return (
     <Card className="h-full overflow-hidden flex flex-col items-center">
       <CardHeader className="flex-shrink-0 w-full">
         <div className="flex justify-between items-center w-full">
           <ModelSelector />
           <h2 className="text-2xl font-bold">Ollama Prompt Engineer</h2>
-          <div className="w-[200px]"></div> {/* Spacer for alignment */}
+          <div className="w-[200px]"></div>
         </div>
       </CardHeader>
       <CardContent className="flex-grow container container-fluid overflow-auto 2xl:w-3/4 w-full">
@@ -182,6 +189,11 @@ export function ChatCard() {
                   message.content !== "" && (
                     <div className="text-left">
                       <MarkdownResponse content={message.content} />
+                      {message.plugins && message.plugins.length > 0 && (
+                        <Badge className="text-xs" variant={"outline"}>
+                          {message.plugins.join(", ")}
+                        </Badge>
+                      )}
                       <div className="flex justify-start mt-2 space-x-2">
                         <Button
                           variant="ghost"

@@ -190,8 +190,8 @@ const ChatSettings = () => {
         </Popover>
         <div>
           <h2 className="text-lg font-semibold mb-2">Plugins</h2>
-          <hr className="pb-3"/>
-          <div className="space-y-2">
+          <hr className="pb-3" />
+          <div className="space-y-4">
             {plugins.map((plugin: ChatPlugin) => (
               <div
                 key={plugin.name}

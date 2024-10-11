@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from "react";
-import { ChatPlugin, ResponseMetadata } from "@/lib/types";
+import { ChatPlugin, Message, ResponseMetadata } from "@/lib/types";
 import { ChatOllama } from "@langchain/ollama";
 import {
   HumanMessage,
@@ -13,6 +13,8 @@ import { useChatStore } from "@/lib/store";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createPythonExecutionChain } from "@/tools/python";
+import { createPolishParliamentClubsTool as createSejmStatsTool } from "@/tools/sejmstats";
+import { PluginNames } from "@/lib/plugins";
 
 export const useChatLogic = () => {
   const { fetchModels } = useInitialLoad();
@@ -29,10 +31,11 @@ export const useChatLogic = () => {
     input,
     setInput,
     plugins,
+    promptStatus,
+    setPromptStatus,
   } = useChatStore();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [promptStatus, setPromptStatus] = useState<string>("");
   const [responseMetadata, setResponseMetadata] =
     useState<ResponseMetadata | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -40,6 +43,14 @@ export const useChatLogic = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatModelRef = useRef<ChatOllama | null>(null);
   const pluginChainsRef = useRef<Map<string, any>>(new Map());
+
+  const pluginChainCreators: {
+    [key in PluginNames]: (model: ChatOllama) => any;
+  } = {
+    [PluginNames.Wikipedia]: createWikipediaSearchChain,
+    [PluginNames.Python]: createPythonExecutionChain,
+    [PluginNames.SejmStats]: createSejmStatsTool,
+  };
 
   useEffect(() => {
     if (selectedModel) {
@@ -49,19 +60,13 @@ export const useChatLogic = () => {
       });
       // Initialize plugin chains
       plugins.forEach((plugin) => {
-        if (plugin.name === "Wikipedia") {
+        const createChain = pluginChainCreators[plugin.name as PluginNames];
+        if (createChain) {
           pluginChainsRef.current.set(
             plugin.name,
-            createWikipediaSearchChain(chatModelRef.current!)
+            createChain(chatModelRef.current!)
           );
         }
-        if (plugin.name === "Python") {
-          pluginChainsRef.current.set(
-            plugin.name,
-            createPythonExecutionChain(chatModelRef.current!)
-          );
-        }
-        // Add other plugin initializations here
       });
     }
   }, [selectedModel, options, plugins]);
@@ -90,11 +95,13 @@ export const useChatLogic = () => {
     try {
       const lastUserMessage = messageHistory[messageHistory.length - 1].content;
       const newMessageId = generateUniqueId();
-      addMessage({
+      const newMessage: Message = {
         id: newMessageId,
         role: "assistant",
         content: "",
-      });
+        plugins: [],
+      };
+      addMessage(newMessage);
 
       setPromptStatus("Analyzing the question");
 
@@ -112,7 +119,7 @@ export const useChatLogic = () => {
       );
 
       let finalResponse = "";
-      if (relevantPlugins.length === 0) {
+      if (relevantPlugins.filter(Boolean).length === 0) {
         setPromptStatus("Decided to use the chat model directly");
       }
       for (const plugin of relevantPlugins.filter(Boolean) as ChatPlugin[]) {
@@ -121,6 +128,7 @@ export const useChatLogic = () => {
         if (pluginChain) {
           const pluginResponse = await pluginChain.invoke(lastUserMessage);
           finalResponse += `${pluginResponse}\n\n`;
+          newMessage.plugins = [...(newMessage.plugins || []), plugin.name];
         }
       }
 
@@ -161,6 +169,9 @@ export const useChatLogic = () => {
         updateMessage(newMessageId, finalResponse.trim());
       }
 
+      // Update the message with the final content and plugins used
+      updateMessage(newMessageId, finalResponse.trim(), newMessage.plugins);
+
       setPromptStatus("");
     } catch (error) {
       handleError(error);
@@ -184,7 +195,7 @@ export const useChatLogic = () => {
       addMessage({
         id: generateUniqueId(),
         role: "assistant",
-        content: "An error occurred while fetching the response.",
+        content: `An error occurred while fetching the response. ${error.message}`,
       });
     }
   };

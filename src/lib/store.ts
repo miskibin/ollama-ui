@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ChatOptions, Message, Model, ChatPlugin } from "./types";
+import { plugins } from "./plugins";
 
 interface ChatState {
   messages: Message[];
@@ -10,8 +11,10 @@ interface ChatState {
   systemPrompt: string;
   input: string;
   plugins: ChatPlugin[];
+  promptStatus: string;
+  setPromptStatus: (status: string) => void;
   addMessage: (message: Message) => void;
-  updateMessage: (id: string, content: string) => void;
+  updateMessage: (id: string, content: string, plugins?: string[]) => void;
   deleteMessage: (id: string) => void;
   clearMessages: () => void;
   setModels: (models: Model[]) => void;
@@ -39,38 +42,15 @@ export const useChatStore = create<ChatState>()(
       },
       systemPrompt: "",
       input: "",
-      plugins: [
-        {
-          name: "Wikipedia",
-          relevancePrompt:
-            "Determine if the following question requires a Wikipedia search. Respond with only 'Yes' or 'No'.\n\nQuestion: {question}\nAnswer:",
-          enabled: true,
-        },
-        {
-          name: "Python",
-          relevancePrompt: `Determine if the following question requires Python code execution. Answer 'Yes' or 'No' only.
-          
-          Consider:
-          1. Calculations or data manipulation
-          2. Python explicitly mentioned
-          3. Complex operations (beyond basic math)
-          4. Data structures (lists, dictionaries, etc.)
-          5. String manipulation or pattern matching
-          6. Iteration or looping
-          7. Use of Python libraries
-          8. Code generation or debugging
-          
-          Question: {question}
-          Answer:`,
-          enabled: false,
-        },
-      ],
+      plugins: plugins,
+      promptStatus: "",
+      setPromptStatus: (status) => set({ promptStatus: status }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
-      updateMessage: (id, content) =>
+      updateMessage: (id, content, plugins?) =>
         set((state) => ({
           messages: state.messages.map((msg) =>
-            msg.id === id ? { ...msg, content } : msg
+            msg.id === id ? { ...msg, content, plugins } : msg
           ),
         })),
       deleteMessage: (id) =>
