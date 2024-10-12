@@ -1,36 +1,25 @@
 import { z } from "zod";
 
-export enum SejmStatsEndpoint {
-  INTERPELLATIONS = "interpellations",
-  CLUBS = "clubs",
-  ENVOYS = "envoys",
-  ACTS = "acts",
-  VOTINGS = "votings",
-}
-
 export const SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
 
 const responseSchema = z.object({
-  count: z.number(),
-  next: z.string().nullable(),
-  previous: z.string().nullable(),
-  results: z.array(z.unknown()),
+  committee_sittings: z.array(z.unknown()),
+  interpellations: z.array(z.unknown()),
+  processes: z.array(z.unknown()),
+  prints: z.array(z.unknown()),
+  acts: z.array(z.unknown()),
+  votings: z.array(z.unknown()),
 });
 
 export type SejmStatsResponse = z.infer<typeof responseSchema>;
 
 export class SejmStatsCommunicator {
-  private pageSize: number;
-
-  constructor(pageSize: number = 20) {
-    this.pageSize = pageSize;
-  }
-
-  async fetchData(endpoint: SejmStatsEndpoint): Promise<SejmStatsResponse> {
-    const url = new URL(
-      `${SEJM_STATS_BASE_URL}/${endpoint.trim()}?page_size=${this.pageSize}`
-    );
-
+  async search(searchQuery: string, field: string): Promise<SejmStatsResponse> {
+    const url = new URL(`${SEJM_STATS_BASE_URL}/search`);
+    url.searchParams.append("q", searchQuery);
+    url.searchParams.append("range", "3m");
+    url.searchParams.append(field, "true");
+    console.log(`Fetching search data from: ${url.toString()}`);
     try {
       const response = await fetch(url.toString());
       if (!response.ok) {
@@ -39,48 +28,55 @@ export class SejmStatsCommunicator {
       const data = await response.json();
       return responseSchema.parse(data);
     } catch (error) {
-      console.error(`Error fetching data from ${endpoint}:`, error);
+      console.error(`Error fetching search data:`, error);
       throw error;
     }
   }
-
-  setPageSize(pageSize: number): void {
-    this.pageSize = pageSize;
-  }
-
-  optimizeForLLM(data: SejmStatsResponse): Partial<SejmStatsResponse> {
-    const optimizedResults = data.results.map((item: any) => {
-      const optimizedItem: any = {};
-      for (const [key, value] of Object.entries(item)) {
-        // Skip fields containing 'photo', 'url', 'link', 'id', or 'pk'
-        if (!/photo|url|link|id|pk/i.test(key)) {
-          // Convert dates to ISO format for consistency
-          if (value instanceof Date) {
-            optimizedItem[key] = value.toISOString();
-          } else if (
-            typeof value === "string" &&
-            /^\d{4}-\d{2}-\d{2}$/.test(value)
-          ) {
-            // If it's a date string, convert to ISO format
-            optimizedItem[key] = new Date(value).toISOString();
-          } else {
-            optimizedItem[key] = value;
-          }
-        }
-      }
-      return optimizedItem;
-    });
-
-    return {
-      count: data.count,
-      results: optimizedResults,
+  optimizeForLLM(
+    data: SejmStatsResponse,
+    limit: number = 5
+  ): SejmStatsResponse {
+    const optimizedData: SejmStatsResponse = {
+      committee_sittings: [],
+      interpellations: [],
+      processes: [],
+      prints: [],
+      acts: [],
+      votings: [],
     };
-  }
 
-  async fetchOptimizedData(
-    endpoint: SejmStatsEndpoint
-  ): Promise<Partial<SejmStatsResponse>> {
-    const data = await this.fetchData(endpoint);
+    for (const [key, value] of Object.entries(data)) {
+      if (Array.isArray(value)) {
+        optimizedData[key as keyof SejmStatsResponse] = value
+          .slice(0, limit)
+          .map((item: any) => {
+            const optimizedItem: any = {};
+            for (const [itemKey, itemValue] of Object.entries(item)) {
+              if (!/photo|url|link|id|pk/i.test(itemKey)) {
+                if (itemValue instanceof Date) {
+                  optimizedItem[itemKey] = itemValue.toISOString();
+                } else if (
+                  typeof itemValue === "string" &&
+                  /^\d{4}-\d{2}-\d{2}$/.test(itemValue)
+                ) {
+                  optimizedItem[itemKey] = new Date(itemValue).toISOString();
+                } else {
+                  optimizedItem[itemKey] = itemValue;
+                }
+              }
+            }
+            return optimizedItem;
+          });
+      }
+    }
+
+    return optimizedData;
+  }
+  async searchOptimized(
+    searchQuery: string,
+    field: string
+  ): Promise<SejmStatsResponse> {
+    const data = await this.search(searchQuery, field);
     return this.optimizeForLLM(data);
   }
 }

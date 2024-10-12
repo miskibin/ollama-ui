@@ -196,7 +196,10 @@ export const useChatLogic = () => {
       .pipe(chatModelRef.current!)
       .pipe(new StringOutputParser());
     const response = await chain.invoke({ question });
-    return response.toLowerCase().includes("yes");
+    return (
+      response.toLowerCase().includes("yes") ||
+      response.toLowerCase().includes("tak")
+    );
   };
 
   const handleError = (error: any) => {

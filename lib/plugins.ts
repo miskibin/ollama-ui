@@ -1,6 +1,5 @@
 import { ChatPlugin } from "./types";
 
-// FILE: pluginEnums.ts
 export enum PluginNames {
   Wikipedia = "Wikipedia",
   SejmStats = "sejm-stats.pl",
@@ -15,22 +14,18 @@ export const plugins: ChatPlugin[] = [
   },
   {
     name: PluginNames.SejmStats,
-    relevancePrompt: `Determine if the question requires information from the Polish Parliament API (SejmStats). Answer 'Yes' or 'No' only.
+    relevancePrompt: `Czy pytanie choć w małym stopniu dotyczy polskiego parlamentu lub polityki? Odpowiedz 'Tak' lub 'Nie'.
 
-      Consider if the question involves:
-      1. Polish political parties, parliamentary clubs, or coalitions
-      2. Members of Sejm or Senat (Polish parliament)
-      3. Legislative processes, bills, or acts in Polish parliament
-      4. Voting records or results in Polish parliament
-      5. Interpellations or parliamentary inquiries
-      6. Statistics or data related to Polish parliament
-      7. Parliamentary committees or their activities
-      8. Composition or changes in parliamentary fractions
-      9. Parliamentary debates or discussions
-      10. Specific mention of "sejm-stats" or Polish Parliament API
+      Uwzględnij:
+      1. Sejm, Senat, posłowie, senatorowie
+      2. Ustawy, głosowania, interpelacje
+      3. Partie polityczne, kluby parlamentarne
+      4. Komisje, posiedzenia, debaty
+      5. Bieżące i historyczne wydarzenia polityczne
 
-      Question: {question}
-      Use SejmStats plugin (Yes/No):`,
+
+      Pytanie: {question}
+      Użyć SejmStats (Tak/Nie):`,
     enabled: true,
   },
 ];

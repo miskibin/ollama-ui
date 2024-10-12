@@ -6,48 +6,61 @@ import {
 } from "@langchain/core/runnables";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { SejmStatsCommunicator, SejmStatsEndpoint } from "./sejmstats-server";
-import { useChatStore } from "@/lib/store";
+import { SejmStatsCommunicator, SejmStatsResponse } from "./sejmstats-server";
 
 const PROMPTS = {
-  extractQueryInfo: PromptTemplate.fromTemplate(`
-    Zadanie: Wyodrębnij kluczowe informacje z pytania o polskim parlamencie.
+  selectField: PromptTemplate.fromTemplate(`
+    Zadanie: Wybierz najbardziej odpowiednie pole do przeszukania w API SejmStats.
     Pytanie: {question}
+    Dostępne pola:
+    - committee_sittings (posiedzenia komisji): Informacje o spotkaniach komisji parlamentarnych, gdzie omawiane są konkretne tematy.
+    - interpellations (interpelacje): Pisemne zapytania OD posłów DO rządu, często dotyczące planów lub wyjaśnień. Nie zawierają informacji o konkretnych działaniach rządu.
+    - prints (druki sejmowe): Projekty ustaw, uchwał i wnioski. Zawierają propozycje nowych przepisów lub zmian w prawie.
+    - acts (ustawy): Już uchwalone i obowiązujące akty prawne. Najlepsze źródło informacji o konkretnych działaniach legislacyjnych.
+    - votings (głosowania): Wyniki głosowań w parlamencie nad ustawami, uchwałami itp.
+
     Instrukcje:
-    1. Zidentyfikuj główne tematy i pojęcia.
-    2. Uwzględnij nazwy partii, osób, lub instytucji.
-    3. Zwróć uwagę na daty lub okresy czasowe.
-    4. Podaj tylko kluczowe słowa lub krótkie frazy.
-    5. Oddziel informacje przecinkami.
+    1. Przeanalizuj pytanie.
+    2. Wybierz pole najlepiej pasujące do zapytania.
+    3. Podaj tylko nazwę wybranego pola, bez dodatkowych informacji.
 
-    Kluczowe informacje:`),
+    Wybrane pole:`),
 
-  selectEndpoint: PromptTemplate.fromTemplate(`
-      Zadanie: Wybierz najbardziej odpowiedni endpoint API do uzyskania informacji.
-      Pytanie: {question}
-      Kluczowe informacje: {keyInfo}
-      Dostępne endpointy:
-      - interpellations (interpelacje)
-      - clubs (kluby parlamentarne)
-      - envoys (posłowie)
-      - acts (ustawy)
-      - votings (głosowania)
-  
-      Instrukcje:
-      1. Przeanalizuj pytanie i kluczowe informacje.
-      2. Wybierz endpoint najlepiej pasujący do zapytania.
-      3. Podaj tylko nazwę wybranego endpointu, bez dodatkowych informacji.
-  
-      Wybrany endpoint:`),
+  generateSearchQuery: PromptTemplate.fromTemplate(`
+    Zadanie: Wygeneruj zapytanie wyszukiwania dla API SejmStats.
+    Pytanie: {question}
+
+    Instrukcje:
+    1. Przeanalizuj pytanie.
+    2. Zidentyfikuj główny temat lub problem, którego dotyczy pytanie.
+    3. Wygeneruj jedno słowo kluczowe, które najlepiej oddaje istotę zapytania.
+    4. Zapytanie powinno być w języku polskim, najlepiej formalnym.
+    5. Unikaj używania słów ogólnych jak "rząd", "sprawie", "zrobił", chyba że są absolutnie kluczowe dla tematu.
+    6. Skup się na konkretnym problemie lub zagadnieniu, np. "powódź", "ustawa", "budżet".
+
+    Przykłady:
+    Pytanie: "Co rząd zrobił w sprawie powodzi?"
+    Poprawne zapytanie: powódź
+
+    Pytanie: "Jakie ustawy przyjęto w sprawie ochrony środowiska?"
+    Poprawne zapytanie: środowisko
+
+    Zapytanie wyszukiwania (jedno słowo):`),
 
   processData: PromptTemplate.fromTemplate(`
-    Zadanie: Odpowiedz na pytanie o polskim parlamencie na podstawie dostarczonych danych.
-    Pytanie: {question}
-    Źródło danych: {endpoint}
-    Dane: {dataString}
-    Uwaga: Dla większości endpointów analizujesz tylko ostatnie 20 obiektów, z wyjątkiem endpointu 'clubs', gdzie analizujesz wszystkie kluby.
-    Instrukcje: Przeanalizuj dane, udziel zwięzłej odpowiedzi (maks. 3-4 zdania). Zaznacz, jeśli informacja jest niedostępna.
-    Odpowiedź:`),
+      Zadanie: Odpowiedz na pytanie o polskim parlamencie na podstawie dostarczonych danych.
+      Pytanie: {question}
+      Dane: {dataString}
+      Instrukcje:
+      1. Przeanalizuj dane i udziel zwięzłej, konkretnej odpowiedzi (maks. 3-6 zdań).
+      2. Użyj formatowania Markdown dla lepszej czytelności:
+         - Użyj '**pogrubienia**' dla kluczowych terminów lub liczb.
+         - Użyj list punktowanych lub numerowanych dla wyliczenia informacji.
+         - Jeśli to stosowne, użyj cytatów '>' dla bezpośrednich odniesień do danych.
+      3. Zacznij od krótkiego podsumowania, a następnie podaj szczegóły.
+      4. Unikaj spekulacji - opieraj się tylko na dostarczonych danych.
+      Odpowiedź:
+      `),
 };
 
 const log = (step: string, message: string, data?: any) => {
@@ -56,41 +69,37 @@ const log = (step: string, message: string, data?: any) => {
   );
 };
 
-const extractQueryInfo = async (input: string, model: ChatOllama) => {
-  log("EXTRACT_QUERY", "Extracting query information", { input });
-  const keyInfo = await PROMPTS.extractQueryInfo
+const selectField = async (question: string, model: ChatOllama) => {
+  log("SELECT_FIELD", "Starting field selection", { question });
+  const selectedField = await PROMPTS.selectField
     .pipe(model)
     .pipe(new StringOutputParser())
-    .invoke({ question: input });
-  log("EXTRACT_QUERY", "Extracted key information", { keyInfo });
-  return keyInfo;
+    .invoke({ question });
+  log("SELECT_FIELD", "Selected field", { selectedField });
+  return selectedField.trim().toLowerCase();
 };
 
-const selectEndpoint = async (
-  question: string,
-  keyInfo: string,
-  model: ChatOllama
-) => {
-  log("SELECT_ENDPOINT", "Starting endpoint selection", { question, keyInfo });
-  const chain = PROMPTS.selectEndpoint
+const generateSearchQuery = async (question: string, model: ChatOllama) => {
+  log("GENERATE_QUERY", "Generating search query", { question });
+  const searchQuery = await PROMPTS.generateSearchQuery
     .pipe(model)
-    .pipe(new StringOutputParser());
-  const selectedEndpoint = await chain.invoke({ question, keyInfo });
-  log("SELECT_ENDPOINT", "Selected endpoint", { selectedEndpoint });
-  return selectedEndpoint.trim().toLowerCase() as SejmStatsEndpoint;
+    .pipe(new StringOutputParser())
+    .invoke({ question });
+  log("GENERATE_QUERY", "Generated search query", { searchQuery });
+  return searchQuery.trim();
 };
+
 const processData = async (
-  data: any,
+  data: SejmStatsResponse,
   question: string,
-  endpoint: SejmStatsEndpoint,
   model: ChatOllama
 ) => {
-  log("PROCESS_DATA", "Processing data", { question, endpoint });
+  log("PROCESS_DATA", "Processing data", { question });
   const dataString = JSON.stringify(data);
   const answer = await PROMPTS.processData
     .pipe(model)
     .pipe(new StringOutputParser())
-    .invoke({ question, endpoint, dataString });
+    .invoke({ question, dataString });
   log("PROCESS_DATA", "Processed answer", { answer });
   return answer;
 };
@@ -100,37 +109,16 @@ export const createSejmStatsTool = (
   setPluginData: (data: string) => void
 ) => {
   return RunnableSequence.from([
-    {
-      original_input: new RunnablePassthrough(),
-      key_info: (input) => extractQueryInfo(input, model),
-    },
+    new RunnablePassthrough(),
     async (input) => {
-      const endpoint = await selectEndpoint(
-        input.original_input,
-        input.key_info,
-        model
-      );
-
-      if (!Object.values(SejmStatsEndpoint).includes(endpoint)) {
-        log("ERROR", "Invalid endpoint", { endpoint });
-        return "Przepraszam, nie mogę uzyskać odpowiednich informacji w tym momencie.";
-      }
-
+      const field = await selectField(input, model);
+      const searchQuery = await generateSearchQuery(input, model);
       const communicator = new SejmStatsCommunicator();
-      const data = await communicator.fetchOptimizedData(endpoint);
+      const data = await communicator.searchOptimized(searchQuery, field);
       setPluginData(JSON.stringify(data, null, 2));
-      log("FETCH_DATA", "Fetched data from endpoint", {
-        endpoint,
-        dataLength: data.results ? data.results.length : 0,
-      });
 
-      const answer = await processData(
-        data,
-        input.original_input,
-        endpoint,
-        model
-      );
-      return `Oto informacje o polskim parlamencie: ${answer}`;
+      const answer = await processData(data, input, model);
+      return `${answer}`;
     },
     new StringOutputParser(),
   ]);
