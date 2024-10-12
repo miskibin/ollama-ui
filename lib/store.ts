@@ -12,9 +12,16 @@ interface ChatState {
   input: string;
   plugins: ChatPlugin[];
   promptStatus: string;
+  pluginData: string;
+  setPluginData: (data: string) => void;
   setPromptStatus: (status: string) => void;
   addMessage: (message: Message) => void;
-  updateMessage: (id: string, content: string, plugins?: string[]) => void;
+  updateMessage: (
+    id: string,
+    content: string,
+    plugins?: string[],
+    pluginData?: string
+  ) => void;
   deleteMessage: (id: string) => void;
   clearMessages: () => void;
   setModels: (models: Model[]) => void;
@@ -44,13 +51,22 @@ export const useChatStore = create<ChatState>()(
       input: "",
       plugins: plugins,
       promptStatus: "",
+      pluginData: "",
+      setPluginData: (data) => set({ pluginData: data }),
       setPromptStatus: (status) => set({ promptStatus: status }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
-      updateMessage: (id, content, plugins?) =>
+      updateMessage: (id, content, plugins?, pluginData?) =>
         set((state) => ({
           messages: state.messages.map((msg) =>
-            msg.id === id ? { ...msg, content, plugins } : msg
+            msg.id === id
+              ? {
+                  ...msg,
+                  content,
+                  ...(plugins && { plugins }),
+                  ...(pluginData && { pluginData }),
+                }
+              : msg
           ),
         })),
       deleteMessage: (id) =>

@@ -1,3 +1,4 @@
+"use client";
 import { ChatOllama } from "@langchain/ollama";
 import {
   RunnableSequence,
@@ -6,6 +7,7 @@ import {
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { SejmStatsCommunicator, SejmStatsEndpoint } from "./sejmstats-server";
+import { useChatStore } from "@/lib/store";
 
 const PROMPTS = {
   extractQueryInfo: PromptTemplate.fromTemplate(`
@@ -93,7 +95,10 @@ const processData = async (
   return answer;
 };
 
-export const createSejmStatsTool = (model: ChatOllama) => {
+export const createSejmStatsTool = (
+  model: ChatOllama,
+  setPluginData: (data: string) => void
+) => {
   return RunnableSequence.from([
     {
       original_input: new RunnablePassthrough(),
@@ -113,6 +118,7 @@ export const createSejmStatsTool = (model: ChatOllama) => {
 
       const communicator = new SejmStatsCommunicator();
       const data = await communicator.fetchOptimizedData(endpoint);
+      setPluginData(JSON.stringify(data, null, 2));
       log("FETCH_DATA", "Fetched data from endpoint", {
         endpoint,
         dataLength: data.results ? data.results.length : 0,

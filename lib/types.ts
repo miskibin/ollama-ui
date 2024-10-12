@@ -6,6 +6,7 @@ export type Message = {
   role: "user" | "assistant";
   content: string;
   plugins?: string[];
+  pluginData?: string; // data fetched from plugins
 };
 
 export type Model = {

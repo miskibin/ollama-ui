@@ -1,3 +1,4 @@
+"use client";
 import { ChatOllama } from "@langchain/ollama";
 import {
   RunnableSequence,
@@ -35,7 +36,10 @@ const processWikipediaResult = async (
   return processedResult;
 };
 
-export const createWikipediaSearchChain = (model: ChatOllama) => {
+export const createWikipediaSearchChain = (
+  model: ChatOllama,
+  setPluginData: (data: string) => void
+) => {
   return RunnableSequence.from([
     {
       original_input: new RunnablePassthrough(),
@@ -45,7 +49,7 @@ export const createWikipediaSearchChain = (model: ChatOllama) => {
       console.log("Searching Wikipedia for topic:", input.search_topic);
       const result = await searchWikipedia(input.search_topic);
       console.log("Wikipedia search result:", result);
-
+      setPluginData(result);
       // Process the Wikipedia result
       const processedResult = await processWikipediaResult(
         result,

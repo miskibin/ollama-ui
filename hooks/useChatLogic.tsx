@@ -14,6 +14,7 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PluginNames } from "@/lib/plugins";
 import { createSejmStatsTool } from "@/tools/sejmstats";
+import { plugin } from "postcss";
 
 export const useChatLogic = () => {
   const { fetchModels } = useInitialLoad();
@@ -29,6 +30,8 @@ export const useChatLogic = () => {
     setSystemPrompt,
     input,
     setInput,
+    pluginData,
+    setPluginData,
     plugins,
     promptStatus,
     setPromptStatus,
@@ -44,7 +47,10 @@ export const useChatLogic = () => {
   const pluginChainsRef = useRef<Map<string, any>>(new Map());
 
   const pluginChainCreators: {
-    [key in PluginNames]: (model: ChatOllama) => any;
+    [key in PluginNames]: (
+      model: ChatOllama,
+      setPluginData: (data: string) => void
+    ) => any;
   } = {
     [PluginNames.Wikipedia]: createWikipediaSearchChain,
     [PluginNames.SejmStats]: createSejmStatsTool,
@@ -62,7 +68,7 @@ export const useChatLogic = () => {
         if (createChain) {
           pluginChainsRef.current.set(
             plugin.name,
-            createChain(chatModelRef.current!)
+            createChain(chatModelRef.current!, setPluginData)
           );
         }
       });
@@ -85,7 +91,7 @@ export const useChatLogic = () => {
 
   const getResponse = async (messageHistory: typeof messages) => {
     if (!chatModelRef.current) return;
-
+    setPluginData("");
     setIsLoading(true);
     setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
@@ -168,8 +174,13 @@ export const useChatLogic = () => {
       }
 
       // Update the message with the final content and plugins used
-      updateMessage(newMessageId, finalResponse.trim(), newMessage.plugins);
-
+      updateMessage(
+        newMessageId,
+        finalResponse.trim(),
+        newMessage.plugins,
+        pluginData
+      );
+      console.log("Final response", pluginData);
       setPromptStatus("");
     } catch (error) {
       handleError(error);

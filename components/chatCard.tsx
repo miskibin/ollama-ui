@@ -18,27 +18,17 @@ import {
   X,
   Copy,
   Trash2,
+  Database,
 } from "lucide-react";
 import MarkdownResponse from "@/components/markdownResponse";
 import InitialChatContent from "@/components/initial-page";
 import { useChatContext } from "@/app/ChatContext";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import LoadingDots from "./loadingDots";
 import ModelSelector from "./model-selector";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@radix-ui/react-tooltip";
+import Image from "next/image";
 import { Badge } from "./ui/badge";
+import PluginDataDialog from "./plugin-data-dialog";
 
 export function ChatCard() {
   const {
@@ -149,10 +139,19 @@ export function ChatCard() {
           messages.map((message) => (
             <div
               key={message.id}
-              className={`mt-2 mb-0 ${
-                message.role === "user" ? "flex justify-end" : ""
+              className={`mt-2 mb-0 flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
+              {message.role === "assistant" && (
+                <Image
+                  src="/logo.svg"
+                  alt="Assistant Avatar"
+                  width={40}
+                  height={40}
+                  className="mr-2"
+                />
+              )}
               <div
                 className={`inline-block pt-3 px-3 shadow-md rounded-md max-w-[80%] ${
                   message.role === "user"
@@ -189,11 +188,14 @@ export function ChatCard() {
                   message.content !== "" && (
                     <div className="text-left">
                       <MarkdownResponse content={message.content} />
-                      {message.plugins && message.plugins.length > 0 && (
-                        <Badge className="text-xs" variant={"outline"}>
-                          {message.plugins.join(", ")}
-                        </Badge>
-                      )}
+                      {message.plugins &&
+                        message.plugins.length > 0 &&
+                        message.pluginData && (
+                          <PluginDataDialog
+                            pluginData={message.pluginData}
+                            name={message.plugins[0]}
+                          ></PluginDataDialog>
+                        )}
                       <div className="flex justify-start mt-2 space-x-2">
                         <Button
                           variant="ghost"
