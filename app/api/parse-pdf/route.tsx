@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import pdf from "pdf-parse";
 
-// Route Segment Config
-// export const dynamic = "force-dynamic";
-// export const runtime = "nodejs";
-
 function formatToMarkdown(text: string): string {
   const lines = text.split("\n").map((line) => line.trim());
   let markdown = "";
