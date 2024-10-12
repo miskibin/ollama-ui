@@ -14,7 +14,7 @@ export const plugins: ChatPlugin[] = [
   },
   {
     name: PluginNames.SejmStats,
-    relevancePrompt: `Czy pytanie choć w małym stopniu dotyczy polskiego parlamentu lub polityki? Odpowiedz 'Tak' lub 'Nie'.
+    relevancePrompt: `Czy pytanie choć w małym stopniu dotyczy polskiego parlamentu, polityki lub powiązanych tematów? Odpowiedz 'Tak' lub 'Nie'.
 
       Uwzględnij:
       1. Sejm, Senat, posłowie, senatorowie
@@ -22,7 +22,7 @@ export const plugins: ChatPlugin[] = [
       3. Partie polityczne, kluby parlamentarne
       4. Komisje, posiedzenia, debaty
       5. Bieżące i historyczne wydarzenia polityczne
-
+      6. Politycy, ministrowie, premier, prezydent, rząd, opozycja, koalicja
 
       Pytanie: {question}
       Użyć SejmStats (Tak/Nie):`,
