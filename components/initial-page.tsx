@@ -16,6 +16,7 @@ import {
   BookOpen,
   RefreshCw,
   Briefcase,
+  FireExtinguisher,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -54,10 +55,10 @@ const allConversationStarters = [
       "Jakie nowe projekty ustaw zostały złożone w Sejmie w ostatnim tygodniu?",
   },
   {
-    icon: <CalendarDays className="text-teal-500" size={24} />,
-    text: "Najbliższe posiedzenia",
+    icon: <FireExtinguisher className="text-red-500" size={24} />,
+    text: "Posiedzenia komisji w sprawie grzegorza brauna",
     action:
-      "Jakie ważne posiedzenia Sejmu są zaplanowane na najbliższy tydzień?",
+      "Czy w ostatnim czasie odbyły się jakieś posiedzenia komisji w sprawie posła 'Grzegorz Braun'?",
   },
   {
     icon: <Building className="text-indigo-500" size={24} />,
@@ -79,15 +80,15 @@ const allConversationStarters = [
   },
   {
     icon: <FileSearch className="text-pink-500" size={24} />,
-    text: "Projekty w komisjach",
+    text: "Dyskusje dot. budżetu w komisjach",
     action:
-      "Jakie projekty ustaw są obecnie rozpatrywane przez komisje sejmowe?",
+      "Czy w ostatnim czasie komisje sejmowe dyskutowały nad projektem budżetu?",
   },
   {
-    icon: <AlertTriangle className="text-amber-500" size={24} />,
-    text: "Bezpieczeństwo",
+    icon: <Users className="text-purple-500" size={24} />,
+    text: "Dyskusje budżetowe w komisjach",
     action:
-      "Czy w ostatnim miesiącu dyskutowano nad ustawami dotyczącymi bezpieczeństwa narodowego?",
+      "Jakie były główne tematy dyskusji dotyczących budżetu w komisjach sejmowych w ostatnim miesiącu?",
   },
   {
     icon: <PieChart className="text-emerald-500" size={24} />,
