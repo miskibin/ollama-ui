@@ -17,6 +17,7 @@ import {
   RefreshCw,
   Briefcase,
 } from "lucide-react";
+import Link from "next/link";
 
 interface InitialChatContentProps {
   onStarterClick: (text: string) => void;
@@ -129,7 +130,13 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
           Twój asystent parlamentarny
         </h2>
         <p className="text-center text-gray-600">
-          Odkryj najnowsze informacje o polskim parlamencie
+          <Link
+            href="https://sejm-stats.pl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            powered by <strong>sejm-stats.pl</strong>
+          </Link>
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl w-full">

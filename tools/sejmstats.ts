@@ -69,45 +69,31 @@ const log = (step: string, message: string, data?: any) => {
   );
 };
 
-const selectField = async (
-  question: string,
-  model: ChatOllama,
-  setPromptStatus: (status: string) => void
-) => {
-  setPromptStatus("Selecting the most appropriate topic...");
+const selectField = async (question: string, model: ChatOllama) => {
   log("SELECT_FIELD", "Starting field selection", { question });
   const selectedField = await PROMPTS.selectField
     .pipe(model)
     .pipe(new StringOutputParser())
     .invoke({ question });
   log("SELECT_FIELD", "Selected field", { selectedField });
-  setPromptStatus("Field selected.");
   return selectedField.trim().toLowerCase();
 };
 
-const generateSearchQuery = async (
-  question: string,
-  model: ChatOllama,
-  setPromptStatus: (status: string) => void
-) => {
-  setPromptStatus("Generating search query...");
+const generateSearchQuery = async (question: string, model: ChatOllama) => {
   log("GENERATE_QUERY", "Generating search query", { question });
   const searchQuery = await PROMPTS.generateSearchQuery
     .pipe(model)
     .pipe(new StringOutputParser())
     .invoke({ question });
   log("GENERATE_QUERY", "Generated search query", { searchQuery });
-  setPromptStatus("Search query generated.");
   return searchQuery.trim();
 };
 
 const processData = async (
   data: SejmStatsResponse,
   question: string,
-  model: ChatOllama,
-  setPromptStatus: (status: string) => void
+  model: ChatOllama
 ) => {
-  setPromptStatus("Processing response from SejmStats...");
   log("PROCESS_DATA", "Processing data", { question });
   const dataString = JSON.stringify(data);
   const answer = await PROMPTS.processData
@@ -115,9 +101,9 @@ const processData = async (
     .pipe(new StringOutputParser())
     .invoke({ question, dataString });
   log("PROCESS_DATA", "Processed answer", { answer });
-  setPromptStatus("Data processed.");
   return answer;
 };
+
 export const createSejmStatsTool = (
   model: ChatOllama,
   setPluginData: (data: string) => void,
@@ -127,13 +113,9 @@ export const createSejmStatsTool = (
     new RunnablePassthrough(),
     async (input) => {
       setPromptStatus("Rozpoczynanie wyboru pola...");
-      const field = await selectField(input, model, setPromptStatus);
+      const field = await selectField(input, model);
       setPromptStatus("Pole wybrane. Generowanie zapytania wyszukiwania...");
-      const searchQuery = await generateSearchQuery(
-        input,
-        model,
-        setPromptStatus
-      );
+      const searchQuery = await generateSearchQuery(input, model);
       setPromptStatus(
         "Zapytanie wyszukiwania wygenerowane. Pobieranie danych..."
       );
@@ -142,8 +124,7 @@ export const createSejmStatsTool = (
       setPluginData(JSON.stringify(data, null, 2));
       console.log(data);
       setPromptStatus("Dane pobrane. Przetwarzanie danych...");
-      console.log(data);
-      const answer = await processData(data, input, model, setPromptStatus);
+      const answer = await processData(data, input, model);
       setPromptStatus("Dane przetworzone. Odpowiedź gotowa.");
       return `${answer}`;
     },
