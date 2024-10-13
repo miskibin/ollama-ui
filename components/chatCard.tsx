@@ -53,11 +53,18 @@ export function ChatCard() {
   const [editTextareaHeight, setEditTextareaHeight] = useState("auto");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editInput, setEditInput] = useState("");
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   useEffect(() => {
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+  const copyToClipboard = (id: string, content: string) => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopiedMessageId(id);
+      setTimeout(() => setCopiedMessageId(null), 2000); // Reset after 2 seconds
+    });
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<Element>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -83,10 +90,6 @@ export function ChatCard() {
   const handleEditCancel = () => {
     setEditingMessageId(null);
     setEditInput("");
-  };
-
-  const copyToClipboard = (content: string) => {
-    navigator.clipboard.writeText(content).then(() => {});
   };
 
   const handleStarterClick = (text: string) => {
@@ -216,11 +219,18 @@ export function ChatCard() {
                               <RefreshCw className="w-4 h-4" />
                             </Button>
                             <Button
-                              onClick={() => copyToClipboard(message.content)}
+                              onClick={() =>
+                                copyToClipboard(message.id, message.content)
+                              }
                               size="sm"
                               variant="ghost"
+                              className="relative"
                             >
-                              <Copy className="w-4 h-4" />
+                              {copiedMessageId === message.id ? (
+                                <Check className="w-4 h-4 text-green-500 absolute animate-scale-check" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
                             </Button>
                           </>
                         )}

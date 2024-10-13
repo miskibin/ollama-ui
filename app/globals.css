@@ -58,8 +58,8 @@ body {
     --secondary-foreground: 334 0% 100%;
     --accent: 217.5 9.09% 17.25%;
     --accent-foreground: 226.73 58.43% 65.1%;
-    --destructive: 0 86.89% 38%; 
-    --destructive-foreground: 334 34% 92%; 
+    --destructive: 0 86.89% 38%;
+    --destructive-foreground: 334 34% 92%;
     --ring: 217.5 9.09% 17.25%;
   }
 }
@@ -72,4 +72,25 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes scale-check {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-check {
+  animation: scale-check 0.3s ease-out;
 }

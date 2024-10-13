@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { ChatPlugin, Message, ResponseMetadata } from "@/lib/types";
 import { ChatOllama } from "@langchain/ollama";
@@ -91,7 +92,6 @@ export const useChatLogic = () => {
 
   const getResponse = async (messageHistory: typeof messages) => {
     if (!chatModelRef.current) return;
-    setPluginData("");
     setIsLoading(true);
     setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
@@ -124,6 +124,7 @@ export const useChatLogic = () => {
 
       let finalResponse = "";
       if (relevantPlugins.filter(Boolean).length === 0) {
+        setPluginData("");
         setPromptStatus("Decided to use the chat model directly");
       }
       for (const plugin of relevantPlugins.filter(Boolean) as ChatPlugin[]) {

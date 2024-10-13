@@ -1,24 +1,22 @@
 import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Book,
-  Code,
-  Coffee,
   FileText,
-  Flame,
-  Globe,
-  HeartHandshake,
-  Puzzle,
-  Ruler,
-  Sandwich,
-  Shirt,
-  ShoppingCart,
-  Sparkles,
-  Trees,
-  Utensils,
-  Wrench,
+  MessageSquare,
+  VoteIcon,
+  Users,
+  Scale,
+  CalendarDays,
+  Building,
+  TrendingUp,
+  Gavel,
+  FileSearch,
+  AlertTriangle,
+  PieChart,
+  BookOpen,
+  RefreshCw,
+  Briefcase,
 } from "lucide-react";
-import Image from "next/image";
 
 interface InitialChatContentProps {
   onStarterClick: (text: string) => void;
@@ -26,97 +24,91 @@ interface InitialChatContentProps {
 
 const allConversationStarters = [
   {
-    icon: <Sandwich className="text-yellow-500" size={24} />,
-    text: "Suggest a recipe for a quick lunch",
+    icon: <FileText className="text-blue-500" size={24} />,
+    text: "Najnowsze ustawy",
+    action: "Jakie ustawy zostały uchwalone w ciągu ostatniego miesiąca?",
+  },
+  {
+    icon: <MessageSquare className="text-green-500" size={24} />,
+    text: "Ostatnie interpelacje",
     action:
-      "Suggest a recipe for a quick and easy lunch using common pantry ingredients.",
+      "Jakie były główne tematy interpelacji poselskich w ostatnim tygodniu?",
   },
   {
-    icon: <Code className="text-blue-500" size={24} />,
-    text: "Explain a programming concept",
+    icon: <VoteIcon className="text-red-500" size={24} />,
+    text: "Niedawne głosowania",
     action:
-      "Explain the concept of recursion in programming and provide a simple example.",
+      "Jakie były wyniki najważniejszych głosowań w Sejmie w tym miesiącu?",
   },
   {
-    icon: <Book className="text-green-500" size={24} />,
-    text: "Summarize a classic novel",
+    icon: <Users className="text-purple-500" size={24} />,
+    text: "Aktywność komisji",
     action:
-      "Provide a brief summary of the plot and main themes of the novel '1984' by George Orwell.",
+      "Które komisje sejmowe odbyły najwięcej posiedzeń w ostatnim miesiącu?",
   },
   {
-    icon: <Puzzle className="text-purple-500" size={24} />,
-    text: "Create a brain teaser",
+    icon: <Scale className="text-orange-500" size={24} />,
+    text: "Nowe projekty ustaw",
     action:
-      "Create an original, challenging brain teaser or riddle for me to solve.",
+      "Jakie nowe projekty ustaw zostały złożone w Sejmie w ostatnim tygodniu?",
   },
   {
-    icon: <Coffee className="text-brown-500" size={24} />,
-    text: "Coffee brewing tips",
-    action: "Share some tips for brewing the perfect cup of coffee at home.",
-  },
-  {
-    icon: <Globe className="text-blue-400" size={24} />,
-    text: "Interesting geography facts",
+    icon: <CalendarDays className="text-teal-500" size={24} />,
+    text: "Najbliższe posiedzenia",
     action:
-      "Tell me five interesting geography facts about countries around the world.",
+      "Jakie ważne posiedzenia Sejmu są zaplanowane na najbliższy tydzień?",
   },
   {
-    icon: <Ruler className="text-gray-600" size={24} />,
-    text: "Explain a math concept",
+    icon: <Building className="text-indigo-500" size={24} />,
+    text: "Infrastruktura",
     action:
-      "Explain the Pythagorean theorem and its practical applications in everyday life.",
+      "Czy w ostatnim miesiącu uchwalono jakieś ustawy dotyczące infrastruktury?",
   },
   {
-    icon: <HeartHandshake className="text-red-500" size={24} />,
-    text: "Conflict resolution advice",
+    icon: <TrendingUp className="text-yellow-500" size={24} />,
+    text: "Gospodarka",
     action:
-      "Provide advice on how to resolve a conflict with a coworker professionally.",
+      "Jakie ustawy związane z gospodarką były omawiane na ostatnim posiedzeniu Sejmu?",
   },
   {
-    icon: <Shirt className="text-indigo-500" size={24} />,
-    text: "Fashion history lesson",
+    icon: <Gavel className="text-gray-600" size={24} />,
+    text: "Wymiar sprawiedliwości",
     action:
-      "Give a brief history of a famous fashion trend or item of clothing.",
+      "Czy w ostatnim czasie głosowano nad ustawami dotyczącymi wymiaru sprawiedliwości?",
   },
   {
-    icon: <Trees className="text-green-600" size={24} />,
-    text: "Gardening tips for beginners",
+    icon: <FileSearch className="text-pink-500" size={24} />,
+    text: "Projekty w komisjach",
     action:
-      "Share some essential gardening tips for beginners starting their first vegetable garden.",
+      "Jakie projekty ustaw są obecnie rozpatrywane przez komisje sejmowe?",
   },
   {
-    icon: <Sparkles className="text-yellow-400" size={24} />,
-    text: "Creative writing prompt",
+    icon: <AlertTriangle className="text-amber-500" size={24} />,
+    text: "Bezpieczeństwo",
     action:
-      "Provide a creative writing prompt for a short story set in a futuristic world.",
+      "Czy w ostatnim miesiącu dyskutowano nad ustawami dotyczącymi bezpieczeństwa narodowego?",
   },
   {
-    icon: <Utensils className="text-orange-500" size={24} />,
-    text: "Cooking technique explanation",
-    action: "Explain the sous-vide cooking technique and its benefits.",
+    icon: <PieChart className="text-emerald-500" size={24} />,
+    text: "Budżet",
+    action: "Jakie były ostatnie decyzje Sejmu dotyczące budżetu państwa?",
   },
   {
-    icon: <FileText className="text-gray-500" size={24} />,
-    text: "Resume writing tips",
+    icon: <BookOpen className="text-rose-500" size={24} />,
+    text: "Edukacja",
     action:
-      "Offer some key tips for writing an effective resume that stands out to employers.",
+      "Czy w ostatnim czasie wprowadzono jakieś zmiany w ustawach dotyczących edukacji?",
   },
   {
-    icon: <ShoppingCart className="text-blue-600" size={24} />,
-    text: "Budgeting advice",
+    icon: <RefreshCw className="text-lime-500" size={24} />,
+    text: "Środowisko",
     action:
-      "Provide practical advice for creating and sticking to a monthly budget.",
+      "Jakie ustawy dotyczące ochrony środowiska były omawiane w Sejmie w ostatnim miesiącu?",
   },
   {
-    icon: <Flame className="text-red-600" size={24} />,
-    text: "Fitness routine suggestion",
-    action:
-      "Suggest a 15-minute high-intensity workout routine that can be done at home without equipment.",
-  },
-  {
-    icon: <Wrench className="text-gray-700" size={24} />,
-    text: "Home maintenance checklist",
-    action: "Create a seasonal home maintenance checklist for homeowners.",
+    icon: <Briefcase className="text-fuchsia-500" size={24} />,
+    text: "Prawo pracy",
+    action: "Czy w ostatnim czasie głosowano nad zmianami w prawie pracy?",
   },
 ];
 
@@ -127,19 +119,16 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
     const shuffled = [...allConversationStarters].sort(
       () => 0.5 - Math.random()
     );
-    return shuffled.slice(0, 4); // Display 8 random starters
+    return shuffled.slice(0, 4); // Display 4 random starters
   }, []);
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-4">
       <div className="mb-8">
-        <Image
-          src="/ollama.png"
-          alt="Ollama Logo"
-          width={200}
-          height={200}
-          className="rounded-md "
-        />
+        <h2 className="text-2xl font-bold text-center">Sejm Stats Tool</h2>
+        <p className="text-center text-gray-600">
+          Odkryj najnowsze informacje o polskim parlamencie
+        </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl w-full">
         {randomStarters.map((starter, index) => (

@@ -48,19 +48,21 @@ const PROMPTS = {
     Zapytanie wyszukiwania (jedno słowo):`),
 
   processData: PromptTemplate.fromTemplate(`
-      Zadanie: Odpowiedz na pytanie o polskim parlamencie na podstawie dostarczonych danych.
+      Zadanie: Zwięźle odpowiedz na pytanie o polskim parlamencie na podstawie dostarczonych danych.
       Pytanie: {question}
       Dane: {dataString}
+      Data: ${new Date().toLocaleDateString("pl-PL")}
       Instrukcje:
-      1. Przeanalizuj dane i udziel zwięzłej, konkretnej odpowiedzi (maks. 3-6 zdań).
-      2. Użyj formatowania Markdown dla lepszej czytelności:
-         - Użyj '**pogrubienia**' dla kluczowych terminów lub liczb.
-         - Użyj list punktowanych lub numerowanych dla wyliczenia informacji.
-         - Jeśli to stosowne, użyj cytatów '>' dla bezpośrednich odniesień do danych.
-      3. Zacznij od krótkiego podsumowania, a następnie podaj szczegóły.
-      4. Unikaj spekulacji - opieraj się tylko na dostarczonych danych.
+      1. Udziel konkretnej odpowiedzi w maksymalnie 3 zdaniach.
+      2. Użyj formatowania Markdown:
+         - '**Pogrubienie**' dla kluczowych terminów i liczb.
+         - Lista punktowana dla maksymalnie 3 najważniejszych faktów.
+         - Jeden cytat '>' dla najistotniejszego fragmentu.
+      3. Skup się na podsumowaniu danych, unikając powtórzeń.
+      4. Podaj tylko informacje z danych, bez spekulacji.
+      5. Jeśli brak odpowiedzi w danych, krótko to zaznacz.
       Odpowiedź:
-      `),
+    `),
 };
 
 const log = (step: string, message: string, data?: any) => {
@@ -116,7 +118,7 @@ export const createSejmStatsTool = (
       const communicator = new SejmStatsCommunicator();
       const data = await communicator.searchOptimized(searchQuery, field);
       setPluginData(JSON.stringify(data, null, 2));
-
+      console.log(data);
       const answer = await processData(data, input, model);
       return `${answer}`;
     },
