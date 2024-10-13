@@ -50,7 +50,8 @@ export const useChatLogic = () => {
   const pluginChainCreators: {
     [key in PluginNames]: (
       model: ChatOllama,
-      setPluginData: (data: string) => void
+      setPluginData: (data: string) => void,
+      setPromptStatus: (status: string) => void
     ) => any;
   } = {
     [PluginNames.Wikipedia]: createWikipediaSearchChain,
@@ -69,7 +70,7 @@ export const useChatLogic = () => {
         if (createChain) {
           pluginChainsRef.current.set(
             plugin.name,
-            createChain(chatModelRef.current!, setPluginData)
+            createChain(chatModelRef.current!, setPluginData, setPromptStatus)
           );
         }
       });

@@ -48,19 +48,17 @@ const PROMPTS = {
     Zapytanie wyszukiwania (jedno słowo):`),
 
   processData: PromptTemplate.fromTemplate(`
-      Zadanie: Zwięźle odpowiedz na pytanie o polskim parlamencie na podstawie dostarczonych danych.
+      Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
       Pytanie: {question}
       Dane: {dataString}
-      Data: ${new Date().toLocaleDateString("pl-PL")}
+      Data obecna: ${new Date().toLocaleDateString("pl-PL")}
       Instrukcje:
-      1. Udziel konkretnej odpowiedzi w maksymalnie 3 zdaniach.
-      2. Użyj formatowania Markdown:
-         - '**Pogrubienie**' dla kluczowych terminów i liczb.
-         - Lista punktowana dla maksymalnie 3 najważniejszych faktów.
-         - Jeden cytat '>' dla najistotniejszego fragmentu.
-      3. Skup się na podsumowaniu danych, unikając powtórzeń.
-      4. Podaj tylko informacje z danych, bez spekulacji.
-      5. Jeśli brak odpowiedzi w danych, krótko to zaznacz.
+      1. Odpowiedz bezpośrednio na pytanie w maksymalnie 2 zdaniach.
+      2. Podaj tylko informacje istotne dla pytania.
+      3. Jeśli brak odpowiedzi w danych, napisz to krótko.
+      4. Użyj '**pogrubienia**' dla kluczowych dat lub liczb.
+      5. Cytuj tytuł dokumentu tylko jeśli jest bezpośrednio związany z pytaniem.
+      6. Nie opisuj dostarczonych danych ani ich zakresu.
       Odpowiedź:
     `),
 };
@@ -71,31 +69,45 @@ const log = (step: string, message: string, data?: any) => {
   );
 };
 
-const selectField = async (question: string, model: ChatOllama) => {
+const selectField = async (
+  question: string,
+  model: ChatOllama,
+  setPromptStatus: (status: string) => void
+) => {
+  setPromptStatus("Selecting the most appropriate topic...");
   log("SELECT_FIELD", "Starting field selection", { question });
   const selectedField = await PROMPTS.selectField
     .pipe(model)
     .pipe(new StringOutputParser())
     .invoke({ question });
   log("SELECT_FIELD", "Selected field", { selectedField });
+  setPromptStatus("Field selected.");
   return selectedField.trim().toLowerCase();
 };
 
-const generateSearchQuery = async (question: string, model: ChatOllama) => {
+const generateSearchQuery = async (
+  question: string,
+  model: ChatOllama,
+  setPromptStatus: (status: string) => void
+) => {
+  setPromptStatus("Generating search query...");
   log("GENERATE_QUERY", "Generating search query", { question });
   const searchQuery = await PROMPTS.generateSearchQuery
     .pipe(model)
     .pipe(new StringOutputParser())
     .invoke({ question });
   log("GENERATE_QUERY", "Generated search query", { searchQuery });
+  setPromptStatus("Search query generated.");
   return searchQuery.trim();
 };
 
 const processData = async (
   data: SejmStatsResponse,
   question: string,
-  model: ChatOllama
+  model: ChatOllama,
+  setPromptStatus: (status: string) => void
 ) => {
+  setPromptStatus("Processing response from SejmStats...");
   log("PROCESS_DATA", "Processing data", { question });
   const dataString = JSON.stringify(data);
   const answer = await PROMPTS.processData
@@ -103,23 +115,36 @@ const processData = async (
     .pipe(new StringOutputParser())
     .invoke({ question, dataString });
   log("PROCESS_DATA", "Processed answer", { answer });
+  setPromptStatus("Data processed.");
   return answer;
 };
-
 export const createSejmStatsTool = (
   model: ChatOllama,
-  setPluginData: (data: string) => void
+  setPluginData: (data: string) => void,
+  setPromptStatus: (status: string) => void
 ) => {
   return RunnableSequence.from([
     new RunnablePassthrough(),
     async (input) => {
-      const field = await selectField(input, model);
-      const searchQuery = await generateSearchQuery(input, model);
+      setPromptStatus("Rozpoczynanie wyboru pola...");
+      const field = await selectField(input, model, setPromptStatus);
+      setPromptStatus("Pole wybrane. Generowanie zapytania wyszukiwania...");
+      const searchQuery = await generateSearchQuery(
+        input,
+        model,
+        setPromptStatus
+      );
+      setPromptStatus(
+        "Zapytanie wyszukiwania wygenerowane. Pobieranie danych..."
+      );
       const communicator = new SejmStatsCommunicator();
       const data = await communicator.searchOptimized(searchQuery, field);
       setPluginData(JSON.stringify(data, null, 2));
       console.log(data);
-      const answer = await processData(data, input, model);
+      setPromptStatus("Dane pobrane. Przetwarzanie danych...");
+      console.log(data);
+      const answer = await processData(data, input, model, setPromptStatus);
+      setPromptStatus("Dane przetworzone. Odpowiedź gotowa.");
       return `${answer}`;
     },
     new StringOutputParser(),

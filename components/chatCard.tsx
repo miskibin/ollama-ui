@@ -131,7 +131,7 @@ export function ChatCard() {
       <CardHeader className="flex-shrink-0 w-full">
         <div className="flex justify-between items-center w-full">
           <ModelSelector />
-          <h2 className="text-2xl font-bold">Sejm stats assistant</h2>
+          <h2 className="text-2xl font-bold">Asystent RP</h2>
           <div className="w-[200px]"></div>
         </div>
       </CardHeader>
@@ -156,21 +156,25 @@ export function ChatCard() {
                 />
               )}
               <div
-                className={`inline-block pt-3 px-3 shadow-md rounded-md max-w-[80%] ${
+                className={`inline-block pt-3 px-3 shadow-md rounded-md ${
                   message.role === "user"
                     ? "bg-primary/10"
                     : "border-0 shadow-none"
+                } ${
+                  editingMessageId === message.id
+                    ? "w-full max-w-full"
+                    : "max-w-[80%]"
                 }`}
               >
                 {editingMessageId === message.id ? (
-                  <div className="min-w-[500px]">
+                  <div className="w-full">
                     <Textarea
                       value={editInput}
                       onChange={adjustEditTextareaHeight}
-                      className="mb-2 min-w-[500px] min-h-[300px] max-h-[500px]"
+                      className="w-full mb-2 min-h-[100px] max-h-[300px] resize-vertical"
                       style={{ height: editTextareaHeight }}
                     />
-                    <div className="flex justify-end space-x-2 p-0 m-0">
+                    <div className="flex justify-end space-x-2">
                       <Button
                         onClick={() => handleEditSave(message.id)}
                         size="sm"
