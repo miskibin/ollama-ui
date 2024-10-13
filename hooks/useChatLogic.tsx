@@ -108,7 +108,7 @@ export const useChatLogic = () => {
       };
       addMessage(newMessage);
 
-      setPromptStatus("Analyzing the question");
+      setPromptStatus("Analizowanie wiadomości...");
 
       // Check relevance for each enabled plugin
       const relevantPlugins = await Promise.all(
@@ -126,7 +126,7 @@ export const useChatLogic = () => {
       let finalResponse = "";
       if (relevantPlugins.filter(Boolean).length === 0) {
         setPluginData("");
-        setPromptStatus("Decided to use the chat model directly");
+        setPromptStatus("Zdecydowałem, że nie użyję zewnętrznych danych.");
       }
       for (const plugin of relevantPlugins.filter(Boolean) as ChatPlugin[]) {
         setPromptStatus(`Gathering data from ${plugin.name}`);
@@ -138,7 +138,7 @@ export const useChatLogic = () => {
         }
       }
 
-      setPromptStatus("Analyzing gathered data");
+      setPromptStatus("Analizowanie zebranych danych...");
 
       if (!finalResponse) {
         // If no plugin was used, use the chat model directly
@@ -152,7 +152,7 @@ export const useChatLogic = () => {
           langChainMessages.unshift(new SystemMessage(systemPrompt));
         }
 
-        setPromptStatus("Generating response");
+        setPromptStatus("Przygotowywanie odpowiedzi...");
         const response = await chatModelRef.current.invoke(langChainMessages, {
           callbacks: [
             {
