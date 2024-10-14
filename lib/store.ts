@@ -31,8 +31,8 @@ export const useChatStore = create<ChatState>()(
       models: [],
       selectedModel: "",
       options: {
-        temperature: 0.7,
-        topP: 0.9,
+        temperature: 0.3,
+        topP: 0.8,
         streaming: true,
         topK: 40,
         repeatPenalty: 1.1,

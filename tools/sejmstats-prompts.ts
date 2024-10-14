@@ -18,19 +18,17 @@ export const PROMPTS = {
       Wybrane pole:`),
 
   generateSearchQuery: PromptTemplate.fromTemplate(`
-      Zadanie: Wygeneruj zapytanie wyszukiwania.
-      Pytanie: {question}
-  
-      Instrukcje:
-      1. Przeanalizuj pytanie.
-      2. Wybierz jedno słowo, które najlepiej oddaje istotę zapytania.
-      3. Skup się na konkretnych tematach, np. "budżet", "edukacja", "podatki".
-      4. Preferuj rzeczowniki, unikaj czasowników i przyimków.
-      5. Unikaj ogólnych terminów jak "sejm" czy "ustawa", chyba że są absolutnie kluczowe.
-      6. Słowo powinno być w języku polskim i w formie podstawowej (nieodmienionej).
-      7. Nie używaj cudzysłowów ani znaków specjalnych.
-    
-  Słowo kluczowe:`),
+        Zadanie: Wybierz JEDNO słowo kluczowe do wyszukiwania.
+        Pytanie: {question}
+        
+        Instrukcje:
+        1. Przeanalizuj pytanie.
+        2. Wybierz TYLKO JEDNO najważniejsze słowo.
+        3. Użyj rzeczownika w formie podstawowej.
+        4. Unikaj ogólnych słów jak "sejm" czy "ustawa".
+        5. Nie używaj cudzysłowów ani znaków specjalnych.
+        
+        Pojedyncze słowo kluczowe:`),
 
   processData: PromptTemplate.fromTemplate(`
       Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.

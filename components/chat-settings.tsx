@@ -218,7 +218,6 @@ const ChatSettings = () => {
       <CardFooter className="flex-shrink-0">
         <Button
           onClick={clearMessages}
-          variant="destructive"
           className="w-full"
         >
           Wyczyść historię
