@@ -41,22 +41,29 @@ export const createWikipediaSearchChain = (
   updateMessage: (id: string, content: string, pluginData?: string) => void
 ) => {
   return RunnableSequence.from([
-    {
-      original_input: new RunnablePassthrough(),
-      search_topic: (input) => extractSearchTopic(input, model),
-    },
-    async (input) => {
-      console.log("Searching Wikipedia for topic:", input.search_topic);
-      const result = await searchWikipedia(input.search_topic);
+    new RunnablePassthrough(),
+    async ({ question, newMessageId }) => {
+      updateMessage(newMessageId, "Extracting search topic...");
+      const searchTopic = await extractSearchTopic(question, model);
+      console.log("Extracted search topic:", searchTopic);
+
+      updateMessage(
+        newMessageId,
+        `Search topic: ${searchTopic}. Searching Wikipedia...`
+      );
+      const result = await searchWikipedia(searchTopic);
       console.log("Wikipedia search result:", result);
-      // Process the Wikipedia result
-      updateMessage(input.original_input, "", "Processing Wikipedia result...");
+
+      updateMessage(newMessageId, "Processing Wikipedia result...");
       const processedResult = await processWikipediaResult(
         result,
-        input.original_input,
+        question,
         model
       );
-      return `Here's what I found from Wikipedia: ${processedResult}`;
+
+      updateMessage(newMessageId, result);
+
+      return processedResult;
     },
     new StringOutputParser(),
   ]);
