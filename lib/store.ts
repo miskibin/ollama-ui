@@ -11,8 +11,6 @@ interface ChatState {
   systemPrompt: string;
   input: string;
   plugins: ChatPlugin[];
-  promptStatus: string;
-  setPromptStatus: (status: string) => void;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, content: string, pluginData?: string) => void;
   deleteMessage: (id: string) => void;
@@ -43,8 +41,6 @@ export const useChatStore = create<ChatState>()(
       systemPrompt: "",
       input: "",
       plugins: plugins,
-      promptStatus: "",
-      setPromptStatus: (status) => set({ promptStatus: status }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
       updateMessage: (id, content, pluginData?) =>

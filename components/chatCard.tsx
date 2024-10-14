@@ -44,7 +44,6 @@ export function ChatCard() {
     handleFileChange,
     isPdfParsing,
     stopGenerating,
-    promptStatus,
     deleteMessage,
   } = useChatContext();
 

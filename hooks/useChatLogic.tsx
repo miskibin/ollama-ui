@@ -35,7 +35,7 @@ export const useChatLogic = () => {
     setInput,
     plugins,
   } = useChatStore();
-
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [responseMetadata, setResponseMetadata] =
     useState<ResponseMetadata | null>(null);
@@ -165,6 +165,21 @@ export const useChatLogic = () => {
       setIsLoading(false);
     }
   };
+  const editMessage = async (id: string, newContent: string) => {
+    const messageIndex = messages.findIndex((msg) => msg.id === id);
+    console.log("Editing message", id, messages[messageIndex]);
+    if (messageIndex === -1) return;
+    updateMessage(id, newContent);
+    setEditingMessageId(null);
+    if (messages[messageIndex].role === "user") {
+      const newMessages = messages.slice(0, messageIndex + 1);
+      clearMessages();
+      newMessages.forEach((msg) => addMessage(msg));
+      updateMessage(id, newContent);
+
+      await getResponse(newMessages);
+    }
+  };
   const regenerateMessage = async (id: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     if (messageIndex === -1 || messages[messageIndex].role !== "assistant")
@@ -177,6 +192,7 @@ export const useChatLogic = () => {
   return {
     isLoading,
     fetchModels,
+    editMessage,
     customSystem: systemPrompt,
     setCustomSystem: setSystemPrompt,
     regenerateMessage,
@@ -184,5 +200,7 @@ export const useChatLogic = () => {
     responseMetadata,
     clearChat: clearMessages,
     stopGenerating,
+    setEditingMessageId,
+    editingMessageId,
   };
 };

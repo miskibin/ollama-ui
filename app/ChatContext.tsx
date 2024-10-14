@@ -32,7 +32,6 @@ interface ChatContextType {
   input: string;
   setInput: (input: string) => void;
   plugins: ChatPlugin[];
-  promptStatus: string;
   // From useChatLogic
   isLoading: boolean;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
@@ -75,7 +74,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const fileLogic = useFileHandling(chatStore.setInput);
   const [currentTest, setCurrentTest] = useState<Test>();
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
-
+  
   return (
     <ChatContext.Provider
       value={{
