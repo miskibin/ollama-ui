@@ -131,7 +131,7 @@ export function ChatCard() {
       <CardHeader className="flex-shrink-0 w-full">
         <div className="flex justify-between items-center w-full">
           <ModelSelector />
-          <h2 className="text-2xl font-bold">Asystent RP</h2>
+          <h2 className="text-lg text-red-500">wersja beta</h2>
           <div className="w-[200px]"></div>
         </div>
       </CardHeader>
@@ -275,7 +275,7 @@ export function ChatCard() {
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message... (Shift+Enter for new line)"
+              placeholder="Wpisz wiadomość... (Shift+Enter by dodać linię)"
               disabled={isLoading}
               className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[350px] rounded-[1rem]"
               rows={1}

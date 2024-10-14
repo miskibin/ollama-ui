@@ -24,7 +24,7 @@ export function Sidebar() {
               height={426}
               className="rounded-md "
             />
-            <h2 className="text-lg font-semibold">Ollama chat</h2>
+            <h2 className="text-lg font-semibold">Aststent RP</h2>
           </div>
           <Button
             variant="ghost"
@@ -43,11 +43,11 @@ export function Sidebar() {
         <TabsList className="grid mx-4 grid-cols-2">
           <TabsTrigger value="chat">
             <Cog className="h-4 w-4 mr-2 text-teal-400" />
-            Settings
+            Ustawienia
           </TabsTrigger>
           <TabsTrigger value="tests">
             <TestTube className="h-4 w-4 mr-2 text-blue-400" />
-            Evaluation
+            Testy
           </TabsTrigger>
         </TabsList>
         <TabsContent value="chat">

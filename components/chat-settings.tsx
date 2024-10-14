@@ -62,7 +62,7 @@ const ChatSettings = () => {
     <div className="flex flex-col h-[80vh]">
       <CardContent className="space-y-8 pt-4 flex-grow overflow-auto">
         <div>
-          <LabelWithIcon icon={Syringe} text="System prompt" />
+          <LabelWithIcon icon={Syringe} text="Prompt systemowy" />
           <Textarea
             placeholder="You are experienced software engineer..."
             value={systemPrompt}
@@ -74,7 +74,7 @@ const ChatSettings = () => {
         <div>
           <LabelWithIcon
             icon={Thermometer}
-            text="Temperature"
+            text="Temperatura"
             value={options.temperature.toFixed(1)}
           />
           <Slider
@@ -89,7 +89,7 @@ const ChatSettings = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <LabelWithIcon icon={Zap} text="Stream Responses" />
+          <LabelWithIcon icon={Zap} text="Odpowiadaj na bieżąco" />
           <Switch
             checked={options.streaming}
             onCheckedChange={(streaming) =>
@@ -101,7 +101,7 @@ const ChatSettings = () => {
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full">
               <Settings2 className="w-4 h-4 mr-2" />
-              Advanced Options
+              Opcje zaawansowane
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80">
@@ -109,7 +109,7 @@ const ChatSettings = () => {
               <div>
                 <LabelWithIcon
                   icon={BarChart}
-                  text="Top P"
+                  text="Maks P"
                   value={options.topP.toFixed(1)}
                 />
                 <Slider
@@ -124,7 +124,7 @@ const ChatSettings = () => {
               <div>
                 <LabelWithIcon
                   icon={RepeatIcon}
-                  text="Repeat Penalty"
+                  text="Kara za powtórzenia"
                   value={options.repeatPenalty.toFixed(1)}
                 />
                 <Slider
@@ -139,7 +139,7 @@ const ChatSettings = () => {
               </div>
 
               <div>
-                <LabelWithIcon icon={Zap} text="Top K" />
+                <LabelWithIcon icon={Zap} text="Maks K" />
                 <Input
                   type="number"
                   value={options.topK}
@@ -151,7 +151,7 @@ const ChatSettings = () => {
               </div>
 
               <div>
-                <LabelWithIcon icon={Sprout} text="Seed" />
+                <LabelWithIcon icon={Sprout} text="Ziarno" />
                 <Input
                   type="number"
                   value={options.seed || ""}
@@ -164,12 +164,12 @@ const ChatSettings = () => {
                     })
                   }
                   className="w-full"
-                  placeholder="Random seed (optional)"
+                  placeholder="Ziarno losowe (opcjonalne)"
                 />
               </div>
 
               <div>
-                <LabelWithIcon icon={Zap} text="Max tokens" />
+                <LabelWithIcon icon={Zap} text="Maks. licba tokenów" />
                 <Input
                   type="number"
                   value={options.num_predict || ""}
@@ -189,7 +189,7 @@ const ChatSettings = () => {
           </PopoverContent>
         </Popover>
         <div>
-          <h2 className="text-lg font-semibold mb-2">Plugins</h2>
+          <h2 className="text-lg font-semibold mb-2">Rozszerzenia</h2>
           <hr className="pb-3" />
           <div className="space-y-4">
             {plugins.map((plugin: ChatPlugin) => (
@@ -214,7 +214,7 @@ const ChatSettings = () => {
           variant="destructive"
           className="w-full"
         >
-          Clear Chat
+          Wyczyść historię
         </Button>
       </CardFooter>
     </div>
