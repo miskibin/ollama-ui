@@ -21,7 +21,8 @@ const generateSearchQuery = async (question: string, model: ChatOllama) => {
     .pipe(model)
     .pipe(new StringOutputParser())
     .invoke({ question });
-  return searchQuery.trim();
+  // remove _ and * from the question
+  return searchQuery.trim().replace(/[_*]/g, "");
 };
 
 const processData = async (
@@ -48,11 +49,17 @@ export const createSejmStatsTool = (
       const field = await selectField(question, model);
       console.log("Selected field:", field);
 
-      updateMessage(newMessageId, "Generowanie zapytania wyszukiwania...");
+      updateMessage(
+        newMessageId,
+        `Wybrane pole: ${field}. Generowanie zapytania...`
+      );
       const searchQuery = await generateSearchQuery(question, model);
       console.log("Generated search query:", searchQuery);
 
-      updateMessage(newMessageId, "Pobieranie danych...");
+      updateMessage(
+        newMessageId,
+        `Zapytanie: ${searchQuery}. Wysyłanie zapytania...`
+      );
       const communicator = new SejmStatsCommunicator();
       const data = await communicator.searchOptimized(searchQuery, field);
       console.log("Received data:", data);

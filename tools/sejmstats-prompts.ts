@@ -1,7 +1,6 @@
-
 import { PromptTemplate } from "@langchain/core/prompts";
 export const PROMPTS = {
-    selectField: PromptTemplate.fromTemplate(`
+  selectField: PromptTemplate.fromTemplate(`
       Zadanie: Wybierz najbardziej odpowiednie pole do przeszukania w API SejmStats.
       Pytanie: {question}
       Dostępne pola:
@@ -17,22 +16,23 @@ export const PROMPTS = {
       3. Podaj tylko nazwę wybranego pola, bez dodatkowych informacji.
   
       Wybrane pole:`),
-  
-    generateSearchQuery: PromptTemplate.fromTemplate(`
-      Zadanie: Wygeneruj zapytanie wyszukiwania dla API SejmStats.
+
+  generateSearchQuery: PromptTemplate.fromTemplate(`
+      Zadanie: Wygeneruj zapytanie wyszukiwania.
       Pytanie: {question}
   
       Instrukcje:
       1. Przeanalizuj pytanie.
-      2. Zidentyfikuj główny temat lub problem, którego dotyczy pytanie.
-      3. Wygeneruj jedno słowo kluczowe, które najlepiej oddaje istotę zapytania.
-      4. Zapytanie powinno być w języku polskim, najlepiej formalnym.
-      5. Unikaj używania słów ogólnych jak "rząd", "sprawie", "zrobił", chyba że są absolutnie kluczowe dla tematu.
-      6. Skup się na konkretnym problemie lub zagadnieniu, np. "powódź", "ustawa", "budżet".
-  
-      Zapytanie wyszukiwania (jedno słowo):`),
-  
-    processData: PromptTemplate.fromTemplate(`
+      2. Wybierz jedno słowo, które najlepiej oddaje istotę zapytania.
+      3. Skup się na konkretnych tematach, np. "budżet", "edukacja", "podatki".
+      4. Preferuj rzeczowniki, unikaj czasowników i przyimków.
+      5. Unikaj ogólnych terminów jak "sejm" czy "ustawa", chyba że są absolutnie kluczowe.
+      6. Słowo powinno być w języku polskim i w formie podstawowej (nieodmienionej).
+      7. Nie używaj cudzysłowów ani znaków specjalnych.
+    
+  Słowo kluczowe:`),
+
+  processData: PromptTemplate.fromTemplate(`
       Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
       Pytanie: {question}
       Dane: {dataString}
@@ -45,5 +45,4 @@ export const PROMPTS = {
       5. Cytuj tytuł dokumentu tylko jeśli jest bezpośrednio związany z pytaniem.
       6. Nie opisuj dostarczonych danych ani ich zakresu.
       Odpowiedź:`),
-  };
-  
+};

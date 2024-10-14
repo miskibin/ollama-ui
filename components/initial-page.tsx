@@ -31,30 +31,6 @@ const allConversationStarters = [
     action: "Jakie ustawy zostały uchwalone w ciągu ostatniego miesiąca?",
   },
   {
-    icon: <MessageSquare className="text-green-500" size={24} />,
-    text: "Ostatnie interpelacje",
-    action:
-      "Jakie były główne tematy interpelacji poselskich w ostatnim tygodniu?",
-  },
-  {
-    icon: <VoteIcon className="text-red-500" size={24} />,
-    text: "Niedawne głosowania",
-    action:
-      "Jakie były wyniki najważniejszych głosowań w Sejmie w tym miesiącu?",
-  },
-  {
-    icon: <Users className="text-purple-500" size={24} />,
-    text: "Aktywność komisji",
-    action:
-      "Które komisje sejmowe odbyły najwięcej posiedzeń w ostatnim miesiącu?",
-  },
-  {
-    icon: <Scale className="text-orange-500" size={24} />,
-    text: "Nowe projekty ustaw",
-    action:
-      "Jakie nowe projekty ustaw zostały złożone w Sejmie w ostatnim tygodniu?",
-  },
-  {
     icon: <FireExtinguisher className="text-red-500" size={24} />,
     text: "Posiedzenia komisji w sprawie grzegorza brauna",
     action:
