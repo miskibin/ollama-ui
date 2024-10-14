@@ -38,7 +38,7 @@ const processWikipediaResult = async (
 
 export const createWikipediaSearchChain = (
   model: ChatOllama,
-  setPluginData: (data: string) => void
+  updateMessage: (id: string, content: string, pluginData?: string) => void
 ) => {
   return RunnableSequence.from([
     {
@@ -49,8 +49,8 @@ export const createWikipediaSearchChain = (
       console.log("Searching Wikipedia for topic:", input.search_topic);
       const result = await searchWikipedia(input.search_topic);
       console.log("Wikipedia search result:", result);
-      setPluginData(result);
       // Process the Wikipedia result
+      updateMessage(input.original_input, "", "Processing Wikipedia result...");
       const processedResult = await processWikipediaResult(
         result,
         input.original_input,

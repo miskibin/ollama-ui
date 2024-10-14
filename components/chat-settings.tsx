@@ -200,7 +200,14 @@ const ChatSettings = () => {
                 <span className="text-sm">{plugin.name}</span>
                 <Switch
                   checked={plugin.enabled}
-                  onCheckedChange={() => togglePlugin(plugin.name)}
+                  onCheckedChange={() => {
+                    togglePlugin(plugin.name);
+                    plugins.forEach((p) => {
+                      if (p.name !== plugin.name && p.enabled) {
+                        togglePlugin(p.name);
+                      }
+                    });
+                  }}
                 />
               </div>
             ))}

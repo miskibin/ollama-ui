@@ -11,18 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Database, Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useChatStore } from "@/lib/store";
 
 interface PluginDataDialogProps {
   pluginData: string;
-  name: string;
 }
 
-const PluginDataDialog: React.FC<PluginDataDialogProps> = ({
-  pluginData,
-  name,
-}) => {
+const PluginDataDialog: React.FC<PluginDataDialogProps> = ({ pluginData }) => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const { plugins } = useChatStore();
   const formatPluginData = (data: string): string => {
     try {
       const parsedData = JSON.parse(data);
@@ -40,14 +37,14 @@ const PluginDataDialog: React.FC<PluginDataDialogProps> = ({
           variant="secondary"
         >
           <Database className="w-3 h-3 mr-1" />
-          {name}
+          Dane zewnętrzne
         </Badge>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[900px] max-h-[80vh] p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-lg font-semibold flex items-center">
             <Database className="w-5 h-5 mr-2" />
-            Data from: {name}
+            Dane z{" "}{plugins.find((plugin) => plugin.enabled)?.name}
           </DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(80vh-100px)]">
@@ -58,8 +55,8 @@ const PluginDataDialog: React.FC<PluginDataDialogProps> = ({
             <div className="flex items-center justify-center w-full text-sm text-muted-foreground">
               <Info className="w-4 h-4 mr-2" />
               <span>
-                Shown data is already processed for AI model. Raw data may
-                differ.
+                Wyświetlone dane są pochodzą z rozszerzeń i mogą być wstępnie
+                przetworzone.
               </span>
             </div>
           </DialogFooter>

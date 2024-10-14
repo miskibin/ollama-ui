@@ -195,14 +195,11 @@ export function ChatCard() {
                   message.content !== "" && (
                     <div className="text-left">
                       <MarkdownResponse content={message.content} />
-                      {message.plugins &&
-                        message.plugins.length > 0 &&
-                        message.pluginData && (
-                          <PluginDataDialog
-                            pluginData={message.pluginData}
-                            name={message.plugins[0]}
-                          ></PluginDataDialog>
-                        )}
+                      {message.pluginData && (
+                        <PluginDataDialog
+                          pluginData={message.pluginData}
+                        ></PluginDataDialog>
+                      )}
                       <div className="flex justify-start mt-2 space-x-2">
                         <Button
                           variant="ghost"
@@ -257,7 +254,9 @@ export function ChatCard() {
         {isLoading && messages[messages.length - 1].content === "" && (
           <div className="flex flex-col items-center mt-4">
             <LoadingDots />
-            <p className="text-sm text-gray-500 italic mt-2">{promptStatus}</p>
+            <p className="text-sm text-gray-500 italic mt-2">
+              {messages[messages.length - 1]?.pluginData}
+            </p>
           </div>
         )}
       </CardContent>
