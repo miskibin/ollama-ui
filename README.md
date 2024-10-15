@@ -1,7 +1,8 @@
 # Ollama Prompt Engineer (integrated with sejm-stats and wikipedia)
 
 
-![image](https://github.com/user-attachments/assets/a2e5f5ae-3186-4dff-8882-9ba7dd9af3d1)
+![image](https://github.com/user-attachments/assets/e2f41457-fc58-4ed1-9f70-65a6b3efd5fa)
+![image](https://github.com/user-attachments/assets/0bfb2559-6765-49a2-9471-c262625ffdb5)
 
 ## Overview
 
