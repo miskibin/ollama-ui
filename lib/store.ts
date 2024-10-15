@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ChatOptions, Message, Model, ChatPlugin } from "./types";
 import { plugins } from "./plugins";
+import { BufferMemory } from "langchain/memory";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
 
 interface ChatState {
   messages: Message[];
@@ -11,6 +13,7 @@ interface ChatState {
   systemPrompt: string;
   input: string;
   plugins: ChatPlugin[];
+  memory: BufferMemory;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, content: string, pluginData?: string) => void;
   deleteMessage: (id: string) => void;
@@ -22,11 +25,14 @@ interface ChatState {
   setInput: (input: string) => void;
   setPlugins: (plugins: ChatPlugin[]) => void;
   togglePlugin: (name: string) => void;
+  getMemoryVariables: () => Promise<{ history: string }>;
+  addToMemory: (humanMessage: string, aiMessage: string) => Promise<void>;
+  clearMemory: () => void;
 }
 
 export const useChatStore = create<ChatState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       messages: [],
       models: [],
       selectedModel: "",
@@ -41,13 +47,18 @@ export const useChatStore = create<ChatState>()(
       systemPrompt: "",
       input: "",
       plugins: plugins,
+      memory: new BufferMemory({
+        returnMessages: true,
+        inputKey: "input",
+        outputKey: "output",
+      }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
       updateMessage: (id, content, pluginData?) =>
         set((state) => ({
           messages: state.messages.map((msg) =>
             msg.id === id
-          ? {
+              ? {
                   ...msg,
                   content,
                   ...(pluginData && { pluginData }),
@@ -59,7 +70,10 @@ export const useChatStore = create<ChatState>()(
         set((state) => ({
           messages: state.messages.filter((msg) => msg.id !== id),
         })),
-      clearMessages: () => set({ messages: [] }),
+      clearMessages: () => {
+        set({ messages: [] });
+        get().clearMemory();
+      },
       setModels: (models) => set({ models }),
       setSelectedModel: (model) => set({ selectedModel: model }),
       setOptions: (newOptions) =>
@@ -75,6 +89,25 @@ export const useChatStore = create<ChatState>()(
               : plugin
           ),
         })),
+      getMemoryVariables: async () => {
+        const memoryVariables = await get().memory.loadMemoryVariables({});
+        return { history: memoryVariables.history.join("\n") };
+      },
+      addToMemory: async (humanMessage: string, aiMessage: string) => {
+        await get().memory.saveContext(
+          { input: humanMessage },
+          { output: aiMessage }
+        );
+      },
+      clearMemory: () => {
+        set({
+          memory: new BufferMemory({
+            returnMessages: true,
+            inputKey: "input",
+            outputKey: "output",
+          }),
+        });
+      },
     }),
     {
       name: "chat-storage",

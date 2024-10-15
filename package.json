@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@langchain/community": "^0.3.4",
+    "@langchain/core": "^0.3.11",
+    "@langchain/langgraph": "^0.2.15",
     "@langchain/ollama": "^0.1.0",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-icons": "^1.3.0",

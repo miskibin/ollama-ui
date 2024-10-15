@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useRef, useState } from "react";
 import { ChatPlugin, Message, ResponseMetadata } from "@/lib/types";
 import { ChatOllama } from "@langchain/ollama";
@@ -14,7 +13,6 @@ import { PluginNames } from "@/lib/plugins";
 import { createWikipediaSearchChain } from "@/tools/wikipedia";
 import { createSejmStatsTool } from "@/tools/sejmstats";
 
-// This part should be in a separate file, e.g., pluginChainCreators.ts
 const pluginChainCreators = {
   [PluginNames.Wikipedia]: createWikipediaSearchChain,
   [PluginNames.SejmStats]: createSejmStatsTool,
@@ -34,6 +32,9 @@ export const useChatLogic = () => {
     input,
     setInput,
     plugins,
+    getMemoryVariables,
+    addToMemory,
+    clearMemory,
   } = useChatStore();
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -79,7 +80,6 @@ export const useChatLogic = () => {
     setInput("");
     await getResponse([...messages, newMessage]);
   };
-
   const getResponse = async (messageHistory: typeof messages) => {
     if (!chatModelRef.current) return;
     setIsLoading(true);
@@ -95,15 +95,21 @@ export const useChatLogic = () => {
       let finalResponse = "";
 
       if (enabledPlugin && pluginChainRef.current) {
-        finalResponse = await pluginChainRef.current.invoke({
-          question: lastUserMessage,
-          newMessageId,
-        });
+        const isRelevant = await checkRelevance(lastUserMessage, enabledPlugin);
+        if (isRelevant) {
+          finalResponse = await pluginChainRef.current.invoke({
+            question: lastUserMessage,
+            newMessageId,
+          });
+        } else {
+          finalResponse = await useDefaultModel(messageHistory, newMessageId);
+        }
       } else {
         finalResponse = await useDefaultModel(messageHistory, newMessageId);
       }
 
       updateMessage(newMessageId, finalResponse.trim());
+      await addToMemory(lastUserMessage, finalResponse.trim());
     } catch (error) {
       handleError(error);
     } finally {
@@ -112,19 +118,43 @@ export const useChatLogic = () => {
     }
   };
 
+  const checkRelevance = async (
+    question: string,
+    plugin: ChatPlugin
+  ): Promise<boolean> => {
+    if (!chatModelRef.current) return false;
+
+    const relevancePrompt = plugin.relevancePrompt.replace(
+      "{question}",
+      question
+    );
+    const relevanceResponse = await chatModelRef.current.invoke([
+      new HumanMessage(relevancePrompt),
+    ]);
+
+    const relevanceAnswer = (relevanceResponse.content as string).toLowerCase().trim();
+    return relevanceAnswer === "yes" || relevanceAnswer === "tak";
+  };
   const useDefaultModel = async (
     messageHistory: typeof messages,
     newMessageId: string
   ) => {
-    const langChainMessages = messageHistory.map((msg) =>
-      msg.role === "user"
-        ? new HumanMessage(msg.content)
-        : new AIMessage(msg.content)
-    );
-
-    if (systemPrompt) {
-      langChainMessages.unshift(new SystemMessage(systemPrompt));
-    }
+    const memoryVariables = await getMemoryVariables();
+    const langChainMessages = [
+      new SystemMessage(systemPrompt || "You are a helpful assistant."),
+      new AIMessage(memoryVariables.history),
+      ...messageHistory.map((msg) => {
+        if (msg.role === "user") {
+          return new HumanMessage(msg.content);
+        } else {
+          // For assistant messages, include pluginData if available
+          const content = msg.pluginData
+            ? `${msg.content}\n\nPlugin Data: ${msg.pluginData}`
+            : msg.content;
+          return new AIMessage(content);
+        }
+      }),
+    ];
 
     let finalResponse = "";
     const response = await chatModelRef.current!.invoke(langChainMessages, {
@@ -165,9 +195,9 @@ export const useChatLogic = () => {
       setIsLoading(false);
     }
   };
+
   const editMessage = async (id: string, newContent: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
-    console.log("Editing message", id, messages[messageIndex]);
     if (messageIndex === -1) return;
     updateMessage(id, newContent);
     setEditingMessageId(null);
@@ -180,6 +210,7 @@ export const useChatLogic = () => {
       await getResponse(newMessages);
     }
   };
+
   const regenerateMessage = async (id: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     if (messageIndex === -1 || messages[messageIndex].role !== "assistant")
@@ -189,6 +220,12 @@ export const useChatLogic = () => {
     newMessages.forEach((msg) => addMessage(msg));
     await getResponse(newMessages);
   };
+
+  const clearChat = () => {
+    clearMessages();
+    clearMemory();
+  };
+
   return {
     isLoading,
     fetchModels,
@@ -198,7 +235,7 @@ export const useChatLogic = () => {
     regenerateMessage,
     handleSubmit,
     responseMetadata,
-    clearChat: clearMessages,
+    clearChat,
     stopGenerating,
     setEditingMessageId,
     editingMessageId,
