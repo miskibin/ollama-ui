@@ -3,7 +3,6 @@ import { persist } from "zustand/middleware";
 import { ChatOptions, Message, Model, ChatPlugin } from "./types";
 import { plugins } from "./plugins";
 import { BufferMemory } from "langchain/memory";
-import { AIMessage, HumanMessage } from "@langchain/core/messages";
 
 interface ChatState {
   messages: Message[];
