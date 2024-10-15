@@ -29,7 +29,9 @@ import ModelSelector from "./model-selector";
 import Image from "next/image";
 import { Badge } from "./ui/badge";
 import PluginDataDialog from "./plugin-data-dialog";
-
+import SummarableTextDialog from "./SummarableTextDialog";
+import { useChatStore } from "@/lib/store";
+import { SummarableText } from "@/lib/types";
 export function ChatCard() {
   const {
     messages,
@@ -47,6 +49,7 @@ export function ChatCard() {
     deleteMessage,
   } = useChatContext();
 
+  const { summarableTexts } = useChatStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [editTextareaHeight, setEditTextareaHeight] = useState("auto");
@@ -124,7 +127,6 @@ export function ChatCard() {
     setInput(e.target.value);
     adjustTextareaHeight();
   };
-  console.log("messages", messages);
   return (
     <Card className="h-full overflow-hidden flex flex-col items-center">
       <CardHeader className="flex-shrink-0 w-full">
@@ -195,9 +197,21 @@ export function ChatCard() {
                     <div className="text-left">
                       <MarkdownResponse content={message.content} />
                       {message.pluginData && (
-                        <PluginDataDialog
-                          pluginData={message.pluginData}
-                        ></PluginDataDialog>
+                        <div className="flex justify-start mt-2 space-x-2">
+                          <PluginDataDialog
+                            pluginData={message.pluginData}
+                          ></PluginDataDialog>
+                          <SummarableTextDialog
+                            onSummarize={function (item: SummarableText): void {
+                              throw new Error("Function not implemented.");
+                            }}
+                            onAddToContext={function (
+                              item: SummarableText
+                            ): void {
+                              throw new Error("Function not implemented.");
+                            }}
+                          />
+                        </div>
                       )}
                       <div className="flex justify-start mt-2 space-x-2">
                         <Button

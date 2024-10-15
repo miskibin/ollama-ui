@@ -1,23 +1,36 @@
 import { z } from "zod";
 
 export const SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
-
-const responseSchema = z.object({
-  committee_sittings: z.array(z.unknown()),
-  interpellations: z.array(z.unknown()),
-  processes: z.array(z.unknown()),
-  prints: z.array(z.unknown()),
-  acts: z.array(z.unknown()),
-  votings: z.array(z.unknown()),
-});
-
+const responseSchema = z
+  .object({
+    committee_sittings: z.array(z.unknown()).optional(),
+    interpellations: z.array(z.unknown()).optional(),
+    processes: z.array(z.unknown()).optional(),
+    prints: z.array(z.unknown()).optional(),
+    acts: z.array(z.unknown()).optional(),
+    votings: z.array(z.unknown()).optional(),
+  })
+  .refine(
+    (data) =>
+      [
+        "committee_sittings",
+        "interpellations",
+        "processes",
+        "prints",
+        "acts",
+        "votings",
+      ].filter((key) => key in data).length === 1,
+    {
+      message: "Dokładnie jedno pole musi być dostarczone.",
+    }
+  );
 export type SejmStatsResponse = z.infer<typeof responseSchema>;
 
 export class SejmStatsCommunicator {
   async search(searchQuery: string, field: string): Promise<SejmStatsResponse> {
     const url = new URL(`${SEJM_STATS_BASE_URL}/search`);
     url.searchParams.append("q", searchQuery);
-    url.searchParams.append("range", "3m");
+    url.searchParams.append("limit", "5");
     url.searchParams.append(field, "true");
     console.log(`Fetching search data from: ${url.toString()}`);
     try {
@@ -32,50 +45,35 @@ export class SejmStatsCommunicator {
       throw error;
     }
   }
-  optimizeForLLM(
-    data: SejmStatsResponse,
-    limit: number = 5
-  ): SejmStatsResponse {
-    const optimizedData: SejmStatsResponse = {
-      committee_sittings: [],
-      interpellations: [],
-      processes: [],
-      prints: [],
-      acts: [],
-      votings: [],
-    };
+  optimizeForLLM(data: SejmStatsResponse): any[] {
+    let result: any[] = [];
 
     for (const [key, value] of Object.entries(data)) {
       if (Array.isArray(value)) {
-        optimizedData[key as keyof SejmStatsResponse] = value
-          .slice(0, limit)
-          .map((item: any) => {
-            const optimizedItem: any = {};
-            for (const [itemKey, itemValue] of Object.entries(item)) {
-              if (!/photo|url|link|id|pk/i.test(itemKey)) {
-                if (itemValue instanceof Date) {
-                  optimizedItem[itemKey] = itemValue.toISOString();
-                } else if (
-                  typeof itemValue === "string" &&
-                  /^\d{4}-\d{2}-\d{2}$/.test(itemValue)
-                ) {
-                  optimizedItem[itemKey] = new Date(itemValue).toISOString();
-                } else {
-                  optimizedItem[itemKey] = itemValue;
-                }
+        result = value.map((item: any) => {
+          const optimizedItem: any = {};
+          for (const [itemKey, itemValue] of Object.entries(item)) {
+            if (!/photo/i.test(itemKey)) {
+              if (itemValue instanceof Date) {
+                optimizedItem[itemKey] = itemValue.toISOString();
+              } else if (
+                typeof itemValue === "string" &&
+                /^\d{4}-\d{2}-\d{2}$/.test(itemValue)
+              ) {
+                optimizedItem[itemKey] = new Date(itemValue).toISOString();
+              } else {
+                optimizedItem[itemKey] = itemValue;
               }
             }
-            return optimizedItem;
-          });
+          }
+          return optimizedItem;
+        });
+        break; // We only process the first non-empty array
       }
     }
-
-    return optimizedData;
+    return result;
   }
-  async searchOptimized(
-    searchQuery: string,
-    field: string
-  ): Promise<SejmStatsResponse> {
+  async searchOptimized(searchQuery: string, field: string): Promise<any[]> {
     const data = await this.search(searchQuery, field);
     return this.optimizeForLLM(data);
   }

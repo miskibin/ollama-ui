@@ -22,11 +22,11 @@ const generateSearchQuery = async (question: string, model: ChatOllama) => {
     .pipe(new StringOutputParser())
     .invoke({ question });
   // remove _ and * from the question
-  return searchQuery.trim().replace(/[_*]/g, "");
+  return searchQuery.trim().replace(/[_*.\s]/g, "");
 };
 
 const processData = async (
-  data: SejmStatsResponse,
+  data: any[],
   question: string,
   model: ChatOllama
 ) => {

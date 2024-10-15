@@ -22,6 +22,11 @@ export type Model = {
   };
 };
 
+export type SummarableText = {
+  title: string;
+  url: string;
+};
+
 export type ChatOptions = {
   temperature: number;
   topP: number;

@@ -44,7 +44,7 @@ const PluginDataDialog: React.FC<PluginDataDialogProps> = ({ pluginData }) => {
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-lg font-semibold flex items-center">
             <Database className="w-5 h-5 mr-2" />
-            Dane z{" "}{plugins.find((plugin) => plugin.enabled)?.name}
+            Dane z {plugins.find((plugin) => plugin.enabled)?.name}
           </DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(80vh-100px)]">

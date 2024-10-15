@@ -18,17 +18,18 @@ export const PROMPTS = {
       Wybrane pole:`),
 
   generateSearchQuery: PromptTemplate.fromTemplate(`
-        Zadanie: Wybierz JEDNO słowo kluczowe do wyszukiwania.
+        Zadanie: Wybierz JEDNO słowo kluczowe do wyszukiwania. W skrajnych przypadkach możesz użyć kilku słów, 
+        np. "ochrona praw osobowych".
         Pytanie: {question}
         
         Instrukcje:
         1. Przeanalizuj pytanie.
-        2. Wybierz TYLKO JEDNO najważniejsze słowo.
+        2. Wybierz TYLKO JEDNO najważniejsze słowo. W skrajnych przypadkach możesz użyć kilku słów.
         3. Użyj rzeczownika w formie podstawowej.
         4. Unikaj ogólnych słów jak "sejm" czy "ustawa".
         5. Nie używaj cudzysłowów ani znaków specjalnych.
         
-        Pojedyncze słowo kluczowe:`),
+        Pojedyncze słowo kluczowe lub kilka słów:`),
 
   processData: PromptTemplate.fromTemplate(`
       Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
@@ -36,6 +37,7 @@ export const PROMPTS = {
       Dane: {dataString}
       Data obecna: ${new Date().toLocaleDateString("pl-PL")}
       Instrukcje:
+      0. Pamiętaj, że dane są ograniczcone do 5 najnowszych wyników.
       1. Odpowiedz bezpośrednio na pytanie w maksymalnie 2 zdaniach.
       2. Podaj tylko informacje istotne dla pytania.
       3. Jeśli brak odpowiedzi w danych, napisz to krótko.

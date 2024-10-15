@@ -12,6 +12,7 @@ import { useChatStore } from "@/lib/store";
 import { PluginNames } from "@/lib/plugins";
 import { createWikipediaSearchChain } from "@/tools/wikipedia";
 import { createSejmStatsTool } from "@/tools/sejmstats";
+import { extractTitlesAndUrls } from "@/lib/parseJson";
 
 const pluginChainCreators = {
   [PluginNames.Wikipedia]: createWikipediaSearchChain,
@@ -35,6 +36,7 @@ export const useChatLogic = () => {
     getMemoryVariables,
     addToMemory,
     clearMemory,
+    setSummarableTexts,
   } = useChatStore();
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -113,6 +115,15 @@ export const useChatLogic = () => {
     } catch (error) {
       handleError(error);
     } finally {
+      console.log(messages);
+      const pluginData = messages[messages.length - 1]?.pluginData;
+      if (pluginData) {
+        setSummarableTexts(extractTitlesAndUrls(pluginData));
+        console.log(
+          "Summarable texts:",
+          extractTitlesAndUrls(messages[messages.length - 1].pluginData || "")
+        );
+      }
       setIsLoading(false);
       abortControllerRef.current = null;
     }
@@ -132,8 +143,11 @@ export const useChatLogic = () => {
       new HumanMessage(relevancePrompt),
     ]);
 
-    const relevanceAnswer = (relevanceResponse.content as string).toLowerCase().trim();
-    return relevanceAnswer === "yes" || relevanceAnswer === "tak";
+    const relevanceAnswer = (relevanceResponse.content as string)
+      .toLowerCase()
+      .trim();
+    return true;
+    // return relevanceAnswer === "yes" || relevanceAnswer === "tak";
   };
   const useDefaultModel = async (
     messageHistory: typeof messages,
@@ -224,6 +238,7 @@ export const useChatLogic = () => {
   const clearChat = () => {
     clearMessages();
     clearMemory();
+    setSummarableTexts([]);
   };
 
   return {
