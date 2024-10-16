@@ -55,6 +55,7 @@ export const useChatLogic = () => {
 
       const memoryVariables = await getMemoryVariables();
       const isPluginEnabled = plugins.some((plugin) => plugin.enabled);
+      console.log("fetching reposnse");
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
