@@ -6,7 +6,7 @@ import { ChatProvider } from "./ChatContext";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import ChatHeader from "@/components/header";
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
@@ -58,30 +58,22 @@ export default function Home() {
 
   return (
     <ChatProvider>
-      <div className="flex flex-col space-x-2 h-screen md:flex-row">
-        <Button
-          className="md:hidden fixed top-2 left-2 z-50"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        >
-          <Menu size={24} />
-        </Button>
+      <div className="flex flex-col h-screen md:flex-row">
         <div
           className={`${
             isSidebarOpen ? "block" : "hidden"
           } md:block md:w-80 flex-shrink-0 h-full overflow-y-auto`}
         >
-          <div
-            className={`${
-              isSidebarOpen ? "block" : "hidden"
-            } md:block md:w-80 flex-shrink-0 h-full overflow-y-auto`}
-          >
-            <Sidebar
-              isMobile={isSidebarOpen}
-              onClose={() => setIsSidebarOpen(false)}
-            />
-          </div>
+          <Sidebar
+            isMobile={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
         </div>
-        <div className="flex-1 max-h-full flex flex-col">
+        <div className="flex-1 max-h-full flex flex-col ">
+          <ChatHeader
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+          />
           <ChatCard />
         </div>
       </div>

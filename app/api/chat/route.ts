@@ -6,15 +6,30 @@ import {
 } from "@langchain/core/messages";
 import { createSejmStatsTool } from "@/tools/sejmstats";
 import { TogetherLLM } from "@/lib/TogetherLLm";
+import { PROMPTS } from "@/tools/sejmstats-prompts";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 
 const llm = new TogetherLLM({
   apiKey: process.env.TOGETHER_API_KEY!,
   model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
 });
 
+const processData = async (
+  data: any[],
+  question: string,
+  model: TogetherLLM
+) => {
+  const dataString = JSON.stringify(data);
+  const answer = await PROMPTS.processData
+    .pipe(model)
+    .pipe(new StringOutputParser())
+    .invoke({ question, dataString });
+  return answer;
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const { messages, systemPrompt, memoryVariables, stream } =
+    const { messages, systemPrompt, memoryVariables, stream, isPluginEnabled } =
       await req.json();
     console.log("Memory Variables:", memoryVariables);
 
@@ -33,12 +48,55 @@ export async function POST(req: NextRequest) {
       }),
     ];
 
-    if (stream && false) {
-      const encoder = new TextEncoder();
+    const lastUserMessage = messages[messages.length - 1].content;
 
-      const AIstream = new ReadableStream({
-        async start(controller) {
-          try {
+    const encoder = new TextEncoder();
+
+    const AIstream = new ReadableStream({
+      async start(controller) {
+        try {
+          if (isPluginEnabled) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  pluginData: "Zapytajmy sejm-stats...",
+                })}\n\n`
+              )
+            );
+
+            const { question, data } = await sejmStatsTool.invoke({
+              question: lastUserMessage,
+            });
+            console.log("Received data:", data);
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  status: "plugin_data_fetched",
+                  pluginData: data,
+                })}\n\n`
+              )
+            );
+
+            console.log("Processing data...");
+            const answer = await processData(data, question, llm);
+
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  status: "plugin_completed",
+                })}\n\n`
+              )
+            );
+
+            // Stream the processed answer
+            for (const char of answer) {
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ response: char })}\n\n`
+                )
+              );
+            }
+          } else {
             const streamingResponse = await llm.stream(langChainMessages);
 
             for await (const chunk of streamingResponse) {
@@ -48,30 +106,22 @@ export async function POST(req: NextRequest) {
                 )
               );
             }
-          } catch (error) {
-            console.error("Error in streaming:", error);
-            controller.error(error);
-          } finally {
-            controller.close();
           }
-        },
-        cancel() {
-          console.log("Stream cancelled by the client");
-        },
-      });
+        } catch (error) {
+          console.error("Error in streaming:", error);
+          controller.error(error);
+        } finally {
+          controller.close();
+        }
+      },
+      cancel() {
+        console.log("Stream cancelled by the client");
+      },
+    });
 
-      return new NextResponse(AIstream, {
-        headers: { "Content-Type": "text/event-stream" },
-      });
-    } else {
-      console.log("Starting field selection...");
-      const lastUserMessage = messages[messages.length - 1].content;
-      const response = await sejmStatsTool.invoke({
-        question: lastUserMessage,
-      });
-
-      return NextResponse.json({ response });
-    }
+    return new NextResponse(AIstream, {
+      headers: { "Content-Type": "text/event-stream" },
+    });
   } catch (error: any) {
     console.error("Error in API route:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

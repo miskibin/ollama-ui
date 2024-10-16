@@ -7,6 +7,7 @@ export class SejmStatsCommunicator {
     const url = new URL(`${SEJM_STATS_BASE_URL}/search`);
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("limit", "5");
+    url.searchParams.append("range", "3m");
     url.searchParams.append(field, "true");
     console.log(`Fetching search data from: ${url.toString()}`);
     try {

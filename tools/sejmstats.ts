@@ -23,19 +23,6 @@ const generateSearchQuery = async (question: string, model: TogetherLLM) => {
   return searchQuery.trim().replace(/[_*.\s]/g, "");
 };
 
-const processData = async (
-  data: any[],
-  question: string,
-  model: TogetherLLM
-) => {
-  const dataString = JSON.stringify(data);
-  const answer = await PROMPTS.processData
-    .pipe(model)
-    .pipe(new StringOutputParser())
-    .invoke({ question, dataString });
-  return answer;
-};
-
 export const createSejmStatsTool = (model: TogetherLLM) => {
   return RunnableSequence.from([
     new RunnablePassthrough(),
@@ -53,15 +40,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
       const data = await communicator.searchOptimized(searchQuery, field);
       console.log("Received data:", data);
 
-      console.log("Processing data...");
-      const answer = await processData(data, question, model);
-
-      return `SejmStats Search Results:
-Field: ${field}
-Query: ${searchQuery}
-Answer: ${answer}
-Raw Data: ${JSON.stringify(data, null, 2)}`;
+      return { question, data };
     },
-    new StringOutputParser(),
   ]);
 };

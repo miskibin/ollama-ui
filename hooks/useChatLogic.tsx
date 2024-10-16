@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Message, ResponseMetadata } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
-import { useInitialLoad } from "./useInitialLoad";
 import { useChatStore } from "@/lib/store";
-import { createDropdownMenuScope } from "@radix-ui/react-dropdown-menu";
 
 export const useChatLogic = () => {
-  const { fetchModels } = useInitialLoad();
   const {
     messages,
     addMessage,
@@ -20,10 +17,12 @@ export const useChatLogic = () => {
     setInput,
     getMemoryVariables,
     addToMemory,
+    plugins,
     clearMemory,
   } = useChatStore();
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [pluginStatus, setPluginStatus] = useState<string | null>(null);
   const [responseMetadata, setResponseMetadata] =
     useState<ResponseMetadata | null>(null);
 
@@ -43,9 +42,10 @@ export const useChatLogic = () => {
     await getResponse([...messages, newMessage]);
   };
 
-  const getResponse = async (messageHistory: typeof messages) => {
+  const getResponse = async (messageHistory: Message[]) => {
     if (!selectedModel) return;
     setIsLoading(true);
+    setPluginStatus(null);
     abortControllerRef.current = new AbortController();
 
     try {
@@ -54,7 +54,7 @@ export const useChatLogic = () => {
       addMessage({ id: newMessageId, role: "assistant", content: "" });
 
       const memoryVariables = await getMemoryVariables();
-
+      const isPluginEnabled = plugins.some((plugin) => plugin.enabled);
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -62,11 +62,12 @@ export const useChatLogic = () => {
           messages: messageHistory,
           systemPrompt,
           memoryVariables,
-          stream: true,
+          stream: options.streaming,
+          isPluginEnabled: isPluginEnabled,
         }),
         signal: abortControllerRef.current.signal,
       });
-      console.log("Response:", response);
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -85,7 +86,19 @@ export const useChatLogic = () => {
             if (line.startsWith("data: ")) {
               try {
                 const data = JSON.parse(line.slice(6));
-                if (data.response && typeof data.response === "string") {
+                if (data.status) {
+                  setPluginStatus(data.status);
+                  if (
+                    data.status === "plugin_data_fetched" &&
+                    data.pluginData
+                  ) {
+                    updateMessage(
+                      newMessageId,
+                      finalResponse,
+                      JSON.stringify(data.pluginData)
+                    );
+                  }
+                } else if (data.response && typeof data.response === "string") {
                   finalResponse += data.response;
                   updateMessage(newMessageId, finalResponse);
                 }
@@ -98,12 +111,12 @@ export const useChatLogic = () => {
 
         const trimmedResponse = finalResponse.trim();
         updateMessage(newMessageId, trimmedResponse);
-        // await addToMemory(lastUserMessage, trimmedResponse);
       }
     } catch (error) {
       handleError(error);
     } finally {
       setIsLoading(false);
+      setPluginStatus(null);
       abortControllerRef.current = null;
     }
   };
@@ -157,7 +170,7 @@ export const useChatLogic = () => {
 
   return {
     isLoading,
-    fetchModels,
+    pluginStatus,
     editMessage,
     customSystem: systemPrompt,
     setCustomSystem: setSystemPrompt,

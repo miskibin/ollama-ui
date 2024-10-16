@@ -38,7 +38,6 @@ interface ChatContextType {
   editingMessageId: string | null;
   setEditingMessageId: React.Dispatch<React.SetStateAction<string | null>>;
   regenerateMessage: (id: string) => Promise<void>;
-  fetchModels: () => Promise<void>;
 
   // From useFileHandling
   isPdfParsing: boolean;
@@ -62,7 +61,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const fileLogic = useFileHandling(chatStore.setInput);
   const [currentTest, setCurrentTest] = useState<Test>();
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
-  
+
   return (
     <ChatContext.Provider
       value={{

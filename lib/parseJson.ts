@@ -1,6 +1,7 @@
 import { SummarableText } from "./types";
 
 export function extractTitlesAndUrls(json: string): SummarableText[] {
+  console.log("Parsing JSON data...", json);
   const data = JSON.parse(json);
   console.log(data);
   const result: SummarableText[] = [];
