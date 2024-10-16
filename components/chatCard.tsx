@@ -18,20 +18,27 @@ import {
   X,
   Copy,
   Trash2,
-  Database,
+  User,
+  LogOut,
 } from "lucide-react";
+
 import MarkdownResponse from "@/components/markdownResponse";
 import InitialChatContent from "@/components/initial-page";
 import { useChatContext } from "@/app/ChatContext";
-
+import Link from "next/link";
 import LoadingDots from "./loadingDots";
 import ModelSelector from "./model-selector";
 import Image from "next/image";
-import { Badge } from "./ui/badge";
 import PluginDataDialog from "./plugin-data-dialog";
 import SummarableTextDialog from "./SummarableTextDialog";
-import { useChatStore } from "@/lib/store";
 import { SummarableText } from "@/lib/types";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import {
+  DropdownMenuContent,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 export function ChatCard() {
   const {
     messages,
@@ -49,7 +56,6 @@ export function ChatCard() {
     deleteMessage,
   } = useChatContext();
 
-  const { summarableTexts } = useChatStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [editTextareaHeight, setEditTextareaHeight] = useState("auto");
@@ -127,13 +133,40 @@ export function ChatCard() {
     setInput(e.target.value);
     adjustTextareaHeight();
   };
+  const { user } = useUser();
+
   return (
     <Card className="h-full overflow-hidden flex flex-col items-center">
       <CardHeader className="flex-shrink-0 w-full">
         <div className="flex justify-between items-center w-full">
           <ModelSelector />
           <h2 className="text-lg text-red-500">wersja beta</h2>
-          <div className="w-[200px]"></div>
+          <div className="w-[200px] flex justify-end">
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open user menu</span>
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>
+                    <Link href="/profile-client" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href="/api/auth/logout" className="flex items-center">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex-grow container container-fluid overflow-auto 2xl:w-3/4 w-full">
@@ -210,6 +243,7 @@ export function ChatCard() {
                             ): void {
                               throw new Error("Function not implemented.");
                             }}
+                            message={message}
                           />
                         </div>
                       )}

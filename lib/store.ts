@@ -19,8 +19,6 @@ interface ChatState {
   input: string;
   plugins: ChatPlugin[];
   memory: BufferMemory;
-  summarableTexts: SummarableText[];
-  setSummarableTexts: (texts: SummarableText[]) => void;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, content: string, pluginData?: string) => void;
   deleteMessage: (id: string) => void;
@@ -59,8 +57,6 @@ export const useChatStore = create<ChatState>()(
         inputKey: "input",
         outputKey: "output",
       }),
-      summarableTexts: [],
-      setSummarableTexts: (texts) => set({ summarableTexts: texts }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
       updateMessage: (id, content, pluginData?) =>

@@ -36,7 +36,6 @@ export const useChatLogic = () => {
     getMemoryVariables,
     addToMemory,
     clearMemory,
-    setSummarableTexts,
   } = useChatStore();
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -115,15 +114,6 @@ export const useChatLogic = () => {
     } catch (error) {
       handleError(error);
     } finally {
-      console.log(messages);
-      const pluginData = messages[messages.length - 1]?.pluginData;
-      if (pluginData) {
-        setSummarableTexts(extractTitlesAndUrls(pluginData));
-        console.log(
-          "Summarable texts:",
-          extractTitlesAndUrls(messages[messages.length - 1].pluginData || "")
-        );
-      }
       setIsLoading(false);
       abortControllerRef.current = null;
     }
@@ -238,7 +228,6 @@ export const useChatLogic = () => {
   const clearChat = () => {
     clearMessages();
     clearMemory();
-    setSummarableTexts([]);
   };
 
   return {

@@ -10,21 +10,24 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, FileSearch, Plus, Database, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SummarableText } from "@/lib/types";
+import { Message, SummarableText } from "@/lib/types";
 import { useChatStore } from "@/lib/store";
 import { Badge } from "./ui/badge";
+import { extractTitlesAndUrls } from "@/lib/parseJson";
 
 interface SummarableTextDialogProps {
   onSummarize: (item: SummarableText) => void;
   onAddToContext: (item: SummarableText) => void;
+  message: Message;
 }
 
 const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
   onSummarize,
   onAddToContext,
+  message,
 }) => {
+  const summarableTexts = extractTitlesAndUrls(message.pluginData || "");
   const [isOpen, setIsOpen] = useState(false);
-  const { summarableTexts } = useChatStore();
   function truncateText(text: string, maxLength: number): string {
     if (text.length <= maxLength) {
       return text;

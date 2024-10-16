@@ -1,33 +1,9 @@
 import { z } from "zod";
 
 export const SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
-const responseSchema = z
-  .object({
-    committee_sittings: z.array(z.unknown()).optional(),
-    interpellations: z.array(z.unknown()).optional(),
-    processes: z.array(z.unknown()).optional(),
-    prints: z.array(z.unknown()).optional(),
-    acts: z.array(z.unknown()).optional(),
-    votings: z.array(z.unknown()).optional(),
-  })
-  .refine(
-    (data) =>
-      [
-        "committee_sittings",
-        "interpellations",
-        "processes",
-        "prints",
-        "acts",
-        "votings",
-      ].filter((key) => key in data).length === 1,
-    {
-      message: "Dokładnie jedno pole musi być dostarczone.",
-    }
-  );
-export type SejmStatsResponse = z.infer<typeof responseSchema>;
 
 export class SejmStatsCommunicator {
-  async search(searchQuery: string, field: string): Promise<SejmStatsResponse> {
+  async search(searchQuery: string, field: string): Promise<object> {
     const url = new URL(`${SEJM_STATS_BASE_URL}/search`);
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("limit", "5");
@@ -39,13 +15,13 @@ export class SejmStatsCommunicator {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      return responseSchema.parse(data);
+      return data;
     } catch (error) {
       console.error(`Error fetching search data:`, error);
       throw error;
     }
   }
-  optimizeForLLM(data: SejmStatsResponse): any[] {
+  optimizeForLLM(data: object): any[] {
     let result: any[] = [];
 
     for (const [key, value] of Object.entries(data)) {

@@ -40,7 +40,7 @@ const ModelSelector = () => {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {models &&
+            {models && models.length > 0 ? (
               models.map((model) => (
                 <SelectItem
                   key={model.name}
@@ -52,7 +52,12 @@ const ModelSelector = () => {
                     {model.details.parameter_size}
                   </span>
                 </SelectItem>
-              ))}
+              ))
+            ) : (
+              <SelectItem value="you have to run ollama first" disabled={true}>
+                you have to run ollama first
+              </SelectItem>
+            )}
           </SelectGroup>
         </SelectContent>
       </Select>
