@@ -1,9 +1,10 @@
 "use server";
-export const SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
 
-export class SejmStatsCommunicator {
+class SejmStatsCommunicator {
+  private static readonly SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
+
   async search(searchQuery: string, field: string): Promise<object> {
-    const url = new URL(`${SEJM_STATS_BASE_URL}/search`);
+    const url = new URL(`${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/search`);
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("limit", "5");
     url.searchParams.append("range", "3m");
@@ -22,6 +23,7 @@ export class SejmStatsCommunicator {
       throw error;
     }
   }
+
   optimizeForLLM(data: object): any[] {
     let result: any[] = [];
 
@@ -50,8 +52,14 @@ export class SejmStatsCommunicator {
     }
     return result;
   }
+
   async searchOptimized(searchQuery: string, field: string): Promise<any[]> {
     const data = await this.search(searchQuery, field);
     return this.optimizeForLLM(data);
   }
 }
+
+export const searchOptimized = async (searchQuery: string, field: string) => {
+  const communicator = new SejmStatsCommunicator();
+  return communicator.searchOptimized(searchQuery, field);
+};

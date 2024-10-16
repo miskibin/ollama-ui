@@ -3,9 +3,9 @@ import {
   RunnablePassthrough,
 } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { SejmStatsCommunicator } from "./sejmstats-server";
 import { PROMPTS } from "./sejmstats-prompts";
 import { TogetherLLM } from "@/lib/TogetherLLm";
+import { searchOptimized } from "./sejmstats-server";
 
 const selectField = async (question: string, model: TogetherLLM) => {
   const selectedField = await PROMPTS.selectField
@@ -36,8 +36,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
       console.log("Generated search query:", searchQuery);
 
       console.log("Sending query to SejmStatsCommunicator...");
-      const communicator = new SejmStatsCommunicator();
-      const data = await communicator.searchOptimized(searchQuery, field);
+      const data = await searchOptimized(searchQuery, field);
       console.log("Received data:", data);
 
       return { question, data };
