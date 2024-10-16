@@ -59,7 +59,7 @@ const ChatSettings = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <CardContent className="space-y-4 pt-2 flex-grow overflow-auto">
+      <CardContent className="space-y-12 pt-2 flex-grow overflow-auto">
         <div>
           <LabelWithIcon icon={Syringe} text="Prompt systemowy" />
           <Textarea

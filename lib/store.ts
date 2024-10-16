@@ -8,7 +8,7 @@ import {
   SummarableText,
 } from "./types";
 import { plugins } from "./plugins";
-import { BufferMemory } from "langchain/memory";
+import { BufferMemory, MemoryVariables } from "langchain/memory";
 
 interface ChatState {
   messages: Message[];
@@ -30,7 +30,7 @@ interface ChatState {
   setInput: (input: string) => void;
   setPlugins: (plugins: ChatPlugin[]) => void;
   togglePlugin: (name: string) => void;
-  getMemoryVariables: () => Promise<{ history: string }>;
+  getMemoryVariables: () => Promise<MemoryVariables>;
   addToMemory: (humanMessage: string, aiMessage: string) => Promise<void>;
   clearMemory: () => void;
 }
@@ -54,6 +54,7 @@ export const useChatStore = create<ChatState>()(
       plugins: plugins,
       memory: new BufferMemory({
         returnMessages: true,
+        memoryKey: "history",
         inputKey: "input",
         outputKey: "output",
       }),
@@ -96,7 +97,7 @@ export const useChatStore = create<ChatState>()(
         })),
       getMemoryVariables: async () => {
         const memoryVariables = await get().memory.loadMemoryVariables({});
-        return { history: memoryVariables.history.join("\n") };
+        return memoryVariables;
       },
       addToMemory: async (humanMessage: string, aiMessage: string) => {
         await get().memory.saveContext(
