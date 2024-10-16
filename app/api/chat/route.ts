@@ -19,18 +19,30 @@ const processData = async (
   question: string,
   model: TogetherLLM
 ) => {
-  const dataString = JSON.stringify(data);
-  const answer = await PROMPTS.processData
-    .pipe(model)
-    .pipe(new StringOutputParser())
-    .invoke({ question, dataString });
-  return answer;
+  try {
+    console.log("Processing data with input:", {
+      question,
+      dataLength: data.length,
+    });
+    const dataString = JSON.stringify(data);
+    const answer = await PROMPTS.processData
+      .pipe(model)
+      .pipe(new StringOutputParser())
+      .invoke({ question, dataString });
+    console.log("Data processed successfully");
+    return answer;
+  } catch (error) {
+    console.error("Error in processData:", error);
+    throw error;
+  }
 };
 
 export async function POST(req: NextRequest) {
+  console.log("POST request received");
   try {
     const { messages, systemPrompt, memoryVariables, stream, isPluginEnabled } =
       await req.json();
+    console.log("Request parsed successfully");
     console.log("Memory Variables:", memoryVariables);
 
     const sejmStatsTool = createSejmStatsTool(llm);
@@ -48,6 +60,8 @@ export async function POST(req: NextRequest) {
       }),
     ];
 
+    console.log("LangChain messages prepared");
+
     const lastUserMessage = messages[messages.length - 1].content;
 
     const encoder = new TextEncoder();
@@ -56,6 +70,7 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         try {
           if (isPluginEnabled) {
+            console.log("Plugin enabled, invoking sejmStatsTool");
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -67,7 +82,11 @@ export async function POST(req: NextRequest) {
             const { question, data } = await sejmStatsTool.invoke({
               question: lastUserMessage,
             });
-            console.log("Received data:", data);
+            console.log(
+              "Received data from sejmStatsTool:",
+              data.length,
+              "items"
+            );
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -79,6 +98,7 @@ export async function POST(req: NextRequest) {
 
             console.log("Processing data...");
             const answer = await processData(data, question, llm);
+            console.log("Data processed, answer length:", answer.length);
 
             controller.enqueue(
               encoder.encode(
@@ -97,6 +117,7 @@ export async function POST(req: NextRequest) {
               );
             }
           } else {
+            console.log("Plugin disabled, streaming LLM response");
             const streamingResponse = await llm.stream(langChainMessages);
 
             for await (const chunk of streamingResponse) {
@@ -107,6 +128,7 @@ export async function POST(req: NextRequest) {
               );
             }
           }
+          console.log("Streaming completed successfully");
         } catch (error) {
           console.error("Error in streaming:", error);
           controller.error(error);
@@ -119,6 +141,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    console.log("Returning AIstream response");
     return new NextResponse(AIstream, {
       headers: { "Content-Type": "text/event-stream" },
     });
