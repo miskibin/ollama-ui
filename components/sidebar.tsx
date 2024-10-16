@@ -28,7 +28,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
     >
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 ">
             <Image
               src="/ollama.png"
               alt="Logo"
@@ -81,7 +81,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
         </CardTitle>
       </CardHeader>
 
-      <div className="p-4">
+      <div className="p-4 md:px-4 px-0 ">
         <ChatSettings />
       </div>
     </Card>

@@ -294,7 +294,7 @@ export function ChatCard() {
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Wpisz wiadomość...F"
+              placeholder="Wpisz wiadomość..."
               disabled={isLoading}
               className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[350px] rounded-[1rem]"
               rows={1}

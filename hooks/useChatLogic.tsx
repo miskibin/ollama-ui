@@ -45,7 +45,6 @@ export const useChatLogic = () => {
   };
 
   const getResponse = async (messageHistory: Message[]) => {
-    if (!selectedModel) return;
     setIsLoading(true);
     setPluginStatus(null);
     abortControllerRef.current = new AbortController();
@@ -125,6 +124,7 @@ export const useChatLogic = () => {
   };
 
   const handleError = (error: any) => {
+    console.error("An error occurred while fetching the response:", error);
     if (error.name !== "AbortError") {
       addMessage({
         id: generateUniqueId(),

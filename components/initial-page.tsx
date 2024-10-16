@@ -3,129 +3,171 @@ import { Button } from "@/components/ui/button";
 import {
   FileText,
   MessageSquare,
-  VoteIcon,
   Users,
-  Scale,
-  CalendarDays,
   Building,
-  TrendingUp,
-  Gavel,
+  VoteIcon,
   FileSearch,
-  AlertTriangle,
-  PieChart,
+  TrendingUp,
+  Droplet,
   BookOpen,
-  RefreshCw,
+  Heart,
+  Shield,
+  Truck,
   Briefcase,
-  FireExtinguisher,
+  Leaf,
+  Home,
+  Scale,
+  Euro,
 } from "lucide-react";
 import Link from "next/link";
 
-interface InitialChatContentProps {
-  onStarterClick: (text: string) => void;
-}
-
-const allConversationStarters = [
+const conversationStarters = [
   {
     icon: <FileText className="text-blue-500" size={24} />,
-    text: "Najnowsze ustawy",
-    action: "Jakie ustawy zostały uchwalone w ciągu ostatniego miesiąca?",
+    text: "Ustawy o gospodarce",
+    action: "Jakie ustawy dotyczące gospodarki uchwalono w ostatnim kwartale?",
   },
   {
-    icon: <FireExtinguisher className="text-red-500" size={24} />,
-    text: "Posiedzenia komisji w sprawie grzegorza brauna",
-    action:
-      "Czy w ostatnim czasie odbyły się jakieś posiedzenia komisji w sprawie posła 'Grzegorz Braun'?",
-  },
-  {
-    icon: <Building className="text-indigo-500" size={24} />,
-    text: "Infrastruktura",
-    action:
-      "Czy w ostatnim miesiącu uchwalono jakieś ustawy dotyczące infrastruktury?",
-  },
-  {
-    icon: <TrendingUp className="text-yellow-500" size={24} />,
-    text: "Gospodarka",
-    action:
-      "Jakie ustawy związane z gospodarką były omawiane na ostatnim posiedzeniu Sejmu?",
-  },
-  {
-    icon: <Gavel className="text-gray-600" size={24} />,
-    text: "Wymiar sprawiedliwości",
-    action:
-      "Czy w ostatnim czasie głosowano nad ustawami dotyczącymi wymiaru sprawiedliwości?",
-  },
-  {
-    icon: <FileSearch className="text-pink-500" size={24} />,
-    text: "Dyskusje dot. budżetu w komisjach",
-    action:
-      "Czy w ostatnim czasie komisje sejmowe dyskutowały nad projektem budżetu?",
+    icon: <VoteIcon className="text-green-500" size={24} />,
+    text: "Głosowania nad klimatem",
+    action: "Jakie były ostatnie głosowania dotyczące zmian klimatycznych?",
   },
   {
     icon: <Users className="text-purple-500" size={24} />,
-    text: "Dyskusje budżetowe w komisjach",
+    text: "Komisje ds. edukacji",
     action:
-      "Jakie były główne tematy dyskusji dotyczących budżetu w komisjach sejmowych w ostatnim miesiącu?",
+      "Jakie posiedzenia komisji dotyczące edukacji odbyły się w tym miesiącu?",
   },
   {
-    icon: <PieChart className="text-emerald-500" size={24} />,
-    text: "Budżet",
-    action: "Jakie były ostatnie decyzje Sejmu dotyczące budżetu państwa?",
-  },
-  {
-    icon: <BookOpen className="text-rose-500" size={24} />,
-    text: "Edukacja",
+    icon: <FileSearch className="text-indigo-500" size={24} />,
+    text: "Projekty ustaw o zdrowiu",
     action:
-      "Czy w ostatnim czasie wprowadzono jakieś zmiany w ustawach dotyczących edukacji?",
+      "Jakie projekty ustaw (druki) dotyczące ochrony zdrowia złożono w tym roku?",
   },
   {
-    icon: <RefreshCw className="text-lime-500" size={24} />,
-    text: "Środowisko",
+    icon: <MessageSquare className="text-red-500" size={24} />,
+    text: "Interpelacje o infrastrukturze",
     action:
-      "Jakie ustawy dotyczące ochrony środowiska były omawiane w Sejmie w ostatnim miesiącu?",
+      "Jakie były najważniejsze interpelacje poselskie dotyczące infrastruktury drogowej?",
   },
   {
-    icon: <Briefcase className="text-fuchsia-500" size={24} />,
-    text: "Prawo pracy",
-    action: "Czy w ostatnim czasie głosowano nad zmianami w prawie pracy?",
+    icon: <Building className="text-yellow-500" size={24} />,
+    text: "Ustawy o budżecie",
+    action: "Jakie ustawy dotyczące budżetu państwa uchwalono w ostatnim roku?",
+  },
+  {
+    icon: <Droplet className="text-blue-300" size={24} />,
+    text: "Głosowania dot. powodzi",
+    action:
+      "Jakie głosowania odbyły się w sprawie pomocy dla obszarów dotkniętych powodzią?",
+  },
+  {
+    icon: <TrendingUp className="text-orange-500" size={24} />,
+    text: "Projekty ustaw gospodarczych",
+    action:
+      "Jakie projekty ustaw dotyczące wzrostu gospodarczego zostały ostatnio złożone?",
+  },
+  {
+    icon: <BookOpen className="text-teal-500" size={24} />,
+    text: "Komisje ds. nauki",
+    action:
+      "Jakie posiedzenia komisji dotyczące szkolnictwa wyższego odbyły się w tym semestrze?",
+  },
+  {
+    icon: <Heart className="text-pink-500" size={24} />,
+    text: "Ustawy o opiece zdrowotnej",
+    action:
+      "Jakie ustawy dotyczące systemu opieki zdrowotnej uchwalono w ostatnim półroczu?",
+  },
+  {
+    icon: <Truck className="text-gray-500" size={24} />,
+    text: "Interpelacje o transporcie",
+    action:
+      "Jakie interpelacje poselskie dotyczące transportu publicznego złożono w tym roku?",
+  },
+  {
+    icon: <Shield className="text-red-700" size={24} />,
+    text: "Głosowania nad bezpieczeństwem",
+    action:
+      "Jakie były ostatnie głosowania dotyczące bezpieczeństwa narodowego?",
+  },
+  {
+    icon: <Truck className="text-amber-600" size={24} />,
+    text: "Projekty ustaw logistycznych",
+    action:
+      "Jakie projekty ustaw dotyczące logistyki i transportu towarowego złożono ostatnio?",
+  },
+  {
+    icon: <Briefcase className="text-indigo-600" size={24} />,
+    text: "Komisje ds. pracy",
+    action:
+      "Jakie posiedzenia komisji dotyczące rynku pracy odbyły się w ostatnim kwartale?",
+  },
+  {
+    icon: <Leaf className="text-green-600" size={24} />,
+    text: "Ustawy o środowisku",
+    action: "Jakie ustawy dotyczące ochrony środowiska uchwalono w tym roku?",
+  },
+  {
+    icon: <Home className="text-cyan-600" size={24} />,
+    text: "Interpelacje o mieszkalnictwie",
+    action:
+      "Jakie były najważniejsze interpelacje poselskie dotyczące polityki mieszkaniowej?",
+  },
+  {
+    icon: <Scale className="text-purple-600" size={24} />,
+    text: "Głosowania nad prawem",
+    action:
+      "Jakie głosowania odbyły się w sprawie zmian w systemie sądownictwa?",
+  },
+  {
+    icon: <Euro className="text-yellow-600" size={24} />,
+    text: "Projekty ustaw podatkowych",
+    action:
+      "Jakie projekty ustaw dotyczące zmian w systemie podatkowym zostały ostatnio złożone?",
   },
 ];
+
+interface InitialChatContentProps {
+  onStarterClick: (action: string) => void;
+}
 
 const InitialChatContent: React.FC<InitialChatContentProps> = ({
   onStarterClick,
 }) => {
   const randomStarters = useMemo(() => {
-    const shuffled = [...allConversationStarters].sort(
-      () => 0.5 - Math.random()
-    );
-    return shuffled.slice(0, 4); // Display 4 random starters
+    return [...conversationStarters]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 4);
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-center">
-          Twój asystent parlamentarny
-        </h2>
-        <p className="text-center text-gray-600">
+    <div className="flex flex-col items-center justify-center w-full p-4 lg:px-4 px-0">
+      <div className="mb-6 text-center">
+        <h2 className="text-xl font-bold">Twój asystent parlamentarny</h2>
+        <p className="text-sm text-gray-600">
           <Link
             href="https://sejm-stats.pl"
             target="_blank"
             rel="noopener noreferrer"
+            className="hover:underline"
           >
             powered by <strong>sejm-stats.pl</strong>
           </Link>
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl w-full">
+      <div className="grid grid-cols-1 gap-3 w-full max-w-sm">
         {randomStarters.map((starter, index) => (
           <Button
             key={index}
             variant="outline"
-            className="flex items-center justify-start space-x-3 p-4 h-auto"
+            className="flex items-center justify-start p-3 h-auto w-full text-left"
             onClick={() => onStarterClick(starter.action)}
           >
-            <span className="text-primary">{starter.icon}</span>
-            <span className="text-foreground text-left">{starter.text}</span>
+            <span className="flex-shrink-0 mr-3">{starter.icon}</span>
+            <span className="text-foreground text-sm leading-tight">
+              {starter.text}
+            </span>
           </Button>
         ))}
       </div>

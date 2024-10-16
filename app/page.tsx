@@ -70,7 +70,7 @@ export default function Home() {
               onClose={() => setIsSidebarOpen(false)}
             />
           </div>
-          <div className="flex-1 flex flex-col w-full md:w-auto">
+          <div className="flex-1 flex flex-col w-full md:w-auto ">
             <ChatHeader
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
