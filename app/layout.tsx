@@ -18,16 +18,19 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Sejm stats assistant",
+  title: "Asystent RP",
   description:
-    "A simple and powerful UI for interacting with the Ollama API, enabling seamless AI-powered conversations and tasks.",
+    "Inteligentny asystent do analizy danych Sejmu Rzeczypospolitej Polskiej",
   keywords: [
-    "Ollama",
+    "Asystent",
+    "RP",
+    "Sejm",
+    "Polska",
     "AI",
-    "chatbot",
-    "natural language processing",
-    "machine learning",
+    "Analiza danych",
+    "Polityka",
   ],
+  authors: [{ name: "Michał Skibiński" }],
 };
 
 export default function RootLayout({
@@ -41,7 +44,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-200 dark:bg-gray-800`}
         >
-          <ThemeProvider attribute="class" defaultTheme="light">
+          <ThemeProvider attribute="class" defaultTheme="system">
             {children}
           </ThemeProvider>
           <Analytics />

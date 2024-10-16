@@ -58,23 +58,27 @@ export default function Home() {
 
   return (
     <ChatProvider>
-      <div className="flex flex-col h-screen md:flex-row">
-        <div
-          className={`${
-            isSidebarOpen ? "block" : "hidden"
-          } md:block md:w-80 flex-shrink-0 h-full overflow-y-auto`}
-        >
-          <Sidebar
-            isMobile={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-          />
-        </div>
-        <div className="flex-1 max-h-full flex flex-col ">
-          <ChatHeader
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-          />
-          <ChatCard />
+      <div className="flex flex-col h-screen">
+        <div className="relative flex-1 flex flex-col md:flex-row overflow-hidden">
+          <div
+            className={`absolute md:relative z-20 h-full md:h-auto transition-transform duration-300 ease-in-out ${
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } md:translate-x-0 md:w-80 md:flex-shrink-0`}
+          >
+            <Sidebar
+              isMobile={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+            />
+          </div>
+          <div className="flex-1 flex flex-col w-full md:w-auto">
+            <ChatHeader
+              isSidebarOpen={isSidebarOpen}
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+            <div className="flex-1 overflow-hidden">
+              <ChatCard />
+            </div>
+          </div>
         </div>
       </div>
     </ChatProvider>

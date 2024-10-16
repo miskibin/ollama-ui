@@ -1,16 +1,24 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import ChatSettings from "./chat-settings";
+
 interface SidebarProps {
   isMobile: boolean;
   onClose: () => void;
 }
+
 export function Sidebar({ isMobile, onClose }: SidebarProps) {
   const { setTheme, theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <Card
@@ -31,18 +39,20 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
             <h2 className="text-lg font-semibold">Aststent RP</h2>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              aria-label="Toggle theme"
-            >
-              {theme === "light" ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
-            </Button>
+            {mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                aria-label="Toggle theme"
+              >
+                {theme === "light" ? (
+                  <Moon className="h-5 w-5" />
+                ) : (
+                  <Sun className="h-5 w-5" />
+                )}
+              </Button>
+            )}
             {isMobile && (
               <Button
                 variant="ghost"
