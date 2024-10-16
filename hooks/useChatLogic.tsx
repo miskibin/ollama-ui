@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { Message, ResponseMetadata } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
