@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useRef, useState } from "react";
 import { Message, ResponseMetadata } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
@@ -10,7 +9,6 @@ export const useChatLogic = () => {
     addMessage,
     updateMessage,
     clearMessages,
-    selectedModel,
     options,
     systemPrompt,
     setSystemPrompt,
@@ -55,7 +53,6 @@ export const useChatLogic = () => {
 
       const memoryVariables = await getMemoryVariables();
       const isPluginEnabled = plugins.some((plugin) => plugin.enabled);
-      console.log("fetching reposnse");
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

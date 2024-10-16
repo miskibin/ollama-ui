@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+"use server";
 export const SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
 
 export class SejmStatsCommunicator {
@@ -16,6 +15,7 @@ export class SejmStatsCommunicator {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      console.log("Received search data:", data);
       return data;
     } catch (error) {
       console.error(`Error fetching search data:`, error);
