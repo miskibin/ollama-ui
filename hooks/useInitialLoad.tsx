@@ -22,9 +22,9 @@ export const useInitialLoad = () => {
     }
   };
 
-  useEffect(() => {
-    fetchModels();
-  }, []);
+  // useEffect(() => {
+  //   fetchModels();
+  // }, []);
 
   return {
     fetchModels,

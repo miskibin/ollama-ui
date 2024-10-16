@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,15 +58,15 @@ const ChatSettings = () => {
   } = useChatContext();
 
   return (
-    <div className="flex flex-col h-[80vh]">
-      <CardContent className="space-y-8 pt-4 flex-grow overflow-auto">
+    <div className="flex flex-col h-full">
+      <CardContent className="space-y-4 pt-2 flex-grow overflow-auto">
         <div>
           <LabelWithIcon icon={Syringe} text="Prompt systemowy" />
           <Textarea
             placeholder="You are experienced software engineer..."
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
-            className="w-full p-2 rounded border h-20 resize-none"
+            className="w-full p-2 rounded border h-20 resize-none text-sm"
           />
         </div>
 
@@ -97,14 +96,15 @@ const ChatSettings = () => {
             }
           />
         </div>
+
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full text-sm">
               <Settings2 className="w-4 h-4 mr-2" />
               Opcje zaawansowane
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80">
+          <PopoverContent className="w-64 sm:w-80">
             <div className="space-y-4">
               <div>
                 <LabelWithIcon
@@ -188,10 +188,11 @@ const ChatSettings = () => {
             </div>
           </PopoverContent>
         </Popover>
+
         <div>
-          <h2 className="text-lg font-semibold mb-2">Rozszerzenia</h2>
-          <hr className="pb-3" />
-          <div className="space-y-4">
+          <h2 className="text-base font-semibold mb-2">Rozszerzenia</h2>
+          <hr className="pb-2" />
+          <div className="space-y-2">
             {plugins.map((plugin: ChatPlugin) => (
               <div
                 key={plugin.name}
@@ -215,11 +216,8 @@ const ChatSettings = () => {
         </div>
       </CardContent>
 
-      <CardFooter className="flex-shrink-0">
-        <Button
-          onClick={clearMessages}
-          className="w-full"
-        >
+      <CardFooter className="pt-2 pb-4">
+        <Button onClick={clearMessages} className="w-full text-sm">
           Wyczyść historię
         </Button>
       </CardFooter>

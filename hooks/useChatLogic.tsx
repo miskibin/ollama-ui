@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { ChatPlugin, Message, ResponseMetadata } from "@/lib/types";
-import { ChatOllama } from "@langchain/ollama";
 import {
   HumanMessage,
   AIMessage,
@@ -12,8 +11,7 @@ import { useChatStore } from "@/lib/store";
 import { PluginNames } from "@/lib/plugins";
 import { createWikipediaSearchChain } from "@/tools/wikipedia";
 import { createSejmStatsTool } from "@/tools/sejmstats";
-import { extractTitlesAndUrls } from "@/lib/parseJson";
-
+import { TogetherAI } from "@langchain/community/llms/togetherai";
 const pluginChainCreators = {
   [PluginNames.Wikipedia]: createWikipediaSearchChain,
   [PluginNames.SejmStats]: createSejmStatsTool,
@@ -43,16 +41,17 @@ export const useChatLogic = () => {
     useState<ResponseMetadata | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
-  const chatModelRef = useRef<ChatOllama | null>(null);
+  const chatModelRef = useRef<TogetherAI | null>(null);
   const pluginChainRef = useRef<any>(null);
 
   useEffect(() => {
     if (selectedModel) {
-      chatModelRef.current = new ChatOllama({
-        model: selectedModel,
+      chatModelRef.current = new TogetherAI({
+        apiKey: process.env.NEXT_PUBLIC_TOGETHER_API_KEY!,
+        model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
         ...options,
       });
-
+      chatModelRef.current.inferenceAPIUrl = "/api/proxy";
       const enabledPlugin = plugins.find((plugin) => plugin.enabled);
       if (enabledPlugin) {
         const createPluginChain =
@@ -70,7 +69,7 @@ export const useChatLogic = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !selectedModel) return;
+    if (!input.trim()) return;
 
     const newMessage: Message = {
       id: generateUniqueId(),
@@ -82,9 +81,9 @@ export const useChatLogic = () => {
     await getResponse([...messages, newMessage]);
   };
   const getResponse = async (messageHistory: typeof messages) => {
+    console.log(messages);
     if (!chatModelRef.current) return;
     setIsLoading(true);
-    setResponseMetadata(null);
     abortControllerRef.current = new AbortController();
 
     try {
@@ -133,9 +132,7 @@ export const useChatLogic = () => {
       new HumanMessage(relevancePrompt),
     ]);
 
-    const relevanceAnswer = (relevanceResponse.content as string)
-      .toLowerCase()
-      .trim();
+    const relevanceAnswer = relevanceResponse.toLowerCase().trim();
     return true;
     // return relevanceAnswer === "yes" || relevanceAnswer === "tak";
   };
@@ -173,12 +170,12 @@ export const useChatLogic = () => {
       signal: abortControllerRef.current!.signal,
     });
 
-    setResponseMetadata({
-      total_duration: response.response_metadata.total_duration,
-      load_duration: response.response_metadata.load_duration,
-      prompt_eval_count: response.response_metadata.prompt_eval_count,
-      prompt_eval_duration: response.response_metadata.prompt_eval_duration,
-    });
+    // setResponseMetadata({
+    //   total_duration: response.response_metadata.total_duration,
+    //   load_duration: response.response_metadata.load_duration,
+    //   prompt_eval_count: response.response_metadata.prompt_eval_count,
+    //   prompt_eval_duration: response.response_metadata.prompt_eval_duration,
+    // });
 
     return finalResponse;
   };

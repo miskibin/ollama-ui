@@ -120,9 +120,7 @@ export const useChatStore = create<ChatState>()(
         messages: state.messages,
         options: state.options,
         selectedModel: state.selectedModel,
-        models: state.models,
         systemPrompt: state.systemPrompt,
-        input: state.input,
       }),
     }
   )

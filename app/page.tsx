@@ -1,64 +1,90 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { ChatCard } from "@/components/chatCard";
 import { ChatProvider } from "./ChatContext";
-import { PromptTestDialog } from "@/components/createTestDialog";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Menu } from "lucide-react";
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isDev = process.env.NODE_ENV === "development";
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
-          <p className="text-lg font-medium">Ładowanie...</p>
+  if (!isDev) {
+    if (isLoading) {
+      return (
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+            <p className="text-lg font-medium">Ładowanie...</p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg font-medium text-red-500 mb-4">
-            Błąd: {error.message}
-          </p>
-          <Link href="/api/auth/login">Spróbuj ponownie</Link>
+    if (error) {
+      return (
+        <div className="flex h-screen items-center justify-center p-4">
+          <div className="text-center">
+            <p className="text-lg font-medium text-red-500 mb-4">
+              Błąd: {error.message}
+            </p>
+            <Link href="/api/auth/login">
+              <Button>Spróbuj ponownie</Button>
+            </Link>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (!user) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="mb-4">
-            Musisz być zalogowany, aby uzyskać dostęp do tej strony.
-          </p>
-          <Button>
-            <Link href="/api/auth/login">Zaloguj się</Link>
-          </Button>
+    if (!user && !isDev) {
+      return (
+        <div className="flex h-screen items-center justify-center p-4">
+          <div className="text-center">
+            <p className="mb-4">
+              Musisz być zalogowany, aby uzyskać dostęp do tej strony.
+            </p>
+            <Link href="/api/auth/login">
+              <Button>Zaloguj się</Button>
+            </Link>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   return (
     <ChatProvider>
-      <div className="flex h-screen gap-2">
-        <Sidebar />
+      <div className="flex flex-col space-x-2 h-screen md:flex-row">
+        <Button
+          className="md:hidden fixed top-2 left-2 z-50"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          <Menu size={24} />
+        </Button>
+        <div
+          className={`${
+            isSidebarOpen ? "block" : "hidden"
+          } md:block md:w-80 flex-shrink-0 h-full overflow-y-auto`}
+        >
+          <div
+            className={`${
+              isSidebarOpen ? "block" : "hidden"
+            } md:block md:w-80 flex-shrink-0 h-full overflow-y-auto`}
+          >
+            <Sidebar
+              isMobile={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+            />
+          </div>
+        </div>
         <div className="flex-1 max-h-full flex flex-col">
           <ChatCard />
         </div>
       </div>
-      <PromptTestDialog />
     </ChatProvider>
   );
 }

@@ -1,5 +1,4 @@
 "use client";
-import { ChatOllama } from "@langchain/ollama";
 import {
   RunnableSequence,
   RunnablePassthrough,
@@ -7,8 +6,9 @@ import {
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { SejmStatsCommunicator } from "./sejmstats-server";
 import { PROMPTS } from "./sejmstats-prompts";
+import { TogetherAI } from "@langchain/community/llms/togetherai";
 
-const selectField = async (question: string, model: ChatOllama) => {
+const selectField = async (question: string, model: TogetherAI) => {
   const selectedField = await PROMPTS.selectField
     .pipe(model)
     .pipe(new StringOutputParser())
@@ -16,7 +16,7 @@ const selectField = async (question: string, model: ChatOllama) => {
   return selectedField.trim().toLowerCase();
 };
 
-const generateSearchQuery = async (question: string, model: ChatOllama) => {
+const generateSearchQuery = async (question: string, model: TogetherAI) => {
   const searchQuery = await PROMPTS.generateSearchQuery
     .pipe(model)
     .pipe(new StringOutputParser())
@@ -28,7 +28,7 @@ const generateSearchQuery = async (question: string, model: ChatOllama) => {
 const processData = async (
   data: any[],
   question: string,
-  model: ChatOllama
+  model: TogetherAI
 ) => {
   const dataString = JSON.stringify(data);
   const answer = await PROMPTS.processData
@@ -39,7 +39,7 @@ const processData = async (
 };
 
 export const createSejmStatsTool = (
-  model: ChatOllama,
+  model: TogetherAI,
   updateMessage: (id: string, content: string, pluginData?: string) => void
 ) => {
   return RunnableSequence.from([
