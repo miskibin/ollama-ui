@@ -11,7 +11,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 
 const llm = new TogetherLLM({
   apiKey: process.env.TOGETHER_API_KEY!,
-  model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+  model: "meta-llama/Llama-Vision-Free",
 });
 
 const processData = async (
