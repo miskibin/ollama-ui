@@ -30,6 +30,7 @@ export const useChatLogic = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("submitting");
     e.preventDefault();
     if (!input.trim()) return;
 
