@@ -51,7 +51,6 @@ export const useChatLogic = () => {
         model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
         ...options,
       });
-      chatModelRef.current.inferenceAPIUrl = "/api/proxy";
       const enabledPlugin = plugins.find((plugin) => plugin.enabled);
       if (enabledPlugin) {
         const createPluginChain =
