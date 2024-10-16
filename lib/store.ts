@@ -12,8 +12,6 @@ import { BufferMemory, MemoryVariables } from "langchain/memory";
 
 interface ChatState {
   messages: Message[];
-  models: Model[];
-  selectedModel: string;
   options: ChatOptions;
   systemPrompt: string;
   input: string;
@@ -23,8 +21,6 @@ interface ChatState {
   updateMessage: (id: string, content: string, pluginData?: string) => void;
   deleteMessage: (id: string) => void;
   clearMessages: () => void;
-  setModels: (models: Model[]) => void;
-  setSelectedModel: (model: string) => void;
   setOptions: (options: Partial<ChatOptions>) => void;
   setSystemPrompt: (prompt: string) => void;
   setInput: (input: string) => void;
@@ -39,8 +35,6 @@ export const useChatStore = create<ChatState>()(
   persist(
     (set, get) => ({
       messages: [],
-      models: [],
-      selectedModel: "",
       options: {
         temperature: 0.3,
         topP: 0.8,
@@ -80,8 +74,6 @@ export const useChatStore = create<ChatState>()(
         set({ messages: [] });
         get().clearMemory();
       },
-      setModels: (models) => set({ models }),
-      setSelectedModel: (model) => set({ selectedModel: model }),
       setOptions: (newOptions) =>
         set((state) => ({ options: { ...state.options, ...newOptions } })),
       setSystemPrompt: (prompt) => set({ systemPrompt: prompt }),
@@ -120,7 +112,6 @@ export const useChatStore = create<ChatState>()(
       partialize: (state) => ({
         messages: state.messages,
         options: state.options,
-        selectedModel: state.selectedModel,
         systemPrompt: state.systemPrompt,
       }),
     }

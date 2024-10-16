@@ -20,9 +20,6 @@ interface ChatContextType {
   editMessage: (id: string, content: string) => void;
   deleteMessage: (id: string) => void;
   clearMessages: () => void;
-  models: Model[];
-  selectedModel: string;
-  setSelectedModel: (model: string) => void;
   options: ChatOptions;
   setOptions: (options: Partial<ChatOptions>) => void;
   systemPrompt: string;
