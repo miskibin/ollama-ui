@@ -5,7 +5,7 @@ import {
   RunnablePassthrough,
 } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { SejmStatsCommunicator, SejmStatsResponse } from "./sejmstats-server";
+import { SejmStatsCommunicator } from "./sejmstats-server";
 import { PROMPTS } from "./sejmstats-prompts";
 
 const selectField = async (question: string, model: ChatOllama) => {
