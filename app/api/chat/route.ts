@@ -9,11 +9,26 @@ import { createSejmStatsTool } from "@/tools/sejmstats";
 import { TogetherLLM } from "@/lib/TogetherLLm";
 import { PROMPTS } from "@/tools/sejmstats-prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-
+import { PromptTemplate } from "@langchain/core/prompts";
 const llm = new TogetherLLM({
   apiKey: process.env.TOGETHER_API_KEY!,
   model: "meta-llama/Llama-Vision-Free",
 });
+
+const processDataPrompt = PromptTemplate.fromTemplate(`
+  Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
+  Pytanie: {question}
+  Dane: {dataString}
+  Data obecna: ${new Date().toLocaleDateString("pl-PL")}
+  Instrukcje:
+  0. Pamiętaj, że dane są ograniczcone do 5 najnowszych wyników.
+  1. Odpowiedz bezpośrednio na pytanie w maksymalnie 2 zdaniach.
+  2. Podaj tylko informacje istotne dla pytania.
+  3. Jeśli brak odpowiedzi w danych, napisz to krótko.
+  4. Użyj '**pogrubienia**' dla kluczowych dat lub liczb.
+  5. Cytuj tytuł dokumentu tylko jeśli jest bezpośrednio związany z pytaniem.
+  6. Nie opisuj dostarczonych danych ani ich zakresu.
+  Odpowiedź:`);
 
 const processData = async (
   data: any[],
@@ -26,7 +41,7 @@ const processData = async (
       dataLength: data.length,
     });
     const dataString = JSON.stringify(data);
-    const answer = await PROMPTS.processData
+    const answer = await processDataPrompt
       .pipe(model)
       .pipe(new StringOutputParser())
       .invoke({ question, dataString });
