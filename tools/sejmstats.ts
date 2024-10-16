@@ -1,4 +1,3 @@
-"use client";
 import {
   RunnableSequence,
   RunnablePassthrough,
@@ -6,9 +5,9 @@ import {
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { SejmStatsCommunicator } from "./sejmstats-server";
 import { PROMPTS } from "./sejmstats-prompts";
-import { TogetherAI } from "@langchain/community/llms/togetherai";
+import { TogetherLLM } from "@/lib/TogetherLLm";
 
-const selectField = async (question: string, model: TogetherAI) => {
+const selectField = async (question: string, model: TogetherLLM) => {
   const selectedField = await PROMPTS.selectField
     .pipe(model)
     .pipe(new StringOutputParser())
@@ -16,19 +15,18 @@ const selectField = async (question: string, model: TogetherAI) => {
   return selectedField.trim().toLowerCase();
 };
 
-const generateSearchQuery = async (question: string, model: TogetherAI) => {
+const generateSearchQuery = async (question: string, model: TogetherLLM) => {
   const searchQuery = await PROMPTS.generateSearchQuery
     .pipe(model)
     .pipe(new StringOutputParser())
     .invoke({ question });
-  // remove _ and * from the question
   return searchQuery.trim().replace(/[_*.\s]/g, "");
 };
 
 const processData = async (
   data: any[],
   question: string,
-  model: TogetherAI
+  model: TogetherLLM
 ) => {
   const dataString = JSON.stringify(data);
   const answer = await PROMPTS.processData
@@ -38,38 +36,31 @@ const processData = async (
   return answer;
 };
 
-export const createSejmStatsTool = (
-  model: TogetherAI,
-  updateMessage: (id: string, content: string, pluginData?: string) => void
-) => {
+export const createSejmStatsTool = (model: TogetherLLM) => {
   return RunnableSequence.from([
     new RunnablePassthrough(),
-    async ({ question, newMessageId }) => {
-      updateMessage(newMessageId, "Rozpoczynanie wyboru pola...");
+    async ({ question }) => {
+      console.log("Starting field selection...");
       const field = await selectField(question, model);
       console.log("Selected field:", field);
 
-      updateMessage(
-        newMessageId,
-        `Wybrane pole: ${field}. Generowanie zapytania...`
-      );
+      console.log("Generating search query...");
       const searchQuery = await generateSearchQuery(question, model);
       console.log("Generated search query:", searchQuery);
 
-      updateMessage(
-        newMessageId,
-        `Zapytanie: ${searchQuery}. Wysyłanie zapytania...`
-      );
+      console.log("Sending query to SejmStatsCommunicator...");
       const communicator = new SejmStatsCommunicator();
       const data = await communicator.searchOptimized(searchQuery, field);
       console.log("Received data:", data);
 
-      updateMessage(newMessageId, "Przetwarzanie danych...");
+      console.log("Processing data...");
       const answer = await processData(data, question, model);
 
-      updateMessage(newMessageId, JSON.stringify(data, null, 2));
-
-      return answer;
+      return `SejmStats Search Results:
+Field: ${field}
+Query: ${searchQuery}
+Answer: ${answer}
+Raw Data: ${JSON.stringify(data, null, 2)}`;
     },
     new StringOutputParser(),
   ]);

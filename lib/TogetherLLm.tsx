@@ -23,10 +23,11 @@ export class TogetherLLM extends LLM {
   topK: number;
   repetitionPenalty: number;
   streaming: boolean;
+
   constructor(fields: TogetherLLMInput) {
     super(fields);
     this.client = new Together({
-      apiKey: fields.apiKey || process.env.NEXT_PUBLIC_TOGETHER_API_KEY,
+      apiKey: fields.apiKey || process.env.TOGETHER_API_KEY,
     });
     this.model = fields.model;
     this.streaming = fields.streaming ?? false;

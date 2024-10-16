@@ -1,42 +1,24 @@
-// app/api/chat/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import {
   HumanMessage,
   AIMessage,
   SystemMessage,
 } from "@langchain/core/messages";
-import { PluginNames } from "@/lib/plugins";
-import { createWikipediaSearchChain } from "@/tools/wikipedia";
 import { createSejmStatsTool } from "@/tools/sejmstats";
 import { TogetherLLM } from "@/lib/TogetherLLm";
 
-const pluginChainCreators = {
-  [PluginNames.Wikipedia]: createWikipediaSearchChain,
-  [PluginNames.SejmStats]: createSejmStatsTool,
-};
-
-// Initialize the TogetherLLM
 const llm = new TogetherLLM({
-  apiKey: process.env.NEXT_PUBLIC_TOGETHER_API_KEY!,
+  apiKey: process.env.TOGETHER_API_KEY!,
   model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
 });
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, systemPrompt, plugins, memoryVariables, stream } =
+    const { messages, systemPrompt, memoryVariables, stream } =
       await req.json();
-    console.log("Messages:", memoryVariables);
-    const enabledPlugin = plugins.find((plugin: any) => plugin.enabled);
-    let pluginChain = null;
+    console.log("Memory Variables:", memoryVariables);
 
-    if (enabledPlugin) {
-      const createPluginChain =
-        pluginChainCreators[enabledPlugin.name as PluginNames];
-      if (createPluginChain) {
-        pluginChain = createPluginChain(llm, () => {});
-      }
-    }
-
+    const sejmStatsTool = createSejmStatsTool(llm);
     const langChainMessages = [
       new SystemMessage(systemPrompt || "You are a helpful assistant."),
       ...(Array.isArray(memoryVariables)
@@ -46,15 +28,12 @@ export async function POST(req: NextRequest) {
         if (msg.role === "user") {
           return new HumanMessage(msg.content);
         } else {
-          const content = msg.pluginData
-            ? `${msg.content}\n\nPlugin Data: ${msg.pluginData}`
-            : msg.content;
-          return new AIMessage(content);
+          return new AIMessage(msg.content);
         }
       }),
     ];
 
-    if (stream) {
+    if (stream && false) {
       const encoder = new TextEncoder();
 
       const AIstream = new ReadableStream({
@@ -85,13 +64,11 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "text/event-stream" },
       });
     } else {
-      let response;
-      if (enabledPlugin && pluginChain) {
-        const lastUserMessage = messages[messages.length - 1].content;
-        response = await pluginChain.invoke({ question: lastUserMessage });
-      } else {
-        response = await llm.invoke(langChainMessages);
-      }
+      console.log("Starting field selection...");
+      const lastUserMessage = messages[messages.length - 1].content;
+      const response = await sejmStatsTool.invoke({
+        question: lastUserMessage,
+      });
 
       return NextResponse.json({ response });
     }

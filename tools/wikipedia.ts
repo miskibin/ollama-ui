@@ -6,9 +6,9 @@ import {
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { searchWikipedia } from "./wikipedia-search";
-import { TogetherAI } from "@langchain/community/llms/togetherai";
+import { TogetherLLM } from "@/lib/TogetherLLm";
 
-const extractSearchTopic = async (input: string, model: TogetherAI) => {
+const extractSearchTopic = async (input: string, model: TogetherLLM) => {
   console.log("Extracting search topic from input:", input);
   const prompt = PromptTemplate.fromTemplate(
     "Extract the main topic or keyword for a Wikipedia search from the following question. Provide only the topic, without any additional text.\n\nQuestion: {question}\nTopic:"
@@ -23,7 +23,7 @@ const extractSearchTopic = async (input: string, model: TogetherAI) => {
 const processWikipediaResult = async (
   result: string,
   question: string,
-  model: TogetherAI
+  model: TogetherLLM
 ) => {
   console.log("Processing Wikipedia result");
   const prompt = PromptTemplate.fromTemplate(
@@ -37,7 +37,7 @@ const processWikipediaResult = async (
 };
 
 export const createWikipediaSearchChain = (
-  model: TogetherAI,
+  model: TogetherLLM,
   updateMessage: (id: string, content: string, pluginData?: string) => void
 ) => {
   return RunnableSequence.from([

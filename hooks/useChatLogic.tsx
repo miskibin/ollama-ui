@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { ChatPlugin, Message, ResponseMetadata } from "@/lib/types";
+import { Message, ResponseMetadata } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
 import { useInitialLoad } from "./useInitialLoad";
 import { useChatStore } from "@/lib/store";
+import { createDropdownMenuScope } from "@radix-ui/react-dropdown-menu";
 
 export const useChatLogic = () => {
   const { fetchModels } = useInitialLoad();
@@ -17,7 +18,6 @@ export const useChatLogic = () => {
     setSystemPrompt,
     input,
     setInput,
-    plugins,
     getMemoryVariables,
     addToMemory,
     clearMemory,
@@ -42,6 +42,7 @@ export const useChatLogic = () => {
     setInput("");
     await getResponse([...messages, newMessage]);
   };
+
   const getResponse = async (messageHistory: typeof messages) => {
     if (!selectedModel) return;
     setIsLoading(true);
@@ -52,19 +53,20 @@ export const useChatLogic = () => {
       const newMessageId = generateUniqueId();
       addMessage({ id: newMessageId, role: "assistant", content: "" });
 
+      const memoryVariables = await getMemoryVariables();
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: messageHistory,
           systemPrompt,
-          plugins,
-          memoryVariables: await getMemoryVariables(),
+          memoryVariables,
           stream: true,
         }),
         signal: abortControllerRef.current.signal,
       });
-
+      console.log("Response:", response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -94,8 +96,9 @@ export const useChatLogic = () => {
           }
         }
 
-        updateMessage(newMessageId, finalResponse.trim());
-        await addToMemory(lastUserMessage, finalResponse.trim());
+        const trimmedResponse = finalResponse.trim();
+        updateMessage(newMessageId, trimmedResponse);
+        // await addToMemory(lastUserMessage, trimmedResponse);
       }
     } catch (error) {
       handleError(error);
