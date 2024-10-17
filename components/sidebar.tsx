@@ -1,9 +1,7 @@
-"use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Moon, Sun } from "lucide-react";
-import Image from "next/image";
 import { useTheme } from "next-themes";
 import ChatSettings from "./chat-settings";
 
@@ -15,27 +13,37 @@ interface SidebarProps {
 export function Sidebar({ isMobile, onClose }: SidebarProps) {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMobile &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobile, onClose]);
 
   return (
     <Card
+      ref={sidebarRef}
       className={`h-full overflow-auto ${
-        isMobile ? "w-full" : "w-96 md:max-w-80"
-      }`}
+        isMobile ? "w-[85vw] max-w-[400px]" : "w-96"
+      } md:w-96`}
     >
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2 ">
-            <Image
-              src="/ollama.png"
-              alt="Logo"
-              width={32}
-              height={32}
-              className="rounded-md"
-            />
             <h2 className="text-lg font-semibold">Aststent RP</h2>
           </div>
           <div className="flex items-center space-x-2">

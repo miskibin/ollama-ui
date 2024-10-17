@@ -30,4 +30,18 @@ export const PROMPTS = {
         5. Nie używaj cudzysłowów ani znaków specjalnych.
         
         Pojedyncze słowo kluczowe lub kilka słów:`),
+  processDataPrompt: PromptTemplate.fromTemplate(`
+          Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
+          Pytanie: {question}
+          Dane: {dataString}
+          Data obecna: ${new Date().toLocaleDateString("pl-PL")}
+          Instrukcje:
+          0. Pamiętaj, że dane są ograniczcone do 5 najnowszych wyników.
+          1. Odpowiedz bezpośrednio na pytanie w maksymalnie 2 zdaniach.
+          2. Podaj tylko informacje istotne dla pytania.
+          3. Jeśli brak odpowiedzi w danych, napisz to krótko.
+          4. Użyj '**pogrubienia**' dla kluczowych dat lub liczb.
+          5. Cytuj tytuł dokumentu tylko jeśli jest bezpośrednio związany z pytaniem.
+          6. Nie opisuj dostarczonych danych ani ich zakresu.
+          Odpowiedź:`),
 };

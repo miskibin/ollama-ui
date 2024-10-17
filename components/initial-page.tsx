@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FileText,
@@ -18,8 +18,10 @@ import {
   Home,
   Scale,
   Euro,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 const conversationStarters = [
   {
@@ -135,37 +137,52 @@ interface InitialChatContentProps {
 const InitialChatContent: React.FC<InitialChatContentProps> = ({
   onStarterClick,
 }) => {
+  const isPhone = useMediaQuery("(max-width: 640px)");
+  const isMediumScreen = useMediaQuery(
+    "(min-width: 641px) and (max-width: 1024px)"
+  );
+
+  const starterCount = useMemo(() => {
+    if (isPhone) return 3;
+    if (isMediumScreen) return 4;
+    return 6;
+  }, [isPhone, isMediumScreen]);
+
   const randomStarters = useMemo(() => {
     return [...conversationStarters]
       .sort(() => 0.5 - Math.random())
-      .slice(0, 4);
-  }, []);
+      .slice(0, starterCount);
+  }, [starterCount]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full p-4 lg:px-4 px-0">
-      <div className="mb-6 text-center">
-        <h2 className="text-xl font-bold">Twój asystent parlamentarny</h2>
-        <p className="text-sm text-gray-600">
-          <Link
-            href="https://sejm-stats.pl"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:underline"
-          >
-            powered by <strong>sejm-stats.pl</strong>
-          </Link>
-        </p>
+    <div className="flex flex-col items-center justify-center w-full p-4 sm:p-6">
+      <div className="mb-6 sm:mb-8 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
+          Twój asystent parlamentarny
+        </h2>
+        <Link
+          href="https://sejm-stats.pl"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-2 text-sm text-muted-foreground hover:underline"
+        >
+          powered by <strong>sejm-stats.pl</strong>
+        </Link>
       </div>
-      <div className="grid grid-cols-1 gap-3 w-full max-w-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
         {randomStarters.map((starter, index) => (
           <Button
             key={index}
             variant="outline"
-            className="flex items-center justify-start p-3 h-auto w-full text-left"
+            className="flex flex-col items-center justify-center p-4 h-auto w-full text-center hover:bg-primary/10 transition-colors duration-200 border-2 border-border rounded-lg shadow-sm"
             onClick={() => onStarterClick(starter.action)}
           >
-            <span className="flex-shrink-0 mr-3">{starter.icon}</span>
-            <span className="text-foreground text-sm leading-tight">
+            <span className="flex-shrink-0 mb-3 p-2 bg-background rounded-full shadow-sm">
+              {React.cloneElement(starter.icon, {
+                size: 32,
+              })}
+            </span>
+            <span className="text-foreground text-sm font-medium leading-tight">
               {starter.text}
             </span>
           </Button>

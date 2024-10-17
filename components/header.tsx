@@ -34,7 +34,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         </Button>
         <p className="text-sm text-foreground/50">public preview</p>
       </div>
-      <p className="text-red-500">Wersja Beta</p>
       <div className="flex items-center">
         {user && (
           <DropdownMenu>

@@ -10,25 +10,11 @@ import { TogetherLLM } from "@/lib/TogetherLLm";
 import { PROMPTS } from "@/tools/sejmstats-prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
+
 const llm = new TogetherLLM({
   apiKey: process.env.TOGETHER_API_KEY!,
   model: "meta-llama/Llama-Vision-Free",
 });
-
-const processDataPrompt = PromptTemplate.fromTemplate(`
-  Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
-  Pytanie: {question}
-  Dane: {dataString}
-  Data obecna: ${new Date().toLocaleDateString("pl-PL")}
-  Instrukcje:
-  0. Pamiętaj, że dane są ograniczcone do 5 najnowszych wyników.
-  1. Odpowiedz bezpośrednio na pytanie w maksymalnie 2 zdaniach.
-  2. Podaj tylko informacje istotne dla pytania.
-  3. Jeśli brak odpowiedzi w danych, napisz to krótko.
-  4. Użyj '**pogrubienia**' dla kluczowych dat lub liczb.
-  5. Cytuj tytuł dokumentu tylko jeśli jest bezpośrednio związany z pytaniem.
-  6. Nie opisuj dostarczonych danych ani ich zakresu.
-  Odpowiedź:`);
 
 const processData = async (
   data: any[],
@@ -36,16 +22,16 @@ const processData = async (
   model: TogetherLLM
 ) => {
   try {
-    console.log("Processing data with input:", {
+    console.debug("Processing data with input:", {
       question,
       dataLength: data.length,
     });
     const dataString = JSON.stringify(data);
-    const answer = await processDataPrompt
+    const answer = await PROMPTS.processDataPrompt
       .pipe(model)
       .pipe(new StringOutputParser())
       .invoke({ question, dataString });
-    console.log("Data processed successfully");
+    console.debug("Data processed successfully");
     return answer;
   } catch (error) {
     console.error("Error in processData:", error);
@@ -54,12 +40,11 @@ const processData = async (
 };
 
 export async function POST(req: NextRequest) {
-  console.log("POST request received");
+  console.debug("POST request received");
   try {
     const { messages, systemPrompt, memoryVariables, stream, isPluginEnabled } =
       await req.json();
-    console.log("Request parsed successfully");
-    console.log("Memory Variables:", memoryVariables);
+    console.debug("Request parsed successfully");
 
     const sejmStatsTool = createSejmStatsTool(llm);
     const langChainMessages = [
@@ -76,8 +61,6 @@ export async function POST(req: NextRequest) {
       }),
     ];
 
-    console.log("LangChain messages prepared");
-
     const lastUserMessage = messages[messages.length - 1].content;
 
     const encoder = new TextEncoder();
@@ -86,7 +69,7 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         try {
           if (isPluginEnabled) {
-            console.log("Plugin enabled, invoking sejmStatsTool");
+            console.debug("Plugin enabled, invoking sejmStatsTool");
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -98,7 +81,7 @@ export async function POST(req: NextRequest) {
             const { question, data } = await sejmStatsTool.invoke({
               question: lastUserMessage,
             });
-            console.log(
+            console.debug(
               "Received data from sejmStatsTool:",
               data.length,
               "items"
@@ -112,9 +95,8 @@ export async function POST(req: NextRequest) {
               )
             );
 
-            console.log("Processing data...");
             const answer = await processData(data, question, llm);
-            console.log("Data processed, answer length:", answer.length);
+            console.debug("Data processed, answer length:", answer.length);
 
             controller.enqueue(
               encoder.encode(
@@ -124,7 +106,6 @@ export async function POST(req: NextRequest) {
               )
             );
 
-            // Stream the processed answer
             for (const char of answer) {
               controller.enqueue(
                 encoder.encode(
@@ -133,7 +114,7 @@ export async function POST(req: NextRequest) {
               );
             }
           } else {
-            console.log("Plugin disabled, streaming LLM response");
+            console.debug("Plugin disabled, streaming LLM response");
             const streamingResponse = await llm.stream(langChainMessages);
 
             for await (const chunk of streamingResponse) {
@@ -144,7 +125,7 @@ export async function POST(req: NextRequest) {
               );
             }
           }
-          console.log("Streaming completed successfully");
+          console.debug("Streaming completed successfully");
         } catch (error) {
           console.error("Error in streaming:", error);
           controller.error(error);
@@ -153,11 +134,11 @@ export async function POST(req: NextRequest) {
         }
       },
       cancel() {
-        console.log("Stream cancelled by the client");
+        console.debug("Stream cancelled by the client");
       },
     });
 
-    console.log("Returning AIstream response");
+    console.debug("Returning AIstream response");
     return new NextResponse(AIstream, {
       headers: { "Content-Type": "text/event-stream" },
     });

@@ -4,33 +4,25 @@ class SejmStatsCommunicator {
   private static readonly SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
 
   async search(searchQuery: string, field: string): Promise<object> {
-    console.log("Search function started");
+    console.debug("Search function started");
     const url = new URL(`${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/search`);
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("limit", "5");
     url.searchParams.append("range", "3m");
     url.searchParams.append(field, "true");
-    console.log(`Fetching search data from: ${url.toString()}`);
 
     try {
-      console.log("Initiating fetch request");
       const response = await fetch(url.toString());
 
-      console.log("Fetch request completed");
-
       if (!response.ok) {
-        console.error(`HTTP error! status: ${response.status}`);
         const responseText = await response.text();
+        console.error(`HTTP error! status: ${response.status}`);
         console.error(`Response text: ${responseText}`);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log("Parsing JSON response");
       const data = await response.json();
-      console.log(
-        "Received search data:",
-        JSON.stringify(data).slice(0, 200) + "..."
-      );
+      console.debug("Received search data");
       return data;
     } catch (error) {
       console.error(`Error in search function:`, error);
@@ -72,18 +64,16 @@ class SejmStatsCommunicator {
     return this.optimizeForLLM(data);
   }
 }
+
 export const searchOptimized = async (
   searchQuery: string,
   field: string
 ): Promise<any[]> => {
-  console.log("searchOptimized function started");
+  console.debug("searchOptimized function started");
   const communicator = new SejmStatsCommunicator();
   try {
-    console.log("Calling searchOptimized method");
     const result = await communicator.searchOptimized(searchQuery, field);
-    console.log(
-      `searchOptimized completed successfully. Result length: ${result.length}`
-    );
+    console.debug("searchOptimized completed successfully");
     return result;
   } catch (error) {
     console.error(`Error in searchOptimized:`, error);

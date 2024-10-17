@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { ChatCard } from "@/components/chatCard";
 import { ChatProvider } from "./ChatContext";
@@ -12,6 +12,17 @@ export default function Home() {
   const { user, error, isLoading } = useUser();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isDev = process.env.NODE_ENV === "development";
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   if (!isDev) {
     if (isLoading) {
@@ -60,17 +71,23 @@ export default function Home() {
     <ChatProvider>
       <div className="flex flex-col h-screen">
         <div className="relative flex-1 flex flex-col md:flex-row overflow-hidden">
+          {isSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-10"
+              onClick={() => setIsSidebarOpen(false)}
+            ></div>
+          )}
           <div
-            className={`absolute md:relative z-20 h-full md:h-auto transition-transform duration-300 ease-in-out ${
+            className={`fixed md:relative z-20 h-full md:h-auto transition-transform duration-300 ease-in-out ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } md:translate-x-0 md:w-80 md:flex-shrink-0`}
+            } md:translate-x-0 md:w-96 md:flex-shrink-0`}
           >
             <Sidebar
               isMobile={isSidebarOpen}
               onClose={() => setIsSidebarOpen(false)}
             />
           </div>
-          <div className="flex-1 flex flex-col w-full md:w-auto ">
+          <div className="flex-1 flex flex-col w-full md:w-auto">
             <ChatHeader
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
