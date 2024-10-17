@@ -1,21 +1,14 @@
 "use server";
 
+import { setTimeout, clearTimeout } from "timers";
+
 class SejmStatsCommunicator {
   private static readonly SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
   private static readonly TIMEOUT = 10000; // 10 seconds timeout
-  private static readonly ALLOWED_ORIGINS = [
-    "https://chat.sejm-stats.pl",
-    "http://localhost:3000",
-    "https://ollama-ui-git-main-miskibins-projects.vercel.app",
-  ];
-
-  private getRandomOrigin(): string {
-    return SejmStatsCommunicator.ALLOWED_ORIGINS[
-      Math.floor(Math.random() * SejmStatsCommunicator.ALLOWED_ORIGINS.length)
-    ];
-  }
+  private static readonly ALLOWED_ORIGIN = "https://chat.sejm-stats.pl";
 
   async search(searchQuery: string, field: string): Promise<object> {
+    console.log("Search function started");
     const url = new URL(`${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/search`);
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("limit", "5");
@@ -25,26 +18,30 @@ class SejmStatsCommunicator {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(
-        () => controller.abort(),
-        SejmStatsCommunicator.TIMEOUT
-      );
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log("Request timed out");
+      }, SejmStatsCommunicator.TIMEOUT);
 
+      console.log("Initiating fetch request");
       const response = await fetch(url.toString(), {
         signal: controller.signal,
         headers: {
-          Origin: this.getRandomOrigin(),
+          Origin: SejmStatsCommunicator.ALLOWED_ORIGIN,
         },
       });
 
       clearTimeout(timeoutId);
+      console.log("Fetch request completed");
 
       if (!response.ok) {
         console.error(`HTTP error! status: ${response.status}`);
-        console.error(`Response text: ${await response.text()}`);
+        const responseText = await response.text();
+        console.error(`Response text: ${responseText}`);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
+      console.log("Parsing JSON response");
       const data = await response.json();
       console.log(
         "Received search data:",
@@ -52,7 +49,7 @@ class SejmStatsCommunicator {
       );
       return data;
     } catch (error) {
-      console.error(`Error fetching search data:`, error);
+      console.error(`Error in search function:`, error);
       throw error;
     }
   }
@@ -91,11 +88,21 @@ class SejmStatsCommunicator {
     return this.optimizeForLLM(data);
   }
 }
-
 export const searchOptimized = async (
   searchQuery: string,
   field: string
 ): Promise<any[]> => {
+  console.log("searchOptimized function started");
   const communicator = new SejmStatsCommunicator();
-  return communicator.searchOptimized(searchQuery, field);
+  try {
+    console.log("Calling searchOptimized method");
+    const result = await communicator.searchOptimized(searchQuery, field);
+    console.log(
+      `searchOptimized completed successfully. Result length: ${result.length}`
+    );
+    return result;
+  } catch (error) {
+    console.error(`Error in searchOptimized:`, error);
+    throw error;
+  }
 };
