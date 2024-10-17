@@ -192,7 +192,6 @@ export function ChatCard() {
                             <PluginDataDialog pluginData={message.pluginData} />
                             <SummarableTextDialog
                               onSummarize={() => {}}
-                              onAddToContext={() => {}}
                               message={message}
                             />
                           </div>

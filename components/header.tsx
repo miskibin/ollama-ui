@@ -32,7 +32,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         >
           <Menu size={24} />
         </Button>
-        <p className="text-sm text-foreground/50">public preview</p>
+        <p className="text-sm text-foreground/50">Asystent RP</p>
       </div>
       <div className="flex items-center">
         {user && (

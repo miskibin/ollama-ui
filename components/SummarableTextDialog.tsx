@@ -16,13 +16,11 @@ import { extractTitlesAndUrls } from "@/lib/parseJson";
 
 interface SummarableTextDialogProps {
   onSummarize: (item: SummarableText) => void;
-  onAddToContext: (item: SummarableText) => void;
   message: Message;
 }
 
 const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
   onSummarize,
-  onAddToContext,
   message,
 }) => {
   const summarableTexts = extractTitlesAndUrls(message.pluginData || "");
@@ -83,15 +81,6 @@ const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
                       >
                         <FileSearch className="mr-2 h-4 w-4" />
                         Streść
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onAddToContext(item)}
-                        className="sm:mb-0 mb-2"
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Dodaj do kontekstu
                       </Button>
                     </div>
                   </li>

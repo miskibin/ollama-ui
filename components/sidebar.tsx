@@ -44,7 +44,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2 ">
-            <h2 className="text-lg font-semibold">Aststent RP</h2>
+            <h2 className="text-lg font-semibold text-red-500">Wersja beta</h2>
           </div>
           <div className="flex items-center space-x-2">
             {mounted && (
