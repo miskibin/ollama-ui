@@ -21,6 +21,7 @@ import Image from "next/image";
 import PluginDataDialog from "./plugin-data-dialog";
 import SummarableTextDialog from "./SummarableTextDialog";
 import { useUser } from "@auth0/nextjs-auth0/client";
+import LoadingDots from "./loadingDots";
 
 export function ChatCard() {
   const {
@@ -248,6 +249,17 @@ export function ChatCard() {
           )
         ) : null}
         <div ref={messagesEndRef} />
+        {isLoading && messages[messages.length - 1].content === "" && (
+          <div className="flex flex-col items-center mt-4">
+            <LoadingDots />
+            <p className="text-sm text-gray-500 italic mt-2">
+              {messages[messages.length - 1]?.pluginData &&
+              (messages[messages.length - 1]?.pluginData?.length ?? 0) < 100
+                ? messages[messages.length - 1]?.pluginData
+                : "Myślę..."}
+            </p>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="w-full mt-1 items-center justify-center sticky bottom-0 ">
         <form
