@@ -1,13 +1,7 @@
-"use client";
 import React, { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Send,
   RefreshCw,
@@ -18,19 +12,14 @@ import {
   X,
   Copy,
   Trash2,
-  User,
-  LogOut,
 } from "lucide-react";
 
 import MarkdownResponse from "@/components/markdownResponse";
 import InitialChatContent from "@/components/initial-page";
 import { useChatContext } from "@/app/ChatContext";
-import Link from "next/link";
-import LoadingDots from "./loadingDots";
 import Image from "next/image";
 import PluginDataDialog from "./plugin-data-dialog";
 import SummarableTextDialog from "./SummarableTextDialog";
-import { SummarableText } from "@/lib/types";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
 export function ChatCard() {
@@ -60,22 +49,24 @@ export function ChatCard() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+
   useEffect(() => {
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
   const copyToClipboard = (id: string, content: string) => {
     navigator.clipboard.writeText(content).then(() => {
       setCopiedMessageId(id);
-      setTimeout(() => setCopiedMessageId(null), 2000); // Reset after 2 seconds
+      setTimeout(() => setCopiedMessageId(null), 2000);
     });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<Element>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      console.log("Enter pressed");
       e.preventDefault();
       handleSubmit(e);
       if (textareaRef.current) {
@@ -87,7 +78,7 @@ export function ChatCard() {
   const handleEditStart = (id: string, content: string) => {
     setEditingMessageId(id);
     setEditInput(content);
-    setEditTextareaHeight("auto"); // Reset height when starting edit
+    setEditTextareaHeight("auto");
   };
 
   const handleEditSave = (id: string) => {
@@ -103,6 +94,7 @@ export function ChatCard() {
   const handleStarterClick = (text: string) => {
     setInput(text);
   };
+
   const adjustEditTextareaHeight = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
@@ -110,13 +102,14 @@ export function ChatCard() {
     setEditTextareaHeight("auto");
     setEditTextareaHeight(`${e.target.scrollHeight}px`);
   };
+
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "56px"; // Reset to min height
+      textareaRef.current.style.height = "56px";
       const scrollHeight = textareaRef.current.scrollHeight;
       textareaRef.current.style.height = `${Math.min(
         Math.max(scrollHeight, 56),
-        350
+        200
       )}px`;
     }
   };
@@ -125,7 +118,6 @@ export function ChatCard() {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     await handleFileChange(e);
-    // Use a small delay to ensure the input has been updated with the PDF content
     setTimeout(adjustTextareaHeight, 0);
   };
 
@@ -133,11 +125,10 @@ export function ChatCard() {
     setInput(e.target.value);
     adjustTextareaHeight();
   };
-  const { user } = useUser();
 
   return (
-    <Card className="h-full overflow-hidden flex flex-col items-center border-t-0 shadow-none rounded-t-none">
-      <CardContent className="flex-grow container container-fluid overflow-auto 2xl:w-3/4 w-full">
+    <Card className="h-full flex flex-col items-center border-t-0 shadow-none rounded-t-none">
+      <CardContent className="flex-grow w-full max-w-5xl overflow-y-auto px-2 sm:px-4">
         {isClient ? (
           messages.length === 0 ? (
             <InitialChatContent onStarterClick={handleStarterClick} />
@@ -145,7 +136,7 @@ export function ChatCard() {
             messages.map((message) => (
               <div
                 key={message.id}
-                className={`mt-2 mb-0 flex ${
+                className={`mt-2 mb-1 flex ${
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
@@ -153,20 +144,18 @@ export function ChatCard() {
                   <Image
                     src="/logo.svg"
                     alt="Assistant Avatar"
-                    width={40}
-                    height={40}
-                    className="mr-2"
+                    width={24}
+                    height={24}
+                    className="mr-1 mt-1"
                   />
                 )}
                 <div
-                  className={`inline-block pt-3 px-3 shadow-md rounded-md ${
+                  className={`inline-block py-2 px-3 shadow-md rounded-md ${
                     message.role === "user"
                       ? "bg-primary/10"
                       : "border-0 shadow-none"
                   } ${
-                    editingMessageId === message.id
-                      ? "w-full max-w-full"
-                      : "max-w-[80%]"
+                    editingMessageId === message.id ? "w-full" : "max-w-[95%]"
                   }`}
                 >
                   {editingMessageId === message.id ? (
@@ -202,16 +191,8 @@ export function ChatCard() {
                           <div className="flex justify-start mt-2 space-x-2">
                             <PluginDataDialog pluginData={message.pluginData} />
                             <SummarableTextDialog
-                              onSummarize={function (
-                                item: SummarableText
-                              ): void {
-                                throw new Error("Function not implemented.");
-                              }}
-                              onAddToContext={function (
-                                item: SummarableText
-                              ): void {
-                                throw new Error("Function not implemented.");
-                              }}
+                              onSummarize={() => {}}
+                              onAddToContext={() => {}}
                               message={message}
                             />
                           </div>
@@ -268,27 +249,16 @@ export function ChatCard() {
           )
         ) : null}
         <div ref={messagesEndRef} />
-        {isLoading && messages[messages.length - 1].content === "" && (
-          <div className="flex flex-col items-center mt-4">
-            <LoadingDots />
-            <p className="text-sm text-gray-500 italic mt-2">
-              {messages[messages.length - 1]?.pluginData &&
-              (messages[messages.length - 1]?.pluginData?.length ?? 0) < 100
-                ? messages[messages.length - 1]?.pluginData
-                : "Myślę..."}
-            </p>
-          </div>
-        )}
       </CardContent>
-      <CardFooter className="w-full mt-3 items-center justify-center">
+      <CardFooter className="w-full mt-1 items-center justify-center sticky bottom-0 ">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSubmit(e);
           }}
-          className="flex flex-col space-y-2 2xl:w-3/5 w-full  h-full"
+          className="flex flex-col space-y-2 w-full max-w-3xl"
         >
-          <div className="relative flex-1 m-2 rounded-full mx-0">
+          <div className="relative flex-1 rounded-full">
             <Textarea
               ref={textareaRef}
               value={input}
@@ -296,7 +266,7 @@ export function ChatCard() {
               onKeyDown={handleKeyDown}
               placeholder="Wpisz wiadomość..."
               disabled={isLoading}
-              className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[350px] rounded-[1rem]"
+              className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[200px] rounded-[1rem]"
               rows={1}
             />
             <div className="absolute bottom-2 right-2 flex space-x-2">

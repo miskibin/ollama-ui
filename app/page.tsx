@@ -69,34 +69,32 @@ export default function Home() {
 
   return (
     <ChatProvider>
-      <div className="flex flex-col h-screen">
-        <div className="relative flex-1 flex flex-col md:flex-row overflow-hidden">
-          {isSidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-10"
-              onClick={() => setIsSidebarOpen(false)}
-            ></div>
-          )}
-          <div
-            className={`fixed md:relative z-20 h-full md:h-auto transition-transform duration-300 ease-in-out ${
-              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } md:translate-x-0 md:w-96 md:flex-shrink-0`}
-          >
-            <Sidebar
-              isMobile={isSidebarOpen}
-              onClose={() => setIsSidebarOpen(false)}
-            />
-          </div>
-          <div className="flex-1 flex flex-col w-full md:w-auto">
-            <ChatHeader
-              isSidebarOpen={isSidebarOpen}
-              setIsSidebarOpen={setIsSidebarOpen}
-            />
-            <div className="flex-1 overflow-hidden">
-              <ChatCard />
-            </div>
+      <div className="flex h-screen overflow-hidden">
+        <div
+          className={`fixed md:relative z-20 h-full transition-transform duration-300 ease-in-out ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0 md:w-96 md:flex-shrink-0`}
+        >
+          <Sidebar
+            isMobile={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        </div>
+        <div className="flex flex-col flex-grow w-full md:w-auto overflow-hidden">
+          <ChatHeader
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+          />
+          <div className="flex-grow overflow-hidden">
+            <ChatCard />
           </div>
         </div>
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
+        )}
       </div>
     </ChatProvider>
   );
