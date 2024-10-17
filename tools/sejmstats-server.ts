@@ -14,8 +14,7 @@ class SejmStatsCommunicator {
 
     try {
       console.log("Initiating fetch request");
-      // const response = await fetch(url.toString(), {});
-      const response = await fetch("https://sejm-stats.pl/apiInt/home/");
+      const response = await fetch(url.toString());
 
       console.log("Fetch request completed");
 
