@@ -4,6 +4,17 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import ChatSettings from "./chat-settings";
+import { useChatStore } from "@/lib/store";
+import { getPatrons } from "@/lib/get-patronite-users";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import Link from "next/link";
 
 interface SidebarProps {
   isMobile: boolean;
@@ -14,9 +25,21 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
+  const { models, selectedModel, setSelectedModel, patrons, setPatrons } =
+    useChatStore();
+  const [isPatron, setIsPatron] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+
+    const fetchPatrons = async () => {
+      const patronList = await getPatrons();
+      setPatrons(patronList);
+      setIsPatron(user && user.email ? patronList.includes(user.email) : false);
+    };
+
+    fetchPatrons();
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -32,7 +55,13 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isMobile, onClose]);
+  }, [isMobile, onClose, setPatrons, user]);
+
+  const handleModelChange = (value: string) => {
+    if (isPatron) {
+      setSelectedModel(value);
+    }
+  };
 
   return (
     <Card
@@ -90,6 +119,37 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
       </CardHeader>
 
       <div className="p-4 md:px-4 px-0 ">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">Wybierz model</h3>
+          <Select
+            onValueChange={handleModelChange}
+            value={selectedModel}
+            disabled={!isPatron}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a model" />
+            </SelectTrigger>
+            <SelectContent>
+              {models.map((model) => (
+                <SelectItem key={model} value={model}>
+                  {model.split("/")[1]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!isPatron && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Zostań{" "}
+              <Link
+                href="https://patronite.pl/sejm-stats"
+                className="text-primary hover:underline"
+              >
+                patronem
+              </Link>
+              , aby uzyskać dostęp do wyboru modelu
+            </p>
+          )}
+        </div>
         <ChatSettings />
       </div>
     </Card>

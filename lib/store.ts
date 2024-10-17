@@ -17,6 +17,9 @@ interface ChatState {
   input: string;
   plugins: ChatPlugin[];
   memory: BufferMemory;
+  patrons: string[];
+  models: string[];
+  selectedModel: string;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, content: string, pluginData?: string) => void;
   deleteMessage: (id: string) => void;
@@ -29,6 +32,9 @@ interface ChatState {
   getMemoryVariables: () => Promise<MemoryVariables>;
   addToMemory: (humanMessage: string, aiMessage: string) => Promise<void>;
   clearMemory: () => void;
+  setPatrons: (patrons: string[]) => void;
+  setModels: (models: string[]) => void;
+  setSelectedModel: (model: string) => void;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -52,6 +58,14 @@ export const useChatStore = create<ChatState>()(
         inputKey: "input",
         outputKey: "output",
       }),
+      patrons: [],
+      models: [
+        "meta-llama/Llama-Vision-Free",
+        "meta-llama/Meta-Llama-3-70B-Instruct-Lite",
+        "google/gemma-2-27b-it",
+        "google/gemma-2-9b-it",
+      ],
+      selectedModel: "meta-llama/Llama-Vision-Free",
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
       updateMessage: (id, content, pluginData?) =>
@@ -106,6 +120,9 @@ export const useChatStore = create<ChatState>()(
           }),
         });
       },
+      setPatrons: (patrons) => set({ patrons }),
+      setModels: (models) => set({ models }),
+      setSelectedModel: (model) => set({ selectedModel: model }),
     }),
     {
       name: "chat-storage",
@@ -113,6 +130,7 @@ export const useChatStore = create<ChatState>()(
         messages: state.messages,
         options: state.options,
         systemPrompt: state.systemPrompt,
+        selectedModel: state.selectedModel,
       }),
     }
   )

@@ -37,7 +37,7 @@ const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Badge
-          className="text-xs cursor-pointer hover:bg-accent transition-colors"
+          className="text-xs cursor-pointer text-primary border-primary hover:bg-accent transition-colors"
           variant="secondary"
         >
           <Database className="w-3 h-3 mr-1" />
@@ -46,7 +46,7 @@ const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[900px] max-h-[80vh] p-0">
         <DialogHeader className="md:px-6 md:py-4 border-b sm:px-6 sm:py-4 px-4 py-2">
-          <DialogTitle className=" font-semibold flex items-center sm:text-lg text-base">
+          <DialogTitle className="font-semibold flex items-center sm:text-lg text-base">
             <Database className="w-5 h-5 mr-2" />
             Lista dokumentów
           </DialogTitle>
@@ -61,7 +61,15 @@ const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
                     className="bg-muted md:p-4 rounded-lg sm:p-4 p-2"
                   >
                     <h3 className="md:mb-3 text-wrap sm:mb-3 mb-2">
-                      {truncateText(item.title, 250)}
+                      {truncateText(item.title, 1050)
+                        .split("\n")
+                        .map((line, i) => (
+                          <span key={i}>
+                            {line}
+                            <br />
+                            <br />
+                          </span>
+                        ))}
                     </h3>
                     <div className="flex flex-wrap space-x-2">
                       <Button
@@ -93,8 +101,8 @@ const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
             )}
           </div>
         </ScrollArea>
-        <DialogFooter className=" border-t bg-muted/50 sm:px-6 sm:py-3 px-4 py-2">
-          <div className="flex items-center justify-center w-full  text-muted-foreground sm:text-sm text-xs">
+        <DialogFooter className="border-t bg-muted/50 sm:px-6 sm:py-3 px-4 py-2">
+          <div className="flex items-center justify-center w-full text-muted-foreground sm:text-sm text-xs">
             <Info className="w-4 h-4 mr-2" />
             <span>
               Wyświetlone dokumenty mogą być wykorzystane do streszczenia lub

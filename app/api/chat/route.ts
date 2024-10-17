@@ -8,8 +8,6 @@ import {
 import { createSejmStatsTool } from "@/tools/sejmstats";
 import { TogetherLLM } from "@/lib/TogetherLLm";
 import { PROMPTS } from "@/tools/sejmstats-prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
-import { PromptTemplate } from "@langchain/core/prompts";
 
 const llm = new TogetherLLM({
   apiKey: process.env.TOGETHER_API_KEY!,
@@ -27,12 +25,14 @@ const processData = async (
       dataLength: data.length,
     });
     const dataString = JSON.stringify(data);
-    const answer = await PROMPTS.processDataPrompt
+    const streamingResponse = await PROMPTS.processDataPrompt
       .pipe(model)
-      .pipe(new StringOutputParser())
-      .invoke({ question, dataString });
+      .stream({
+        question,
+        dataString,
+      });
     console.debug("Data processed successfully");
-    return answer;
+    return streamingResponse;
   } catch (error) {
     console.error("Error in processData:", error);
     throw error;
@@ -95,8 +95,24 @@ export async function POST(req: NextRequest) {
               )
             );
 
-            const answer = await processData(data, question, llm);
-            console.debug("Data processed, answer length:", answer.length);
+            const streamingResponse = await processData(data, question, llm);
+            console.debug("Starting to stream processed data");
+
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  status: "plugin_processing",
+                })}\n\n`
+              )
+            );
+
+            for await (const chunk of streamingResponse) {
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ response: chunk })}\n\n`
+                )
+              );
+            }
 
             controller.enqueue(
               encoder.encode(
@@ -105,14 +121,6 @@ export async function POST(req: NextRequest) {
                 })}\n\n`
               )
             );
-
-            for (const char of answer) {
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({ response: char })}\n\n`
-                )
-              );
-            }
           } else {
             console.debug("Plugin disabled, streaming LLM response");
             const streamingResponse = await llm.stream(langChainMessages);
@@ -133,12 +141,9 @@ export async function POST(req: NextRequest) {
           controller.close();
         }
       },
-      cancel() {
-        console.debug("Stream cancelled by the client");
-      },
+      cancel() {},
     });
 
-    console.debug("Returning AIstream response");
     return new NextResponse(AIstream, {
       headers: { "Content-Type": "text/event-stream" },
     });

@@ -8,7 +8,7 @@ class SejmStatsCommunicator {
     const url = new URL(`${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/search`);
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("limit", "5");
-    url.searchParams.append("range", "3m");
+    url.searchParams.append("range", "6m");
     url.searchParams.append(field, "true");
 
     try {

@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ProfileClient() {
   const { user, error, isLoading } = useUser();
-
+  console.log(user);
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
