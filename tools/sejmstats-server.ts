@@ -2,7 +2,6 @@
 
 class SejmStatsCommunicator {
   private static readonly SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
-  private static readonly ALLOWED_ORIGIN = "https://chat.sejm-stats.pl";
 
   async search(searchQuery: string, field: string): Promise<object> {
     console.log("Search function started");
@@ -15,21 +14,9 @@ class SejmStatsCommunicator {
 
     try {
       console.log("Initiating fetch request");
-      // const response = await fetch(url.toString(), {
-      //   headers: {
-      //     Origin: SejmStatsCommunicator.ALLOWED_ORIGIN,
-      //   },
-      // });
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        text: async () => "mock text",
-        json: async () => ({
-          data: "mock data",
-        }),
-      };
+      // const response = await fetch(url.toString(), {});
+      const response = await fetch("https://sejm-stats.pl/apiInt/home/");
 
-      const response = mockResponse;
       console.log("Fetch request completed");
 
       if (!response.ok) {
