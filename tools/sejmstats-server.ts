@@ -1,9 +1,7 @@
 "use server";
 
-import { setTimeout, clearTimeout } from "timers";
-
 class SejmStatsCommunicator {
-  private static readonly SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
+  private static readonly SEJM_STATS_BASE_URL = "https://httpbin.org/get";
   private static readonly TIMEOUT = 10000; // 10 seconds timeout
   private static readonly ALLOWED_ORIGIN = "https://chat.sejm-stats.pl";
 
@@ -18,20 +16,13 @@ class SejmStatsCommunicator {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-        console.log("Request timed out");
-      }, SejmStatsCommunicator.TIMEOUT);
-
       console.log("Initiating fetch request");
       const response = await fetch(url.toString(), {
-        signal: controller.signal,
         headers: {
           Origin: SejmStatsCommunicator.ALLOWED_ORIGIN,
         },
       });
 
-      clearTimeout(timeoutId);
       console.log("Fetch request completed");
 
       if (!response.ok) {
