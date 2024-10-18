@@ -27,17 +27,17 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
   return RunnableSequence.from([
     new RunnablePassthrough(),
     async ({ question }) => {
-      console.log("Starting field selection...");
       const field = await selectField(question, model);
-      console.log("Selected field:", field);
+      console.debug("Selected field:", field);
 
-      console.log("Generating search query...");
       const searchQuery = await generateSearchQuery(question, model);
-      console.log("Generated search query:", searchQuery);
+      console.info("SEJM-STATS", {
+        "user prompt": question,
+        field: field,
+        searchQuery: searchQuery,
+      });
 
-      console.log("Sending query to SejmStatsCommunicator...");
       const data = await searchOptimized(searchQuery, field);
-      console.log("Received data:", data);
 
       return { question, data };
     },
