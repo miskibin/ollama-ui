@@ -96,7 +96,7 @@ const ChatSettings = () => {
       <div>
         <LabelWithIcon
           icon={Thermometer}
-          text="Temperatura"
+          text="Kreatywność"
           value={options.temperature.toFixed(1)}
         />
         <Slider

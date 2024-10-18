@@ -1,27 +1,12 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  Send,
-  RefreshCw,
-  StopCircle,
-  FileText,
-  Edit,
-  Check,
-  X,
-  Copy,
-  Trash2,
-} from "lucide-react";
-
-import MarkdownResponse from "@/components/markdownResponse";
+import { Send, StopCircle, FileText } from "lucide-react";
 import InitialChatContent from "@/components/initial-page";
 import { useChatContext } from "@/app/ChatContext";
-import Image from "next/image";
-import PluginDataDialog from "./plugin-data-dialog";
-import SummarableTextDialog from "./SummarableTextDialog";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import LoadingDots from "./loadingDots";
+import { ChatMessage } from "./message";
 
 export function ChatCard() {
   const {
@@ -30,27 +15,14 @@ export function ChatCard() {
     input,
     setInput,
     handleSubmit,
-    editingMessageId,
-    editMessage,
-    setEditingMessageId,
-    regenerateMessage,
-    handleFileChange,
     isPdfParsing,
     stopGenerating,
-    deleteMessage,
+    handleFileChange,
   } = useChatContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [editTextareaHeight, setEditTextareaHeight] = useState("auto");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [editInput, setEditInput] = useState("");
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -58,14 +30,7 @@ export function ChatCard() {
     }
   }, [messages]);
 
-  const copyToClipboard = (id: string, content: string) => {
-    navigator.clipboard.writeText(content).then(() => {
-      setCopiedMessageId(id);
-      setTimeout(() => setCopiedMessageId(null), 2000);
-    });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<Element>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
@@ -73,28 +38,6 @@ export function ChatCard() {
         textareaRef.current.style.height = "56px";
       }
     }
-  };
-
-  const handleEditStart = (id: string, content: string) => {
-    setEditingMessageId(id);
-    setEditInput(content);
-    setEditTextareaHeight("auto");
-  };
-
-  const handleEditSave = (id: string) => {
-    editMessage(id, editInput);
-    setEditingMessageId(null);
-  };
-
-  const handleEditCancel = () => {
-    setEditingMessageId(null);
-    setEditInput("");
-  };
-
-  const handleStarterClick = (text: string) => {
-    setInput(text);
-    const e = new Event("submit");
-    handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
   };
 
   const adjustTextareaHeight = () => {
@@ -122,134 +65,29 @@ export function ChatCard() {
     }
   };
 
-  useEffect(() => {
-    if (input === "") {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "56px";
-      }
-    }
-  }, [input]);
   return (
     <Card className="h-full flex flex-col items-center border-t-0 shadow-none rounded-t-none">
       <CardContent className="flex-grow w-full max-w-6xl overflow-y-auto px-2 sm:px-4">
-        {isClient ? (
-          messages.length === 0 ? (
-            <InitialChatContent onStarterClick={handleStarterClick} />
-          ) : (
-            messages
-              .filter((message) => message.content !== "")
-              .map((message) => (
-                <div
-                  key={message.id}
-                  className={`mt-2 mb-1 flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {message.role === "assistant" && (
-                    <Image
-                      src="/logo.svg"
-                      alt="Assistant Avatar"
-                      width={24}
-                      height={24}
-                      className="mr-1 mt-1"
-                    />
-                  )}
-                  <div
-                    className={`inline-block py-2 px-3 shadow-md rounded-md ${
-                      message.role === "user"
-                        ? "bg-primary/10"
-                        : "border-0 shadow-none"
-                    } ${
-                      editingMessageId === message.id ? "w-full" : "max-w-[95%]"
-                    }`}
-                  >
-                    {editingMessageId === message.id ? (
-                      <div className="w-full">
-                        <Textarea
-                          value={editInput}
-                          onChange={adjustTextareaHeight}
-                          className="w-full mb-2 min-h-[100px] max-h-[300px] resize-vertical"
-                          style={{ height: editTextareaHeight }}
-                        />
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            onClick={() => handleEditSave(message.id)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            onClick={handleEditCancel}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-left">
-                        <MarkdownResponse content={message.content} />
-                        {message.pluginData && (
-                          <div className="flex justify-start mt-2 space-x-2">
-                            <PluginDataDialog pluginData={message.pluginData} />
-                            <SummarableTextDialog
-                              onSummarize={() => {}}
-                              message={message}
-                            />
-                          </div>
-                        )}
-                        <div className="flex justify-start mt-2 space-x-2">
-                          <Button
-                            variant="ghost"
-                            onClick={() =>
-                              handleEditStart(message.id, message.content)
-                            }
-                            size="sm"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          {message.role === "assistant" && (
-                            <>
-                              <Button
-                                onClick={() => regenerateMessage(message.id)}
-                                size="sm"
-                                variant="ghost"
-                              >
-                                <RefreshCw className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                onClick={() =>
-                                  copyToClipboard(message.id, message.content)
-                                }
-                                size="sm"
-                                variant="ghost"
-                                className="relative"
-                              >
-                                {copiedMessageId === message.id ? (
-                                  <Check className="w-4 h-4 text-green-500 absolute animate-scale-check" />
-                                ) : (
-                                  <Copy className="w-4 h-4" />
-                                )}
-                              </Button>
-                            </>
-                          )}
-                          <Button
-                            onClick={() => deleteMessage(message.id)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-          )
-        ) : null}
+        {messages.length === 0 ? (
+          <InitialChatContent
+            onStarterClick={(text) =>
+              handleSubmit(
+                new Event("submit") as unknown as React.FormEvent,
+                text
+              )
+            }
+          />
+        ) : (
+          messages
+            .filter((message) => message.content !== "")
+            .map((message, index) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                isLastMessage={index === messages.length - 1}
+              />
+            ))
+        )}
         <div ref={messagesEndRef} />
         {isLoading && messages[messages.length - 1].content === "" && (
           <div className="flex flex-col items-center mt-4">
@@ -263,7 +101,7 @@ export function ChatCard() {
           </div>
         )}
       </CardContent>
-      <CardFooter className="w-full mt-1 items-center justify-center sticky bottom-0 ">
+      <CardFooter className="w-full mt-1 items-center justify-center sticky bottom-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -297,7 +135,7 @@ export function ChatCard() {
                       <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   ) : (
-                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <FileText className="h-5 w-5 " />
                   )}
                 </Button>
                 <input
@@ -325,7 +163,7 @@ export function ChatCard() {
                   disabled={isLoading || isPdfParsing}
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10 rounded-full hover:bg-primary/10 transition-colors"
+                  className="h-10 w-10 rounded-full hover:bg-primary/10 text-primary transition-colors"
                 >
                   <Send className="h-5 w-5" />
                 </Button>

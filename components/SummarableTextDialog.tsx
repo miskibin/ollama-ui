@@ -84,7 +84,10 @@ const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => onSummarize(item)}
+                        onClick={() => {
+                          setIsOpen(false);
+                          onSummarize(item);
+                        }}
                         className="sm:mb-0 mb-2"
                       >
                         <FileSearch className="mr-2 h-4 w-4" />

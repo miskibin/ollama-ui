@@ -18,6 +18,7 @@ export const useChatLogic = () => {
     getMemoryVariables,
     addToMemory,
     selectedModel,
+    togglePlugin,
     plugins,
     clearMemory,
   } = useChatStore();
@@ -29,19 +30,19 @@ export const useChatLogic = () => {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, text?: string) => {
     e.preventDefault();
-    if (!input.trim()) return;
-
+    const inputText = text || input;
+    if (!inputText.trim()) return;
     const userMessage: Message = {
       id: generateUniqueId(),
       role: "user",
-      content: input,
+      content: inputText,
     };
     addMessage(userMessage);
     setInput("");
 
-    const easterEgg = checkEasterEggs(input);
+    const easterEgg = checkEasterEggs(inputText);
     if (easterEgg) {
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 400));
@@ -56,7 +57,10 @@ export const useChatLogic = () => {
       await getResponse([...messages, userMessage]);
     }
   };
-  const getResponse = async (messageHistory: Message[]) => {
+  const getResponse = async (
+    messageHistory: Message[],
+    disableSejmStats?: boolean
+  ) => {
     setIsLoading(true);
     setPluginStatus(null);
     abortControllerRef.current = new AbortController();
@@ -77,7 +81,8 @@ export const useChatLogic = () => {
           systemPrompt,
           memoryVariables,
           stream: options.streaming,
-          isPluginEnabled: isPluginEnabled,
+          isPluginEnabled:
+            disableSejmStats !== undefined ? false : isPluginEnabled,
           modelName: selectedModel,
         }),
         signal: abortControllerRef.current.signal,
@@ -147,6 +152,50 @@ export const useChatLogic = () => {
     }
   };
 
+  const handleSummarize = async (pdfUrl: string) => {
+    setIsLoading(true);
+    setPluginStatus(null);
+
+    try {
+      const pdfResponse = await fetch(pdfUrl);
+      if (!pdfResponse.ok) {
+        throw new Error(
+          `Failed to download PDF. HTTP status: ${pdfResponse.status}`
+        );
+      }
+      const arrayBuffer = await pdfResponse.arrayBuffer();
+      const formData = new FormData();
+      formData.append(
+        "pdf",
+        new Blob([arrayBuffer], { type: "application/pdf" })
+      );
+      const response = await fetch("/api/parse-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const markdownContent = data.markdown;
+      const summarizePrompt = `${markdownContent}\n\n  Write a concise summary of the text in polish, return your responses with 5 lines that cover the key points of the text.
+`;
+      const userMessage: Message = {
+        id: generateUniqueId(),
+        role: "user",
+        content: summarizePrompt,
+      };
+      addMessage(userMessage);
+      await getResponse([...messages, userMessage], true);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
+      setPluginStatus(null);
+    }
+  };
   const stopGenerating = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -187,6 +236,7 @@ export const useChatLogic = () => {
   return {
     isLoading,
     pluginStatus,
+    handleSummarize,
     editMessage,
     customSystem: systemPrompt,
     setCustomSystem: setSystemPrompt,

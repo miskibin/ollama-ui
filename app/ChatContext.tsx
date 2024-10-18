@@ -29,13 +29,13 @@ interface ChatContextType {
   plugins: ChatPlugin[];
   // From useChatLogic
   isLoading: boolean;
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
+  handleSubmit: (e: React.FormEvent, text?: string) => Promise<void>;
   stopGenerating: () => void;
   responseMetadata: ResponseMetadata | null;
   editingMessageId: string | null;
   setEditingMessageId: React.Dispatch<React.SetStateAction<string | null>>;
   regenerateMessage: (id: string) => Promise<void>;
-
+  handleSummarize: (pdfUrl: string) => void;
   // From useFileHandling
   isPdfParsing: boolean;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
