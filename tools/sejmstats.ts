@@ -20,7 +20,7 @@ const generateSearchQuery = async (question: string, model: TogetherLLM) => {
     .pipe(model)
     .pipe(new StringOutputParser())
     .invoke({ question });
-  return searchQuery.trim().replace(/[_*.\s]/g, "");
+  return searchQuery.trim().replace(/[_*.]/g, "");
 };
 
 export const createSejmStatsTool = (model: TogetherLLM) => {
