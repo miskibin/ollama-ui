@@ -31,7 +31,11 @@ export const getPatrons = async (): Promise<string[]> => {
     const data = await response.json();
 
     const emails = data.results.map((patron: any) => patron.email);
-    const result = [...emails, "michalskibinski109@gmail.com"];
+    const result = [
+      ...emails,
+      "michalskibinski109@gmail.com",
+      "d4nielp0l0k@gmail.com",
+    ];
 
     // Update cache
     cache = {
