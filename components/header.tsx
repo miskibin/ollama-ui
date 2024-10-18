@@ -47,7 +47,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         isPatron
           ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
           : "bg-card"
-      } border-b border-border p-3 py-2 mx-0`}
+      } border-b border-border md:p-4 p-2 mx-0`}
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
