@@ -158,5 +158,5 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({ status: "OK"});
+  return NextResponse.json({ status: "OK" });
 }
