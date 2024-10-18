@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu } from "lucide-react";
+import { User, LogOut, Menu, Star } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import {
@@ -22,7 +22,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   setIsSidebarOpen,
 }) => {
   const { user } = useUser();
-  const [isPatron, setIsPatron] = useState(false);
+  const [isPatron, setIsPatron] = useState(true);
   const setPatrons = useChatStore((state) => state.setPatrons);
 
   useEffect(() => {
@@ -44,13 +44,17 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   return (
     <div
       className={`flex flex-col w-full ${
-        isPatron ? "bg-primary" : "bg-card"
-      } border-2 border-b-0 rounded-lg rounded-b-none p-4 mx-0`}
+        isPatron
+          ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
+          : "bg-card"
+      } border-b border-border p-4 mx-0`}
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Button
-            className="md:hidden mr-2"
+            className={`md:hidden mr-2 ${
+              isPatron ? "text-white hover:bg-white/20" : "text-foreground"
+            }`}
             variant="ghost"
             size="icon"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -58,23 +62,32 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <Menu size={24} />
           </Button>
           <p
-            className={`text-sm ${
-              isPatron ? "text-primary-foreground" : "text-foreground/50"
+            className={`text-lg font-semibold ${
+              isPatron ? "text-white" : "text-foreground/50"
             }`}
           >
             Asystent RP
           </p>
           {isPatron && (
-            <p className="text-sm font-medium text-primary-foreground bg-primary-foreground/50 px-2 py-1 rounded-full">
-              Dziękuję za wsparcie!
-            </p>
+            <div className="flex items-center bg-white/20 px-3 py-1 rounded-full">
+              <Star className="w-4 h-4 text-yellow-300 mr-2" />
+              <p className="text-sm font-medium text-white">Dziękuję!</p>
+            </div>
           )}
         </div>
         <div className="flex items-center">
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={
+                    isPatron
+                      ? "text-white hover:bg-white/20"
+                      : "text-foreground"
+                  }
+                >
                   <span className="sr-only">Opcje</span>
                   <User className="h-4 w-4" />
                 </Button>

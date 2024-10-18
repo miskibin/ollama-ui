@@ -134,58 +134,59 @@ export function ChatCard() {
           messages.length === 0 ? (
             <InitialChatContent onStarterClick={handleStarterClick} />
           ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`mt-2 mb-1 flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {message.role === "assistant" && (
-                  <Image
-                    src="/logo.svg"
-                    alt="Assistant Avatar"
-                    width={24}
-                    height={24}
-                    className="mr-1 mt-1"
-                  />
-                )}
+            messages
+              .filter((message) => message.content !== "")
+              .map((message) => (
                 <div
-                  className={`inline-block py-2 px-3 shadow-md rounded-md ${
-                    message.role === "user"
-                      ? "bg-primary/10"
-                      : "border-0 shadow-none"
-                  } ${
-                    editingMessageId === message.id ? "w-full" : "max-w-[95%]"
+                  key={message.id}
+                  className={`mt-2 mb-1 flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {editingMessageId === message.id ? (
-                    <div className="w-full">
-                      <Textarea
-                        value={editInput}
-                        onChange={adjustEditTextareaHeight}
-                        className="w-full mb-2 min-h-[100px] max-h-[300px] resize-vertical"
-                        style={{ height: editTextareaHeight }}
-                      />
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          onClick={() => handleEditSave(message.id)}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={handleEditCancel}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
+                  {message.role === "assistant" && (
+                    <Image
+                      src="/logo.svg"
+                      alt="Assistant Avatar"
+                      width={24}
+                      height={24}
+                      className="mr-1 mt-1"
+                    />
+                  )}
+                  <div
+                    className={`inline-block py-2 px-3 shadow-md rounded-md ${
+                      message.role === "user"
+                        ? "bg-primary/10"
+                        : "border-0 shadow-none"
+                    } ${
+                      editingMessageId === message.id ? "w-full" : "max-w-[95%]"
+                    }`}
+                  >
+                    {editingMessageId === message.id ? (
+                      <div className="w-full">
+                        <Textarea
+                          value={editInput}
+                          onChange={adjustEditTextareaHeight}
+                          className="w-full mb-2 min-h-[100px] max-h-[300px] resize-vertical"
+                          style={{ height: editTextareaHeight }}
+                        />
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            onClick={() => handleEditSave(message.id)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={handleEditCancel}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    message.content !== "" && (
+                    ) : (
                       <div className="text-left">
                         <MarkdownResponse content={message.content} />
                         {message.pluginData && (
@@ -241,11 +242,10 @@ export function ChatCard() {
                           </Button>
                         </div>
                       </div>
-                    )
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           )
         ) : null}
         <div ref={messagesEndRef} />
