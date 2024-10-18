@@ -48,7 +48,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         isPatron
           ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
           : "bg-card"
-      } border-b border-border p-4 mx-0`}
+      } border-b border-border p-3 mx-0`}
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
@@ -68,10 +68,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             }`}
           >
             Asystent RP
-            <Badge
-            className="ml-2"
-              variant="destructive"
-            >
+            <Badge className="ml-2 hidden md:inline" variant="destructive">
               beta
             </Badge>
           </p>
