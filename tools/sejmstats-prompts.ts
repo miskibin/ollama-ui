@@ -18,22 +18,20 @@ export const PROMPTS = {
       Wybrane pole:`),
 
   generateSearchQuery: PromptTemplate.fromTemplate(`
-        Zadanie: Wygeneruj jedno słowo kluczowe do wyszukiwania.
-        
-        Pytanie: {question}
-        
-        Instrukcje:
-        1. Przeanalizuj pytanie dokładnie.
-        2. Wybierz JEDNO najważniejsze słowo kluczowe.
-        3. Jeśli absolutnie konieczne, możesz użyć maksymalnie dwóch słów (np. "ochrona środowiska").
-        4. Użyj rzeczownika w formie podstawowej, w mianowniku liczby pojedynczej.
-        5. Jeśli wybierzesz słowo złożone, rozdziel je na osobne słowa (np. "ochrona" zamiast "ochronaśrodowiska").
-        6. Unikaj ogólnych słów jak "sejm", "ustawa", "interpelacja".
-        7. Sprawdź, czy słowo jest poprawnie napisane (np. "budżet" zamiast "budzet").
-        8. Nie używaj cudzysłowów, myślników ani innych znaków specjalnych.
-        9. Użyj tylko małych liter.
-        
-        Słowo kluczowe (maksymalnie dwa słowa):`),
+    Zadanie: Wybierz najistotniejsze słowo kluczowe lub krótką frazę do wyszukiwania.
+
+    Pytanie: {question}
+
+    Instrukcje:
+    1. Zidentyfikuj główny, konkretny temat pytania.
+    2. Wybierz JEDNO słowo kluczowe lub krótką frazę (maks. 2-3 słowa).
+    3. Użyj rzeczownika lub frazy rzeczownikowej w mianowniku liczby pojedynczej.
+    4. Preferuj terminy specjalistyczne (np. "logistyka", "prawo podatkowe").
+    5. Unikaj ogólnych słów jak "projekt", "ustawa", "sejm", "komisja".
+    6. Użyj małych liter, bez znaków specjalnych.
+    7. Sprawdź poprawność pisowni.
+
+    Słowo kluczowe lub krótka fraza:`),
   processDataPrompt: PromptTemplate.fromTemplate(`
           Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
           Pytanie: {question}
