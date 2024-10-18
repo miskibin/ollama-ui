@@ -22,7 +22,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   setIsSidebarOpen,
 }) => {
   const { user } = useUser();
-  const [isPatron, setIsPatron] = useState(true);
+  const [isPatron, setIsPatron] = useState(false);
   const setPatrons = useChatStore((state) => state.setPatrons);
 
   useEffect(() => {

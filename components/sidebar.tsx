@@ -49,7 +49,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
             <Badge
               variant="destructive"
             >
-              Wersja beta
+              beta
             </Badge>
           </div>
           <div className="flex items-center space-x-2">

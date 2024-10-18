@@ -60,10 +60,10 @@ export const useChatStore = create<ChatState>()(
       }),
       patrons: [],
       models: [
-        "meta-llama/Llama-Vision-Free",
-        "meta-llama/Meta-Llama-3-70B-Instruct-Lite",
-        "google/gemma-2-27b-it",
-        "google/gemma-2-9b-it",
+        "meta-llama/Llama-Vision-Free", // 0
+        "meta-llama/Meta-Llama-3-70B-Instruct-Lite", // 	$0.54
+        "google/gemma-2-27b-it", // 0.80
+        "google/gemma-2-9b-it", //0.30
       ],
       selectedModel: "meta-llama/Llama-Vision-Free",
       addMessage: (message) =>
