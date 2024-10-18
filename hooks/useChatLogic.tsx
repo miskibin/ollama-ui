@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Message, ResponseMetadata } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
 import { useChatStore } from "@/lib/store";
+import { checkEasterEggs } from "@/lib/utils";
 
 export const useChatLogic = () => {
   const {
@@ -32,16 +33,29 @@ export const useChatLogic = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: generateUniqueId(),
       role: "user",
       content: input,
     };
-    addMessage(newMessage);
+    addMessage(userMessage);
     setInput("");
-    await getResponse([...messages, newMessage]);
-  };
 
+    const easterEgg = checkEasterEggs(input);
+    if (easterEgg) {
+      setIsLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      const easterEggMessage: Message = {
+        id: generateUniqueId(),
+        role: "assistant",
+        content: `![Easter Egg](${easterEgg})`,
+      };
+      addMessage(easterEggMessage);
+      setIsLoading(false);
+    } else {
+      await getResponse([...messages, userMessage]);
+    }
+  };
   const getResponse = async (messageHistory: Message[]) => {
     setIsLoading(true);
     setPluginStatus(null);
