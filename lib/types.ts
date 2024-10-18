@@ -10,8 +10,7 @@ export type Message = {
 
 export type Model = {
   name: string;
-  size: number;
-  friendlyName: string;
+  description: string;
 };
 
 export type SummarableText = {

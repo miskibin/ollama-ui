@@ -79,8 +79,8 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex-grow overflow-auto space-y-6 pt-8">
-        <div className="space-y-12">
+      <CardContent className="flex-grow overflow-auto space-y-4 pt-8">
+        <div className="space-y-8">
           {plugins.map((plugin) => (
             <div
               key={plugin.name}
@@ -90,7 +90,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
             >
               <span className="text-sm font-medium flex items-center">
                 <Database className="w-4 h-4 mr-2 text-primary" />
-                {plugin.name}
+                korzystaj z {plugin.name}
               </span>
               <Switch
                 checked={plugin.enabled}
@@ -107,7 +107,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
                 >
                   Zostań patronem
                 </Link>
-                , aby korzystać z płatnych modeli i dodatkowych funkcji.
+                , aby korzystać z płatnych modeli.
               </p>
             </div>
           )}

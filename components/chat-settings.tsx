@@ -62,7 +62,7 @@ const ChatSettings = () => {
   };
 
   return (
-    <div className="space-y-12 pt-8">
+    <div className="space-y-8 pt-8">
       <div>
         <div className="flex items-center justify-between mb-2">
           <LabelWithIcon icon={Zap} text="Model" />
@@ -74,12 +74,19 @@ const ChatSettings = () => {
           disabled={!isPatron}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a model" />
+            <SelectValue placeholder="Wybierz model" />
           </SelectTrigger>
           <SelectContent>
             {models.map((model) => (
-              <SelectItem key={model} value={model}>
-                {model.split("/")[1]}
+              <SelectItem
+                key={model.name}
+                value={model.name}
+                className="flex justify-between"
+              >
+                <span>{model.name.split("/")[1]}</span>
+                <Badge variant="secondary" className="ml-2">
+                  {model.description}
+                </Badge>
               </SelectItem>
             ))}
           </SelectContent>

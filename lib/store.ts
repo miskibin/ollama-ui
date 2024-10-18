@@ -18,7 +18,7 @@ interface ChatState {
   plugins: ChatPlugin[];
   memory: BufferMemory;
   patrons: string[];
-  models: string[];
+  models: Model[];
   selectedModel: string;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, content: string, pluginData?: string) => void;
@@ -33,7 +33,7 @@ interface ChatState {
   addToMemory: (humanMessage: string, aiMessage: string) => Promise<void>;
   clearMemory: () => void;
   setPatrons: (patrons: string[]) => void;
-  setModels: (models: string[]) => void;
+  setModels: (models: Model[]) => void;
   setSelectedModel: (model: string) => void;
 }
 
@@ -49,7 +49,7 @@ export const useChatStore = create<ChatState>()(
         repeatPenalty: 1.1,
         num_predict: 4096,
       },
-      systemPrompt: "",
+      systemPrompt: "You are a specialized keyword extractor for Polish legislative topics.",
       input: "",
       plugins: plugins,
       memory: new BufferMemory({
@@ -60,10 +60,22 @@ export const useChatStore = create<ChatState>()(
       }),
       patrons: [],
       models: [
-        "meta-llama/Llama-Vision-Free", // 0
-        "meta-llama/Meta-Llama-3-70B-Instruct-Lite", // 	$0.54
-        "google/gemma-2-27b-it", // 0.80
-        "google/gemma-2-9b-it", //0.30
+        {
+          name: "meta-llama/Llama-Vision-Free",
+          description: "Prymitywny",
+        },
+        {
+          name: "meta-llama/Meta-Llama-3-70B-Instruct-Lite",
+          description: "Zaawansowany", // 54
+        },
+        {
+          name: "google/gemma-2-27b-it",
+          description: "Zaawansowany", // 80
+        },
+        {
+          name: "google/gemma-2-9b-it",
+          description: "Kompaktowy", // 30
+        },
       ],
       selectedModel: "meta-llama/Llama-Vision-Free",
       addMessage: (message) =>
