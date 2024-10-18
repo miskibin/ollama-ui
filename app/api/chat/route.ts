@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       isPluginEnabled,
       modelName,
     } = await req.json();
-    console.debug("Request parsed successfully");
+    console.debug("Request parsed successfully", modelName);
     const llm = new TogetherLLM({
       apiKey: process.env.TOGETHER_API_KEY!,
       model: modelName,

@@ -46,7 +46,6 @@ export function ChatCard() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editInput, setEditInput] = useState("");
   const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -94,14 +93,8 @@ export function ChatCard() {
 
   const handleStarterClick = (text: string) => {
     setInput(text);
-  };
-
-  const adjustEditTextareaHeight = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setEditInput(e.target.value);
-    setEditTextareaHeight("auto");
-    setEditTextareaHeight(`${e.target.scrollHeight}px`);
+    const e = new Event("submit");
+    handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
   };
 
   const adjustTextareaHeight = () => {
@@ -115,18 +108,27 @@ export function ChatCard() {
     }
   };
 
-  const handlePdfFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    await handleFileChange(e);
-    setTimeout(adjustTextareaHeight, 0);
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     adjustTextareaHeight();
   };
 
+  const handlePdfFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (e.target.files && e.target.files[0]) {
+      await handleFileChange(e);
+      setTimeout(adjustTextareaHeight, 0);
+    }
+  };
+
+  useEffect(() => {
+    if (input === "") {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "56px";
+      }
+    }
+  }, [input]);
   return (
     <Card className="h-full flex flex-col items-center border-t-0 shadow-none rounded-t-none">
       <CardContent className="flex-grow w-full max-w-6xl overflow-y-auto px-2 sm:px-4">
@@ -165,7 +167,7 @@ export function ChatCard() {
                       <div className="w-full">
                         <Textarea
                           value={editInput}
-                          onChange={adjustEditTextareaHeight}
+                          onChange={adjustTextareaHeight}
                           className="w-full mb-2 min-h-[100px] max-h-[300px] resize-vertical"
                           style={{ height: editTextareaHeight }}
                         />
@@ -269,35 +271,43 @@ export function ChatCard() {
           }}
           className="flex flex-col space-y-2 w-full max-w-3xl"
         >
-          <div className="relative flex-1 rounded-full">
+          <div className="relative flex-1">
             <Textarea
               ref={textareaRef}
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="Wpisz wiadomość..."
-              disabled={isLoading}
-              className="pr-20 pl-4 pt-4 pb-2 resize-none min-h-[56px] max-h-[200px] rounded-[1rem]"
+              disabled={isLoading || isPdfParsing}
+              className="pr-24 pl-4 py-3 resize-none min-h-[56px] max-h-[200px] w-full rounded-2xl border-2 focus:ring-2 focus:ring-primary/50 transition-all overflow-y-auto scrollbar-hide hover:scrollbar-default"
               rows={1}
             />
-            <div className="absolute bottom-2 right-2 flex space-x-2">
-              <Button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading || isPdfParsing}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <FileText className="h-5 w-5" />
-              </Button>
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={handlePdfFileChange}
-                ref={fileInputRef}
-                className="hidden"
-              />
+            <div className="absolute bottom-2 right-2 flex items-center space-x-1">
+              <div className="relative">
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isPdfParsing}
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full hover:bg-muted transition-colors"
+                >
+                  {isPdfParsing ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : (
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </Button>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handlePdfFileChange}
+                  ref={fileInputRef}
+                  className="hidden"
+                />
+              </div>
 
               {isLoading ? (
                 <Button
@@ -305,17 +315,17 @@ export function ChatCard() {
                   onClick={stopGenerating}
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10 rounded-full hover:bg-red-100 transition-colors"
                 >
                   <StopCircle className="h-5 w-5 text-red-500" />
                 </Button>
               ) : (
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || isPdfParsing}
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10 rounded-full hover:bg-primary/10 transition-colors"
                 >
                   <Send className="h-5 w-5" />
                 </Button>

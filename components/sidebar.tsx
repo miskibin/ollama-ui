@@ -46,11 +46,7 @@ export function Sidebar({ isMobile, onClose }: SidebarProps) {
             <span className="text-lg font-semibold text-primary">
               Ustawienia
             </span>
-            <Badge
-              variant="destructive"
-            >
-              beta
-            </Badge>
+
           </div>
           <div className="flex items-center space-x-2">
             {mounted && (

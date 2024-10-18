@@ -54,7 +54,7 @@ export const useChatLogic = () => {
 
       const memoryVariables = await getMemoryVariables();
       const isPluginEnabled = plugins.some((plugin) => plugin.enabled);
-      console.log("selected model", selectedModel)
+      console.log("selected model", selectedModel);
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,7 +64,7 @@ export const useChatLogic = () => {
           memoryVariables,
           stream: options.streaming,
           isPluginEnabled: isPluginEnabled,
-          model: selectedModel,
+          modelName: selectedModel,
         }),
         signal: abortControllerRef.current.signal,
       });

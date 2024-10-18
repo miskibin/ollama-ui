@@ -11,6 +11,7 @@ import {
 } from "./ui/dropdown-menu";
 import { getPatrons } from "@/lib/get-patronite-users";
 import { useChatStore } from "@/lib/store";
+import { Badge } from "./ui/badge";
 
 interface ChatHeaderProps {
   isSidebarOpen: boolean;
@@ -67,6 +68,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             }`}
           >
             Asystent RP
+            <Badge
+            className="ml-2"
+              variant="destructive"
+            >
+              beta
+            </Badge>
           </p>
           {isPatron && (
             <div className="flex items-center bg-white/20 px-3 py-1 rounded-full">

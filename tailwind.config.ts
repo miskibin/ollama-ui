@@ -58,6 +58,28 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/typography"),
+    function ({ addUtilities }: { addUtilities: Function }) {
+      const newUtilities = {
+        ".scrollbar-hide": {
+          "-ms-overflow-style": "none",
+          "scrollbar-width": "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        },
+        ".scrollbar-default": {
+          "-ms-overflow-style": "auto",
+          "scrollbar-width": "auto",
+          "&::-webkit-scrollbar": {
+            display: "block",
+          },
+        },
+      };
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
+  ],
 };
 export default config;
