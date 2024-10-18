@@ -16,6 +16,7 @@ export const useChatLogic = () => {
     setInput,
     getMemoryVariables,
     addToMemory,
+    selectedModel,
     plugins,
     clearMemory,
   } = useChatStore();
@@ -62,6 +63,7 @@ export const useChatLogic = () => {
           memoryVariables,
           stream: options.streaming,
           isPluginEnabled: isPluginEnabled,
+          model: selectedModel,
         }),
         signal: abortControllerRef.current.signal,
       });

@@ -9,11 +9,6 @@ import { createSejmStatsTool } from "@/tools/sejmstats";
 import { TogetherLLM } from "@/lib/TogetherLLm";
 import { PROMPTS } from "@/tools/sejmstats-prompts";
 
-const llm = new TogetherLLM({
-  apiKey: process.env.TOGETHER_API_KEY!,
-  model: "meta-llama/Llama-Vision-Free",
-});
-
 const processData = async (
   data: any[],
   question: string,
@@ -42,10 +37,19 @@ const processData = async (
 export async function POST(req: NextRequest) {
   console.debug("POST request received");
   try {
-    const { messages, systemPrompt, memoryVariables, stream, isPluginEnabled } =
-      await req.json();
+    const {
+      messages,
+      systemPrompt,
+      memoryVariables,
+      stream,
+      isPluginEnabled,
+      modelName,
+    } = await req.json();
     console.debug("Request parsed successfully");
-
+    const llm = new TogetherLLM({
+      apiKey: process.env.TOGETHER_API_KEY!,
+      model: modelName,
+    });
     const sejmStatsTool = createSejmStatsTool(llm);
     const langChainMessages = [
       new SystemMessage(systemPrompt || "You are a helpful assistant."),
@@ -154,5 +158,5 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({ status: "OK", model: llm.model });
+  return NextResponse.json({ status: "OK"});
 }
