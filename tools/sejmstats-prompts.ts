@@ -18,20 +18,23 @@ export const PROMPTS = {
       Wybrane pole:`),
 
   generateSearchQuery: PromptTemplate.fromTemplate(`
-    Zadanie: Wybierz najistotniejsze słowo kluczowe lub krótką frazę do wyszukiwania.
+    Task: Select the most relevant keyword or short phrase for searching.
 
-    Pytanie: {question}
+    Question: {question}
 
-    Instrukcje:
-    1. Zidentyfikuj główny, konkretny temat pytania.
-    2. Wybierz JEDNO słowo kluczowe lub krótką frazę (maks. 2-3 słowa).
-    3. Użyj rzeczownika lub frazy rzeczownikowej w mianowniku liczby pojedynczej.
-    4. Preferuj terminy specjalistyczne (np. "logistyka", "prawo podatkowe").
-    5. Unikaj ogólnych słów jak "projekt", "ustawa", "sejm", "komisja".
-    6. Użyj małych liter, bez znaków specjalnych.
-    7. Sprawdź poprawność pisowni.
+    Instructions:
+    1. Identify the core issue or event, ignoring procedural aspects.
+    2. Choose ONE keyword or short phrase (max 2-3 words) in Polish.
+    3. Use a noun or noun phrase in its basic form.
+    4. Focus on the primary subject, not actions related to it.
+    5. Prefer broader terms when appropriate.
+    6. Omit words like "projekt", "ustawa", "sejm", "głosowanie", "pomoc".
+    7. Use lowercase letters, correct Polish spelling, no special characters.
 
-    Słowo kluczowe lub krótka fraza:`),
+    Example: For "Jakie ustawy uchwalono w sprawie ochrony środowiska?" use "ochrona środowiska"
+
+    Keyword or short phrase (in Polish):`),
+    
   processDataPrompt: PromptTemplate.fromTemplate(`
           Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
           Pytanie: {question}
