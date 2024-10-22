@@ -1,0 +1,6 @@
+2024-10-22T20:17:53.173Z [req_0001] [31merror[39m: Error executing tool sejm_stats_analyzer
+{
+  "error": {
+    "output": "{}"
+  }
+}
