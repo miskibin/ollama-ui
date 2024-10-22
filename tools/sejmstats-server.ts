@@ -3,13 +3,13 @@
 class SejmStatsCommunicator {
   private static readonly SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
 
-  async search(searchQuery: string, field: string): Promise<object> {
+  async search(searchQuery: string): Promise<object> {
     console.debug("Search function started");
-    const url = new URL(`${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/search`);
+    const url = new URL(
+      `${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/vector-search`
+    );
     url.searchParams.append("q", searchQuery);
-    url.searchParams.append("limit", "5");
-    url.searchParams.append("range", "6m");
-    url.searchParams.append(field, "true");
+    url.searchParams.append("n", "5");
 
     try {
       const response = await fetch(url.toString());
@@ -59,20 +59,17 @@ class SejmStatsCommunicator {
     return result;
   }
 
-  async searchOptimized(searchQuery: string, field: string): Promise<any[]> {
-    const data = await this.search(searchQuery, field);
+  async searchOptimized(searchQuery: string): Promise<any[]> {
+    const data = await this.search(searchQuery);
     return this.optimizeForLLM(data);
   }
 }
 
-export const searchOptimized = async (
-  searchQuery: string,
-  field: string
-): Promise<any[]> => {
+export const searchOptimized = async (searchQuery: string): Promise<any[]> => {
   console.debug("searchOptimized function started");
   const communicator = new SejmStatsCommunicator();
   try {
-    const result = await communicator.searchOptimized(searchQuery, field);
+    const result = await communicator.searchOptimized(searchQuery);
     console.debug("searchOptimized completed successfully");
     return result;
   } catch (error) {

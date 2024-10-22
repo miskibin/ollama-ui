@@ -1,0 +1,14 @@
+2024-10-22T20:17:52.553Z [req_0001] [32minfo[39m: Starting new agent invocation
+2024-10-22T20:17:52.554Z [req_0001] [34mdebug[39m: Processed input query
+{
+  "query": "najnowsze statystyki about Sejm statistics?"
+}
+2024-10-22T20:17:52.555Z [req_0001] [32minfo[39m: Starting query analysis
+{
+  "query": "najnowsze statystyki about Sejm statistics?"
+}
+2024-10-22T20:17:52.555Z [req_0001] [34mdebug[39m: Analyzing relevance for tool: sejm_stats_analyzer
+2024-10-22T20:17:52.556Z [req_0001] [34mdebug[39m: Generated analysis prompt
+{
+  "prompt": "You are an AI assistant that determines if a tool is needed to answer a question.\n      Answer only with YES or NO.\n      \n      Question: najnowsze statystyki about Sejm statistics?\n      \n      Tool Information:\n      Name: sejm_stats_analyzer\n      Description: Analyzes statistics and data about the Polish Sejm based on natural language questions\n      \n      Is this tool needed to answer the question?\n      Answer with either:\n      RELEVANT: YES\n      or\n      RELEVANT: NO\n      "
+}

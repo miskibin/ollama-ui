@@ -1,4 +1,3 @@
-"use server";
 import { NextRequest, NextResponse } from "next/server";
 import {
   HumanMessage,
@@ -6,154 +5,102 @@ import {
   SystemMessage,
 } from "@langchain/core/messages";
 import { createSejmStatsTool } from "@/tools/sejmstats";
-import { TogetherLLM } from "@/lib/TogetherLLm";
 import { PROMPTS } from "@/tools/sejmstats-prompts";
+import {
+  convertLangChainMessageToRPMessage,
+  convertRPMessageToLangChainMessage,
+} from "@/lib/utils";
+import { TogetherLLM } from "@/lib/TogetherLLm";
+import { AgentRP } from "@/lib/agent";
 
-const processData = async (
-  data: any[],
-  question: string,
-  model: TogetherLLM
-) => {
-  try {
-    console.debug("Processing data with input:", {
-      question,
-      dataLength: data.length,
-    });
-    const dataString = JSON.stringify(data);
-    const streamingResponse = await PROMPTS.processDataPrompt
-      .pipe(model)
-      .stream({
-        question,
-        dataString,
-      });
-    console.debug("Data processed successfully");
-    return streamingResponse;
-  } catch (error) {
-    console.error("Error in processData:", error);
-    throw error;
-  }
-};
+const AGENT_SYSTEM_TEMPLATE = `You are Polish laywer and you are helping a friend who is a journalist. You never answer if you are not sure.
+If you don't know how to answer a question, use the available tools to look up relevant information. You should particularly do this for questions about Polish parliament.`;
 
 export async function POST(req: NextRequest) {
-  console.debug("POST request received");
   try {
-    const {
-      messages,
-      systemPrompt,
-      memoryVariables,
-      stream,
-      isPluginEnabled,
-      modelName,
-    } = await req.json();
-    console.debug("Request parsed successfully", modelName);
+    const { messages, systemPrompt, isPluginEnabled, modelName } =
+      await req.json();
+
+    // Convert incoming messages to LangChain format
+    const langChainMessages = [
+      new SystemMessage(systemPrompt || AGENT_SYSTEM_TEMPLATE),
+      ...messages.map(convertRPMessageToLangChainMessage),
+    ];
+
+    // Initialize LLM
     const llm = new TogetherLLM({
       apiKey: process.env.TOGETHER_API_KEY!,
       model: modelName,
+      streaming: true, // Enable streaming
+      temperature: 0.7,
     });
+
+    // Create tools
     const sejmStatsTool = createSejmStatsTool(llm);
-    const langChainMessages = [
-      new SystemMessage(systemPrompt || "You are a helpful assistant."),
-      ...(Array.isArray(memoryVariables)
-        ? memoryVariables
-        : [new AIMessage(memoryVariables || "")]),
-      ...messages.map((msg: any) => {
-        if (msg.role === "user") {
-          return new HumanMessage(msg.content);
-        } else {
-          return new AIMessage(msg.content);
-        }
-      }),
-    ];
 
-    const lastUserMessage = messages[messages.length - 1].content;
+    // Initialize agent
+    const agent = new AgentRP({
+      llm,
+      tools: [sejmStatsTool],
+    });
 
+    // Create a TransformStream for streaming the response
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
     const encoder = new TextEncoder();
 
-    const AIstream = new ReadableStream({
-      async start(controller) {
-        try {
-          if (isPluginEnabled) {
-            console.debug("Plugin enabled, invoking sejmStatsTool");
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  pluginData: "Zapytajmy sejm-stats...",
-                })}\n\n`
-              )
-            );
+    // Start the agent execution in the background
+    (async () => {
+      try {
+        let fullContent = "";
 
-            const { question, data } = await sejmStatsTool.invoke({
-              question: lastUserMessage,
-            });
-            console.debug(
-              "Received data from sejmStatsTool:",
-              data.length,
-              "items"
-            );
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  status: "plugin_data_fetched",
-                  pluginData: data,
-                })}\n\n`
-              )
-            );
+        // Process each chunk from the agent
+        for await (const chunk of agent.invoke(langChainMessages)) {
+          // Convert chunk to your response format
+          const responseChunk = {
+            messages: [convertLangChainMessageToRPMessage(chunk)],
+          };
 
-            const streamingResponse = await processData(data, question, llm);
-            console.debug("Starting to stream processed data");
-
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  status: "plugin_processing",
-                })}\n\n`
-              )
-            );
-
-            for await (const chunk of streamingResponse) {
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({ response: chunk })}\n\n`
-                )
-              );
-            }
-
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  status: "plugin_completed",
-                })}\n\n`
-              )
-            );
-          } else {
-            console.debug("Plugin disabled, streaming LLM response");
-            const streamingResponse = await llm.stream(langChainMessages);
-
-            for await (const chunk of streamingResponse) {
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({ response: chunk })}\n\n`
-                )
-              );
-            }
+          // Accumulate content for tools execution messages
+          if (chunk.content.includes("Executed")) {
+            fullContent += chunk.content + "\n";
+            continue;
           }
-          console.debug("Streaming completed successfully");
-        } catch (error) {
-          console.error("Error in streaming:", error);
-          controller.error(error);
-        } finally {
-          controller.close();
-        }
-      },
-      cancel() {},
-    });
 
-    return new NextResponse(AIstream, {
-      headers: { "Content-Type": "text/event-stream" },
+          // Write the chunk to the stream
+          await writer.write(
+            encoder.encode(`data: ${JSON.stringify(responseChunk)}\n\n`)
+          );
+        }
+
+        // Close the stream
+        await writer.close();
+      } catch (error) {
+        // Handle any errors during streaming
+        const errorMessage = {
+          error: error instanceof Error ? error.message : "An error occurred",
+        };
+        await writer.write(
+          encoder.encode(`data: ${JSON.stringify(errorMessage)}\n\n`)
+        );
+        await writer.close();
+      }
+    })();
+
+    // Return the streaming response
+    return new Response(stream.readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
     });
-  } catch (error: any) {
-    console.error("Error in API route:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error("Error in POST handler:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 

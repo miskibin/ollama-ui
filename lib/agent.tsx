@@ -30,32 +30,33 @@ export class AgentRP {
 
   private readonly analyzeTemplate =
     PromptTemplate.fromTemplate(`You are an AI assistant that determines if a tool is needed to answer a question.
-    Answer only with YES or NO.
-    
-    Question: {query}
-    
-    Tool Information:
-    Name: {toolName}
-    Description: {toolDescription}
-    
-    Is this tool needed to answer the question?
-    Answer with either:
-    RELEVANT: YES
-    or
-    RELEVANT: NO
-    `);
+      Answer only with YES or NO.
+      
+      Question: {query}
+      
+      Tool Information:
+      Name: {toolName}
+      Description: {toolDescription}
+      
+      Is this tool needed to answer the question?
+      Answer with either:
+      RELEVANT: YES
+      or
+      RELEVANT: NO
+      `);
 
   private readonly RESPONSE_PROMPT = `You are a helpful AI assistant. Using the information gathered from the tools, provide a clear and direct answer to the user's question.
-    Focus on being concise and informative based on the tool outputs provided.
-    
-    Question: {question}
-    Tool Results: {tool_results}`;
+      Focus on being concise and informative based on the tool outputs provided.
+      
+      Question: {question}
+      Tool Results: {tool_results}`;
 
   constructor(options: AgentOptions) {
     this.llm = options.llm;
     this.tools = options.tools;
     this.verbose = options.verbose ?? true;
 
+    // Initialize Winston logger
     this.logger = winston.createLogger({
       level: this.verbose ? "debug" : "info",
       format: winston.format.combine(
@@ -73,8 +74,13 @@ export class AgentRP {
       ),
       transports: [
         new winston.transports.Console(),
-        new winston.transports.File({ filename: "error.log", level: "error" }),
-        new winston.transports.File({ filename: "combined.log" }),
+        new winston.transports.File({
+          filename: "error.log",
+          level: "error",
+        }),
+        new winston.transports.File({
+          filename: "combined.log",
+        }),
       ],
     });
   }
@@ -134,37 +140,35 @@ export class AgentRP {
   ): Promise<string[]> {
     this.log(context, "info", "Starting query analysis", { query });
 
-    const relevantTools: string[] = [];
+    const analyses = await Promise.all(
+      this.tools.map(async (tool) => ({
+        name: tool.name,
+        relevant: await this.analyzeToolRelevance(query, tool, context),
+      }))
+    );
 
-    for (const tool of this.tools) {
-      const isRelevant = await this.analyzeToolRelevance(query, tool, context);
-      if (isRelevant) {
-        relevantTools.push(tool.name);
-      }
-    }
+    const relevantToolNames = analyses
+      .filter((analysis) => analysis.relevant)
+      .map((analysis) => analysis.name);
 
     this.log(
       context,
       "info",
-      `Query analysis complete. Found ${relevantTools.length} relevant tools`,
-      { relevantTools }
+      `Query analysis complete. Found ${relevantToolNames.length} relevant tools`,
+      { relevantTools: relevantToolNames }
     );
 
-    return relevantTools;
+    return relevantToolNames;
   }
 
   private async executeTool(
     tool: StructuredToolInterface,
-    query: string,
     context: LogContext
   ): Promise<string> {
-    this.log(context, "info", `Executing tool: ${tool.name}`, {
-      question: query,
-    });
+    this.log(context, "info", `Executing tool: ${tool.name}`);
 
     try {
-      // Pass the query as the question parameter
-      const result = await tool.invoke({ question: query });
+      const result = await tool.invoke({});
       this.log(context, "debug", `Tool ${tool.name} execution completed`, {
         result,
       });
@@ -224,7 +228,7 @@ export class AgentRP {
         continue;
       }
 
-      const result = await this.executeTool(tool, query, context);
+      const result = await this.executeTool(tool, context);
       toolResults.push({
         tool: toolName,
         result,

@@ -1,11 +1,9 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-
+import { ToolCall } from "@langchain/core/messages/tool";
 export type Message = {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "tool";
   content: string;
-  pluginData?: string; // data fetched from plugins
+  tool_calls?: ToolCall[];
 };
 
 export type Model = {
