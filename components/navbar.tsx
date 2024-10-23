@@ -13,12 +13,7 @@ import { getPatrons } from "@/lib/get-patronite-users";
 import { useChatStore } from "@/lib/store";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-interface NavbarProps {
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (isOpen: boolean) => void;
-}
-
-const Navbar: React.FC<NavbarProps> = () => {
+const Navbar: React.FC = () => {
   const { user } = useUser();
   const [isPatron, setIsPatron] = useState(false);
   const setPatrons = useChatStore((state) => state.setPatrons);
