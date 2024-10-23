@@ -46,10 +46,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="px-3 md:px-4 py-3 border-b">
+      <SidebarHeader className="px-3 md:px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5" />
+            <Settings className="w-6 h-6" />
             <span className="text-sm font-medium">Ustawienia</span>
           </div>
           {mounted && (
@@ -61,9 +61,9 @@ export function AppSidebar() {
               aria-label="Przełącz motyw"
             >
               {theme === "light" ? (
-                <Moon className="h-6 w-6" />
+                <Moon className="h-7 w-7" />
               ) : (
-                <Sun className="h-6 w-6" />
+                <Sun className="h-7 w-7" />
               )}
             </Button>
           )}
