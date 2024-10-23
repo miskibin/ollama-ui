@@ -89,8 +89,8 @@ export const useChatLogic = () => {
           systemPrompt,
           enabledPluginIds:
             disableAllPlugins ||
-            (messages[messages.length - 1].role == "user" &&
-              messages[messages.length - 1].artifacts)
+            (messages[messages.length - 1]?.role == "user" &&
+              messages[messages.length - 1]?.artifacts)
               ? []
               : plugins
                   .filter((plugin) => plugin.enabled)

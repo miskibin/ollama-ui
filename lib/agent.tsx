@@ -180,12 +180,12 @@ export class AgentRP {
       type: "status",
       content: "Generuję ostateczną odpowiedź...",
     };
-
     const finalPrompt = await PROMPTS.processDataPrompt.format({
       question: query,
       dataString: formattedResults,
     });
 
+    this.logger.debug(finalPrompt);
     const stream = await this.llm._streamResponseChunks(finalPrompt, {});
     let contentBuffer = "";
 
