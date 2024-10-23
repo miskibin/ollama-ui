@@ -4,6 +4,7 @@ import { generateUniqueId } from "@/utils/common";
 import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
 import { stat } from "fs";
+import { SummarizePrompt } from "@/lib/prompts";
 
 type ProgressUpdate = {
   type: "status" | "tool_execution" | "response" | "error";
@@ -216,18 +217,17 @@ export const useChatLogic = () => {
       }
 
       const data = await response.json();
-      const summarizePrompt = `Write a concise summary of the text in polish, return your responses with 5 lines that cover the key points of the text.`;
 
       const userMessage: Message = {
         id: generateUniqueId(),
         role: "user",
-        content: summarizePrompt,
+        content: SummarizePrompt,
         artifacts: [
           {
             type: "Dokument PDF",
             question: "",
             searchQuery: "",
-            data: data,
+            data: data["markdown"],
           },
         ],
       };

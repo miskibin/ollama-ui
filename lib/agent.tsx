@@ -89,20 +89,18 @@ export class AgentRP {
   }
 
   private messageToString(message: ChatMessage): string {
+    console.log(message);
+
+    // Handle content
     let content =
       typeof message.content === "string"
         ? message.content
         : Array.isArray(message.content)
         ? message.content.join(" ")
         : String(message.content);
-
-    // If message has artifacts, prepend their content
-    if (
-      "artifacts" in message &&
-      Array.isArray(message.artifacts) &&
-      message.artifacts.length > 0
-    ) {
-      const artifactContent = message.artifacts
+    const artifacts = message.additional_kwargs?.artifacts || [];
+    if (artifacts && Array.isArray(artifacts) && artifacts.length > 0) {
+      const artifactContent = artifacts
         .map((artifact) => {
           if (artifact.data) {
             return `Data: ${artifact.type}:\n${JSON.stringify(
@@ -151,7 +149,7 @@ export class AgentRP {
 
       yield {
         type: "status",
-        content: `Wywołuję narzędzie ${toolName}...`,
+        content: `Czekam na odpowiedź od ${toolName}...`,
       };
 
       const { result, artifact } = await this.executeTool(tool, query);

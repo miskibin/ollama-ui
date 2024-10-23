@@ -13,7 +13,6 @@ export const PROMPTS = {
     4. Focus on the primary subject, not actions related to it.
     6. Omit words like "projekt", "ustawa", "sejm", "głosowanie", "pomoc".
     7. Use lowercase letters, correct Polish spelling, no special characters.
-    8. If there is url field provided - Wrap act name with markdown link like this. [ELI value](url value) 
     Example: For "Jakie ustawy uchwalono w sprawie ochrony środowiska?" use "ochrona środowiska"
     Example: For "prawo dotyczące aborcji ?" use "przerywanie ciąży"
 
@@ -33,17 +32,18 @@ export const PROMPTS = {
     RELEVANT: NO`),
 
   processDataPrompt: PromptTemplate.fromTemplate(`
-    Zadanie: Odpowiedz zwięźle i precyzyjnie na pytanie o polskim parlamencie.
-    Pytanie: {question}
-    Dane: {dataString}
-    Data obecna: ${new Date().toLocaleDateString("pl-PL")}
-    Instrukcje:
-    1. Odpowiedz bezpośrednio na pytanie w maksymalnie 4 zdaniach.
-    2. Podaj tylko informacje istotne dla pytania.
-    4. Użyj '**pogrubienia**' dla kluczowych dat lub liczb.
-    5. Cytuj tytuł dokumentu tylko jeśli jest bezpośrednio związany z pytaniem.
-    6. Nie opisuj dostarczonych danych ani ich zakresu.
-    Odpowiedź:`),
+    Task: Answer concisely and precisely to the question:
+    Question: {question}
+    Data: {dataString}
+    Current date: ${new Date().toLocaleDateString("pl-PL")}
+    Instructions:
+    1. Answer the question directly in maximum 7 sentences.
+    2. Provide only information relevant to the question.
+    4. Use '**bold**' for key dates or numbers.
+    5. Quote document title only if directly related to the question.
+    6. Don't describe the provided data or its scope.
+    7. If there is url field provided - Wrap act name with markdown link like this: [ELI value](url value)
+    Answer in Polish:`),
 
   generateResponse:
     PromptTemplate.fromTemplate(`You are a helpful AI assistant. Using the information gathered from the tools, provide a clear and direct answer to the user's question.
@@ -52,3 +52,6 @@ export const PROMPTS = {
     Question: {question}
     Tool Results: {tool_results}`),
 };
+
+export const SummarizePrompt =
+  "Napisz zwięzłe podsumowanie tekstu, przedstaw odpowiedź w 5 punktach, które obejmują najważniejsze zagadnienia z tekstu.";
