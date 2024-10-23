@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Star } from "lucide-react";
+import { User, LogOut, Star, Heart } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import {
@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
         isPatron
           ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
           : "bg-card"
-      } border-b border-border md:p-4 p-2 mx-0`}
+      } border-b border-border md:p-4 p-2 px-3 mx-0`}
     >
       <div className="flex items-center space-x-2">
         <SidebarTrigger
@@ -55,12 +55,24 @@ const Navbar: React.FC = () => {
         >
           Asystent RP
         </h1>
-        {isPatron && (
-          <div className="flex items-center bg-white/20 px-3 py-1 rounded-full">
-            <Star className="w-4 h-4 text-yellow-300 mr-2" />
-            <p className="text-sm font-medium text-white">Dziękuję!</p>
-          </div>
-        )}
+        <div className="flex items-center bg-white/20 px-3 py-1 rounded-full">
+          {isPatron ? (
+            <>
+              <Star className="w-4 h-4 text-yellow-300 mr-2" />
+              <p className="text-sm font-medium text-white">Dziękuję!</p>
+            </>
+          ) : (
+            <>
+              <Heart className="w-4 h-4 text-primary mr-2" />
+              <Link
+                href="https://patronite.pl/sejm-stats"
+                className="text-sm font-medium text-primary"
+              >
+                Wesprzyj projekt!
+              </Link>
+            </>
+          )}
+        </div>
       </div>
       <div className="flex items-center">
         {user && (

@@ -1,132 +1,83 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FileText,
-  MessageSquare,
-  Users,
+  Scale,
   Building,
-  VoteIcon,
   FileSearch,
-  TrendingUp,
-  Droplet,
-  BookOpen,
+  Briefcase,
+  Home,
   Heart,
   Shield,
-  Truck,
-  Briefcase,
+  Wine,
   Leaf,
-  Home,
-  Scale,
   Euro,
-  ChevronRight,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 const conversationStarters = [
   {
-    icon: <FileText className="text-blue-500" size={24} />,
-    text: "Ustawy o gospodarce",
-    action: "Jakie ustawy dotyczące gospodarki uchwalono w ostatnim kwartale?",
-  },
-  {
-    icon: <VoteIcon className="text-green-500" size={24} />,
-    text: "Głosowania nad klimatem",
-    action: "Jakie były ostatnie głosowania dotyczące zmian klimatycznych?",
-  },
-  {
-    icon: <Users className="text-purple-500" size={24} />,
-    text: "Komisje ds. edukacji",
-    action:
-      "Jakie posiedzenia komisji dotyczące edukacji odbyły się w tym miesiącu?",
-  },
-  {
-    icon: <FileSearch className="text-indigo-500" size={24} />,
-    text: "Projekty ustaw o zdrowiu",
-    action:
-      "Jakie projekty ustaw (druki) dotyczące ochrony zdrowia złożono w tym roku?",
-  },
-  {
-    icon: <MessageSquare className="text-red-500" size={24} />,
-    text: "Interpelacje o infrastrukturze",
-    action:
-      "Jakie były najważniejsze interpelacje poselskie dotyczące infrastruktury drogowej?",
-  },
-  {
-    icon: <Building className="text-yellow-500" size={24} />,
-    text: "Ustawy o budżecie",
-    action: "Jakie ustawy dotyczące budżetu państwa uchwalono w ostatnim roku?",
-  },
-  {
-    icon: <Droplet className="text-blue-300" size={24} />,
-    text: "Głosowania dot. powodzi",
-    action:
-      "Jakie głosowania odbyły się w sprawie pomocy dla obszarów dotkniętych powodzią?",
-  },
-  {
-    icon: <TrendingUp className="text-orange-500" size={24} />,
-    text: "Projekty ustaw gospodarczych",
-    action:
-      "Jakie projekty ustaw dotyczące wzrostu gospodarczego zostały ostatnio złożone?",
-  },
-  {
-    icon: <BookOpen className="text-teal-500" size={24} />,
-    text: "Komisje ds. nauki",
-    action:
-      "Jakie posiedzenia komisji dotyczące szkolnictwa wyższego odbyły się w tym semestrze?",
-  },
-  {
     icon: <Heart className="text-pink-500" size={24} />,
-    text: "Ustawy o opiece zdrowotnej",
+    text: "Przerywanie ciąży",
     action:
-      "Jakie ustawy dotyczące systemu opieki zdrowotnej uchwalono w ostatnim półroczu?",
+      "Jakie są obecnie obowiązujące przepisy dotyczące przerywania ciąży?",
   },
   {
-    icon: <Truck className="text-gray-500" size={24} />,
-    text: "Interpelacje o transporcie",
-    action:
-      "Jakie interpelacje poselskie dotyczące transportu publicznego złożono w tym roku?",
+    icon: <Wine className="text-purple-500" size={24} />,
+    text: "Sprzedaż alkoholu",
+    action: "Jakie są aktualne przepisy regulujące sprzedaż alkoholu?",
   },
   {
     icon: <Shield className="text-red-700" size={24} />,
-    text: "Głosowania nad bezpieczeństwem",
-    action:
-      "Jakie były ostatnie głosowania dotyczące bezpieczeństwa narodowego?",
-  },
-  {
-    icon: <Truck className="text-amber-600" size={24} />,
-    text: "Projekty ustaw logistycznych",
-    action:
-      "Jakie projekty ustaw dotyczące logistyki i transportu towarowego złożono ostatnio?",
-  },
-  {
-    icon: <Briefcase className="text-indigo-600" size={24} />,
-    text: "Komisje ds. pracy",
-    action:
-      "Jakie posiedzenia komisji dotyczące rynku pracy odbyły się w ostatnim kwartale?",
-  },
-  {
-    icon: <Leaf className="text-green-600" size={24} />,
-    text: "Ustawy o środowisku",
-    action: "Jakie ustawy dotyczące ochrony środowiska uchwalono w tym roku?",
+    text: "Broń palna",
+    action: "Pokaż obecne przepisy dotyczące posiadania broni palnej",
   },
   {
     icon: <Home className="text-cyan-600" size={24} />,
-    text: "Interpelacje o mieszkalnictwie",
-    action:
-      "Jakie były najważniejsze interpelacje poselskie dotyczące polityki mieszkaniowej?",
+    text: "Eksmisja lokatora",
+    action: "Jakie przepisy regulują eksmisję lokatora z mieszkania?",
   },
   {
-    icon: <Scale className="text-purple-600" size={24} />,
-    text: "Głosowania nad prawem",
-    action:
-      "Jakie głosowania odbyły się w sprawie zmian w systemie sądownictwa?",
+    icon: <Briefcase className="text-gray-500" size={24} />,
+    text: "Zwolnienie z pracy",
+    action: "Jakie są przepisy dotyczące zwolnienia pracownika?",
   },
   {
     icon: <Euro className="text-yellow-600" size={24} />,
-    text: "Projekty ustaw podatkowych",
-    action:
-      "Jakie projekty ustaw dotyczące zmian w systemie podatkowym zostały ostatnio złożone?",
+    text: "Dziedziczenie",
+    action: "Pokaż aktualne przepisy o dziedziczeniu majątku",
+  },
+  {
+    icon: <Users className="text-blue-500" size={24} />,
+    text: "Rozwód",
+    action: "Jakie są obecne przepisy regulujące rozwód?",
+  },
+  {
+    icon: <Building className="text-amber-600" size={24} />,
+    text: "Budowa domu",
+    action: "Jakie przepisy regulują budowę domu jednorodzinnego?",
+  },
+  {
+    icon: <FileSearch className="text-indigo-500" size={24} />,
+    text: "Mandat drogowy",
+    action: "Pokaż aktualne przepisy dotyczące mandatów drogowych",
+  },
+  {
+    icon: <Leaf className="text-green-600" size={24} />,
+    text: "Marihuana",
+    action: "Jakie są obecne przepisy dotyczące marihuany?",
+  },
+  {
+    icon: <Scale className="text-purple-600" size={24} />,
+    text: "Alimenty",
+    action: "Jakie są przepisy regulujące wysokość alimentów?",
+  },
+  {
+    icon: <FileText className="text-red-500" size={24} />,
+    text: "Przemoc domowa",
+    action: "Pokaż obecne przepisy dotyczące przemocy domowej",
   },
 ];
 
@@ -158,8 +109,11 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
     <div className="flex flex-col items-center justify-center w-full p-4 sm:p-6">
       <div className="mb-6 sm:mb-8 text-center">
         <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
-          Twój asystent parlamentarny
+          Twój asystent prawny
         </h2>
+        <p className="text-sm text-muted-foreground mb-2">
+          Dowiedz się więcej o aktualnie obowiązujących przepisach
+        </p>
         <Link
           href="https://sejm-stats.pl"
           target="_blank"
