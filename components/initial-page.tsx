@@ -70,11 +70,6 @@ const conversationStarters = [
     action: "Jakie są obecne przepisy dotyczące marihuany?",
   },
   {
-    icon: <Scale className="text-purple-600" size={24} />,
-    text: "Alimenty",
-    action: "Jakie są przepisy regulujące wysokość alimentów?",
-  },
-  {
     icon: <FileText className="text-red-500" size={24} />,
     text: "Przemoc domowa",
     action: "Pokaż obecne przepisy dotyczące przemocy domowej",

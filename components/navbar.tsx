@@ -68,7 +68,7 @@ const Navbar: React.FC = () => {
                 href="https://patronite.pl/sejm-stats"
                 className="text-sm font-medium text-primary"
               >
-                Wesprzyj projekt!
+                Wesprzyj!
               </Link>
             </>
           )}
@@ -86,7 +86,7 @@ const Navbar: React.FC = () => {
                 }
               >
                 <span className="sr-only">Opcje</span>
-                <User className="h-4 w-4" />
+                <User className="h-6 w-6" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
