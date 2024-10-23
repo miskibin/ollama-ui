@@ -32,8 +32,9 @@ export const PROMPTS = {
 
     RELEVANT: YES/NO
     (reason in one line)`),
-
-  processDataPrompt: PromptTemplate.fromTemplate(`
+  // context could be moved
+  processDataPrompt: PromptTemplate.fromTemplate(` 
+    Context: You are an AI that can ONLY see and use the data provided in the "Data:" field below. You have NO access to any other information.
     Task: Answer concisely and precisely to the question:
     Question: {question}
     Data: {dataString}

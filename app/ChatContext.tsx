@@ -28,7 +28,7 @@ interface ChatContextType {
   editingMessageId: string | null;
   setEditingMessageId: React.Dispatch<React.SetStateAction<string | null>>;
   regenerateMessage: (id: string) => Promise<void>;
-  handleSummarize: (pdfUrl: string) => void;
+  handleSummarize: (pdfUrl: string, context?: string) => void;
   // From useFileHandling
   isPdfParsing: boolean;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;

@@ -220,7 +220,7 @@ export const useChatLogic = () => {
       });
     }
   };
-  const handleSummarize = async (pdfUrl: string) => {
+  const handleSummarize = async (pdfUrl: string, context?: string) => {
     setIsLoading(true);
     setStatus(null);
 
@@ -253,7 +253,9 @@ export const useChatLogic = () => {
       const userMessage: Message = {
         id: generateUniqueId(),
         role: "user",
-        content: SummarizePrompt,
+        content: context
+          ? `Bazując na danych odpowiedz na pytanie: ${context}`
+          : SummarizePrompt,
         artifacts: [
           {
             type: "Dokument PDF",

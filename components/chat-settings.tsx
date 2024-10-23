@@ -100,14 +100,6 @@ const ChatSettings = () => {
         </Select>
       </div>
 
-      <div className="flex items-center justify-between">
-        <LabelWithIcon icon={Zap} text="Odpowiadaj na bieżąco" />
-        <Switch
-          checked={options.streaming}
-          onCheckedChange={(streaming) => setOptions({ ...options, streaming })}
-        />
-      </div>
-
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" className="w-full text-sm">
@@ -164,6 +156,16 @@ const ChatSettings = () => {
                 }
               />
             </div>
+            <div className="flex items-center justify-between">
+              <LabelWithIcon icon={Zap} text="Odpowiadaj na bieżąco" />
+              <Switch
+                checked={options.streaming}
+                onCheckedChange={(streaming) =>
+                  setOptions({ ...options, streaming })
+                }
+              />
+            </div>
+
             <div>
               <LabelWithIcon icon={Zap} text="Maks K" />
               <Input
@@ -210,7 +212,7 @@ const ChatSettings = () => {
               />
             </div>
 
-            <div>
+            {/* <div>
               <LabelWithIcon icon={Zap} text="Prompt systemowy" />
               <Textarea
                 placeholder="You are experienced software engineer..."
@@ -218,7 +220,7 @@ const ChatSettings = () => {
                 onChange={(e) => setSystemPrompt(e.target.value)}
                 className="w-full p-2 rounded border h-20 resize-none text-sm"
               />
-            </div>
+            </div> */}
           </div>
         </PopoverContent>
       </Popover>

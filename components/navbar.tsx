@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
         isPatron
           ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
           : "bg-card"
-      } border-b border-border md:p-4 p-2 px-3 mx-0`}
+      } border-b border-border md:p-4 p-2 py-3 mx-0`}
     >
       <div className="flex items-center space-x-2">
         <SidebarTrigger

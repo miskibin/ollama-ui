@@ -34,6 +34,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     editMessage,
     regenerateMessage,
     handleSummarize,
+    messages,
     deleteMessage,
   } = useChatContext();
 
@@ -79,7 +80,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const handleDownloadAndSummarize = async () => {
     if (actUrl) {
-      await handleSummarize(actUrl);
+      await handleSummarize(actUrl, messages[messages.length - 2].content);
     }
   };
 
@@ -105,7 +106,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           disabled={isLoading}
         >
           <Download className="h-4 w-4" />
-          Pobierz i streść
+          Przeczytaj i odpowiedz
         </Button>
       </div>
     );
