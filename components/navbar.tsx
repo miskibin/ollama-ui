@@ -63,11 +63,8 @@ const Navbar: React.FC = () => {
             </>
           ) : (
             <>
-              <Heart className="w-4 h-4 text-primary mr-2" />
-              <Link
-                href="https://patronite.pl/sejm-stats"
-                className="text-sm font-medium text-primary"
-              >
+              <Heart className="w-4 h-4 text-destructive font-bold mr-2" />
+              <Link href="https://patronite.pl/sejm-stats" className="text-sm ">
                 Wesprzyj!
               </Link>
             </>

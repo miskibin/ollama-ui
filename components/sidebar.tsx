@@ -43,7 +43,7 @@ export function AppSidebar() {
     setMounted(true);
     setIsPatron(user?.email ? patrons.includes(user.email) : false);
   }, [user, patrons]);
-
+  if (!user && process.env.NODE_ENV !== "development") return null;
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="px-3 md:px-4 py-3">
@@ -61,9 +61,9 @@ export function AppSidebar() {
               aria-label="Przełącz motyw"
             >
               {theme === "light" ? (
-                <Moon className="h-7 w-7" />
+                <Moon className="h-6 w-6" />
               ) : (
-                <Sun className="h-7 w-7" />
+                <Sun className="h-6 w-6" />
               )}
             </Button>
           )}

@@ -38,7 +38,7 @@ export class AgentRP {
       toolName: tool.name,
       toolDescription: tool.description,
     });
-
+    this.logger.debug(prompt);
     const response = await this.llm.invoke(prompt);
     const lines = response.split("\n");
     const relevantLine =
@@ -88,9 +88,46 @@ export class AgentRP {
     }
   }
 
-  private messageToString(message: ChatMessage): string {
-    console.log(message);
+  private async processWithoutTools(messages: ChatMessage[]): Promise<string> {
+    // Take last two messages if available
+    const contextMessages = messages.slice(-2);
+    const context = contextMessages.map((msg) => {
+      const content = this.messageToString(msg);
+      const artifacts: Artifact[] = Array.isArray(
+        msg.additional_kwargs?.artifacts
+      )
+        ? msg.additional_kwargs.artifacts
+        : [];
 
+      return {
+        role: msg.role,
+        content,
+        artifacts,
+      };
+    });
+
+    // Format context for the model
+    const formattedContext = context
+      .map(
+        (msg) =>
+          `${msg.role}: ${msg.content}\n${msg.artifacts
+            .map(
+              (a) => `[Artifact: ${a.type}]\n${JSON.stringify(a.data, null, 2)}`
+            )
+            .join("\n")}`
+      )
+      .join("\n\n");
+
+    // Generate response using the context
+    const prompt = await PROMPTS.generateResponse.format({
+      question: this.messageToString(messages[messages.length - 1]),
+      tool_results: formattedContext,
+    });
+
+    return await this.llm.invoke(prompt);
+  }
+
+  private messageToString(message: ChatMessage): string {
     // Handle content
     let content =
       typeof message.content === "string"
@@ -98,6 +135,7 @@ export class AgentRP {
         : Array.isArray(message.content)
         ? message.content.join(" ")
         : String(message.content);
+
     const artifacts = message.additional_kwargs?.artifacts || [];
     if (artifacts && Array.isArray(artifacts) && artifacts.length > 0) {
       const artifactContent = artifacts
@@ -119,9 +157,10 @@ export class AgentRP {
     return content;
   }
   async *invoke(input: string | ChatMessage[]): AsyncGenerator<AgentProgress> {
-    const query = Array.isArray(input)
-      ? this.messageToString(input[input.length - 1])
-      : input;
+    const messages = Array.isArray(input)
+      ? input
+      : [new ChatMessage({ content: input, role: "user" })];
+    const query = this.messageToString(messages[messages.length - 1]);
 
     // Initial status
     yield {
@@ -131,6 +170,24 @@ export class AgentRP {
 
     const relevantToolNames = await this.analyzeQuery(query);
 
+    if (relevantToolNames.length === 0) {
+      yield {
+        type: "status",
+        content: "Generuję odpowiedź na podstawie kontekstu...",
+      };
+
+      // Process without tools if we have messages context
+      if (Array.isArray(input)) {
+        const response = await this.processWithoutTools(messages);
+        yield {
+          type: "response",
+          content: response,
+        };
+        return;
+      }
+    }
+
+    // Rest of the existing tool processing logic
     if (relevantToolNames.length > 0) {
       yield {
         type: "status",
@@ -178,17 +235,21 @@ export class AgentRP {
       type: "status",
       content: "Generuję ostateczną odpowiedź...",
     };
-    const finalPrompt = await PROMPTS.processDataPrompt.format({
-      question: query,
-      dataString: formattedResults,
-    });
+
+    let finalPrompt;
+    if (artifacts.length > 0) {
+      finalPrompt = await PROMPTS.processDataPrompt.format({
+        question: query,
+        dataString: formattedResults,
+      });
+    } else {
+      finalPrompt = query;
+    }
 
     this.logger.debug(finalPrompt);
     const stream = await this.llm._streamResponseChunks(finalPrompt, {});
-    let contentBuffer = "";
 
     for await (const chunk of stream) {
-      contentBuffer += chunk.text;
       yield {
         type: "response",
         content: chunk.text,

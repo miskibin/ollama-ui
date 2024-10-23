@@ -20,16 +20,18 @@ export const PROMPTS = {
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
     Question: {query}
-    
-    Tool Information:
-    Name: {toolName}
-    Description: {toolDescription}
-    
-    Is this tool needed to answer the question?
-    Answer with either:
-    RELEVANT: YES
-    or
-    RELEVANT: NO`),
+
+    Tool: {toolName} - {toolDescription}
+
+    If question uses pronouns (ten/ta/to) or lacks clear subject:
+    RELEVANT: NO (requires missing context)
+
+    Otherwise, answer YES only if:
+    1. Query needs THIS EXACT tool's data
+    2. Can't be answered without it
+
+    RELEVANT: YES/NO
+    (reason in one line)`),
 
   processDataPrompt: PromptTemplate.fromTemplate(`
     Task: Answer concisely and precisely to the question:
@@ -43,6 +45,7 @@ export const PROMPTS = {
     5. Quote document title only if directly related to the question.
     6. Don't describe the provided data or its scope.
     7. If there is url field provided - Wrap act name with markdown link like this: [ELI value](url value)
+    IMPORTANT: Base your answer ONLY on the provided Data. Do not use any external knowledge.
     Answer in Polish:`),
 
   generateResponse:
@@ -53,5 +56,17 @@ export const PROMPTS = {
     Tool Results: {tool_results}`),
 };
 
-export const SummarizePrompt =
-  "Napisz zwięzłe podsumowanie tekstu, przedstaw odpowiedź w 5 punktach, które obejmują najważniejsze zagadnienia z tekstu.";
+export const SummarizePrompt = `Przygotuj zwięzłe podsumowanie aktu prawnego w prostym języku:
+
+1. 🎯 Cel: [1 zdanie o głównym celu]
+
+2. ⚡ Kluczowe zmiany:
+- [zmiana 1]
+- [zmiana 2]
+- [zmiana 3]
+
+3. 👥 Dla kogo: [kogo dotyczy]
+
+4. ⏰ Od kiedy: [**data wejścia w życie**]
+
+❗ Używaj prostego języka. Wyjaśniaj terminy prawne. Podawaj konkretne daty i kwoty w **pogrubieniu**.`;
