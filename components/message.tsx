@@ -15,7 +15,7 @@ import {
 import { useChatContext } from "@/app/ChatContext";
 import { Message, Artifact } from "@/lib/types";
 import PluginDataDialog from "./plugin-data-dialog";
-import { SummarableTextDialog } from "./SummarableTextDialog";
+import SummarableTextDialog from "./SummarableTextDialog";
 
 interface ChatMessageProps {
   message: Message;
