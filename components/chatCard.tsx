@@ -73,7 +73,7 @@ export function ChatCard() {
     }
 
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 my-8">
+      <div className="flex w-full flex-col items-center justify-center space-y-4 my-8">
         <div className="flex items-center justify-center space-x-2 text-muted-foreground ">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm font-medium">Asystent myśli...</span>

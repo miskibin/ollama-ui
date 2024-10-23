@@ -49,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
     >
       <div className="flex items-center space-x-2">
         <SidebarTrigger
-          className={`md:hidden mr-2 ${
+          className={`mr-2 ${
             isPatron ? "text-white hover:bg-white/20" : "text-foreground"
           }`}
         />

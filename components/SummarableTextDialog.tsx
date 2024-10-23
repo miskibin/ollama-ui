@@ -17,7 +17,7 @@ import { extractSummarableTexts } from "@/lib/parseJson";
 
 interface SummarableTextDialogProps {
   artifacts: Artifact[];
-  onSummarize: (item: SummarableText) => void;
+  onSummarize: (pdfUrl: string) => void;
 }
 
 export const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
@@ -90,7 +90,7 @@ export const SummarableTextDialog: React.FC<SummarableTextDialogProps> = ({
                       variant="outline"
                       onClick={() => {
                         setIsOpen(false);
-                        onSummarize(item);
+                        onSummarize(item.url);
                       }}
                       className="sm:mb-0 mb-2"
                     >

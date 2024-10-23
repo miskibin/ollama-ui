@@ -1,6 +1,6 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
-import { Sidebar } from "@/components/sidebar";
 import { ChatCard } from "@/components/chatCard";
 import { ChatProvider } from "./ChatContext";
 import { useUser } from "@auth0/nextjs-auth0/client";
@@ -22,7 +22,6 @@ export default function Home() {
       setWindowHeight(`${window.innerHeight}px`);
     };
 
-    // Set initial height
     setWindowHeight(`${window.innerHeight}px`);
 
     window.addEventListener("resize", handleResize);
@@ -83,32 +82,14 @@ export default function Home() {
 
   return (
     <ChatProvider>
-      <div className="flex overflow-hidden" style={{ height: windowHeight }}>
-        <div
-          className={`fixed md:relative z-20 h-full transition-transform duration-300 ease-in-out ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 md:w-96 md:flex-shrink-0`}
-        >
-          <Sidebar
-            isMobile={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-          />
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Navbar
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+        />
+        <div className="flex-grow overflow-auto">
+          <ChatCard />
         </div>
-        <div className="flex flex-col flex-grow w-full md:w-auto overflow-hidden">
-          <Navbar
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-          />
-          <div className="flex-grow overflow-hidden">
-            <ChatCard />
-          </div>
-        </div>
-        {isSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
-            onClick={() => setIsSidebarOpen(false)}
-          ></div>
-        )}
       </div>
     </ChatProvider>
   );

@@ -9,7 +9,7 @@ interface ChatContextType {
   // From useChatStore
   messages: Message[];
   addMessage: (message: Message) => void;
-  updateMessage: (id: string, content: string) => void;
+  updateMessage: (id: string, message: Message) => void;
   editMessage: (id: string, content: string) => void;
   deleteMessage: (id: string) => void;
   clearMessages: () => void;
@@ -22,7 +22,7 @@ interface ChatContextType {
   plugins: ChatPlugin[];
   // From useChatLogic
   isLoading: boolean;
-  status: string;
+  status: string | null;
   handleSubmit: (e: React.FormEvent, text?: string) => Promise<void>;
   stopGenerating: () => void;
   editingMessageId: string | null;

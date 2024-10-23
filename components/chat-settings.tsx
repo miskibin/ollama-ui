@@ -49,9 +49,16 @@ const LabelWithIcon = ({
 );
 
 const ChatSettings = () => {
-  const { systemPrompt, setSystemPrompt, options, setOptions } =
-    useChatContext();
-  const { models, selectedModel, setSelectedModel, patrons } = useChatStore();
+  const {
+    systemPrompt,
+    setSystemPrompt,
+    options,
+    setOptions,
+    models,
+    selectedModel,
+    setSelectedModel,
+    patrons,
+  } = useChatStore();
   const { user } = useUser();
   const isPatron = user?.email ? patrons.includes(user.email) : false;
 
