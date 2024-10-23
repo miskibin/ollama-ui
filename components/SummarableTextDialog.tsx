@@ -19,7 +19,10 @@ interface SummarableTextDialogProps {
   onSummarize: (pdfUrl: string) => void;
 }
 
-export default function SummarableTextDialog({ artifacts, onSummarize }: SummarableTextDialogProps) {
+export default function SummarableTextDialog({
+  artifacts,
+  onSummarize,
+}: SummarableTextDialogProps) {
   const summarableTexts = extractSummarableTexts(artifacts);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -56,10 +59,7 @@ export default function SummarableTextDialog({ artifacts, onSummarize }: Summara
           <div className="p-4 sm:p-6">
             <ul className="space-y-4">
               {summarableTexts.map((item, index) => (
-                <li
-                  key={index}
-                  className="bg-muted p-3 sm:p-4 rounded-lg"
-                >
+                <li key={index} className="bg-muted p-3 sm:p-4 rounded-lg">
                   <h3 className="mb-2 sm:mb-3 text-sm sm:text-base">
                     {truncateText(item.title, 1050)
                       .split("\n")

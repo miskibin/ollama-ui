@@ -3,7 +3,6 @@ import { Artifact, Message } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
 import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
-import { stat } from "fs";
 import { SummarizePrompt } from "@/lib/prompts";
 
 type ProgressUpdate = {
@@ -47,20 +46,26 @@ export const useChatLogic = () => {
     addMessage(userMessage);
     setInput("");
 
-    const easterEgg = checkEasterEggs(inputText);
-    if (easterEgg) {
-      setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      const easterEggMessage: Message = {
-        id: generateUniqueId(),
-        role: "assistant",
-        content: `![Easter Egg](${easterEgg})`,
-        artifacts: [],
-      };
-      addMessage(easterEggMessage);
+    try {
+      const easterEgg = checkEasterEggs(inputText);
+      if (easterEgg) {
+        setIsLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        const easterEggMessage: Message = {
+          id: generateUniqueId(),
+          role: "assistant",
+          content: `![Easter Egg](${easterEgg})`,
+          artifacts: [],
+        };
+        addMessage(easterEggMessage);
+      } else {
+        await getResponse([...messages, userMessage]);
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      handleError(error);
+    } finally {
       setIsLoading(false);
-    } else {
-      await getResponse([...messages, userMessage]);
     }
   };
 
@@ -90,7 +95,7 @@ export const useChatLogic = () => {
           systemPrompt,
           enabledPluginIds:
             disableAllPlugins ||
-            (messages[messages.length - 1]?.role == "user" &&
+            (messages[messages.length - 1]?.role === "user" &&
               messages[messages.length - 1]?.artifacts)
               ? []
               : plugins
@@ -123,49 +128,74 @@ export const useChatLogic = () => {
               try {
                 const data = JSON.parse(line.slice(6)) as ProgressUpdate;
 
+                // Ensure data and messages exist before processing
+                if (
+                  !data ||
+                  !Array.isArray(data.messages) ||
+                  data.messages.length === 0
+                ) {
+                  console.warn("Received invalid progress update:", data);
+                  continue;
+                }
+
+                const firstMessage = data.messages[0];
+
                 // Handle different types of updates
                 switch (data.type) {
                   case "status":
-                    setStatus(data.messages[0].content);
+                    if (firstMessage?.content) {
+                      setStatus(firstMessage.content);
+                    }
                     break;
 
                   case "tool_execution":
-                    setStatus(data.messages[0].content);
-                    if (data.messages[0].artifacts?.length) {
-                      currentArtifacts.push(...data.messages[0].artifacts);
+                    if (firstMessage?.content) {
+                      setStatus(firstMessage.content);
+                      if (firstMessage.artifacts?.length) {
+                        currentArtifacts.push(...firstMessage.artifacts);
+                      }
                     }
                     break;
 
                   case "response":
-                    currentContent += data.messages[0].content;
-                    // Update with accumulated content and artifacts
-                    const updatedMessage: Message = {
-                      id: newMessageId,
-                      role: "assistant",
-                      content: currentContent,
-                      artifacts: currentArtifacts,
-                    };
-                    updateMessage(newMessageId, updatedMessage);
+                    if (firstMessage?.content) {
+                      currentContent += firstMessage.content;
+                      // Update with accumulated content and artifacts
+                      updateMessage(newMessageId, {
+                        id: newMessageId,
+                        role: "assistant",
+                        content: currentContent,
+                        artifacts: currentArtifacts,
+                      });
+                    }
                     break;
 
                   case "error":
-                    throw new Error(data.messages[0].content);
+                    if (firstMessage?.content) {
+                      throw new Error(firstMessage.content);
+                    }
+                    break;
+
+                  default:
+                    console.warn("Unknown progress update type:", data.type);
                 }
               } catch (error) {
                 console.error("Error parsing SSE data:", error);
+                if (error instanceof Error) {
+                  handleError(error);
+                }
               }
             }
           }
         }
 
         // Final update with trimmed content
-        const finalMessage: Message = {
+        updateMessage(newMessageId, {
           id: newMessageId,
           role: "assistant",
           content: currentContent.trim(),
           artifacts: currentArtifacts,
-        };
-        updateMessage(newMessageId, finalMessage);
+        });
       }
     } catch (error) {
       handleError(error);
@@ -176,18 +206,20 @@ export const useChatLogic = () => {
     }
   };
 
-  const handleError = (error: any) => {
-    console.error("An error occurred while fetching the response:", error);
-    if (error.name !== "AbortError") {
+  const handleError = (error: unknown) => {
+    console.error("An error occurred:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+
+    if (error instanceof Error && error.name !== "AbortError") {
       addMessage({
         id: generateUniqueId(),
         role: "assistant",
-        content: `An error occurred while fetching the response. ${error.message}`,
+        content: `An error occurred while fetching the response: ${errorMessage}`,
         artifacts: [],
       });
     }
   };
-
   const handleSummarize = async (pdfUrl: string) => {
     setIsLoading(true);
     setStatus(null);
