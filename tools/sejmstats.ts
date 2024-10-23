@@ -19,7 +19,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
   return new DynamicStructuredTool({
     name: "sejm_stats_analyzer",
     description:
-      "Analyzes statistics and data about the Polish Sejm based on natural language questions",
+      "Analyzes statistics and data about the Polish Sejm and Polish Law, and all politics based on natural language questions",
     schema: sejmStatsSchema,
     func: async ({ question }: z.infer<typeof sejmStatsSchema>) => {
       try {

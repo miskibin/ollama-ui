@@ -11,6 +11,8 @@ import {
   Sparkles,
   ChevronRight,
   AlertCircle,
+  Crown,
+  Star,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
@@ -91,7 +93,7 @@ export function AppSidebar() {
           <Separator />
           <SidebarGroup>
             <div className="p-3 md:p-4 space-y-4">
-              {!isPatron && (
+              {!isPatron ? (
                 <>
                   <Alert variant="default">
                     <AlertCircle className="h-4 w-4" />
@@ -129,6 +131,32 @@ export function AppSidebar() {
                     </CardContent>
                   </Card>
                 </>
+              ) : (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Crown className="w-4 h-4" />
+                      <span className="font-medium text-sm">
+                        Status Patrona
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <ul className="text-sm space-y-2">
+                      <li className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-primary" />
+                        Zaawansowane modele
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-primary" />
+                        Brak limitów zapytań
+                      </li>
+                    </ul>
+                    <div className="text-sm text-muted-foreground">
+                      Dziękuję za wsparcie projektu!
+                    </div>
+                  </CardContent>
+                </Card>
               )}
               <ChatSettings />
             </div>
