@@ -10,15 +10,12 @@ import Navbar from "@/components/navbar";
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isDev = process.env.NODE_ENV === "development";
   const [windowHeight, setWindowHeight] = useState("100vh");
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsSidebarOpen(false);
-      }
+
       setWindowHeight(`${window.innerHeight}px`);
     };
 
@@ -83,10 +80,7 @@ export default function Home() {
   return (
     <ChatProvider>
       <div className="flex flex-col h-screen overflow-hidden">
-        <Navbar
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-        />
+        <Navbar />
         <div className="flex-grow overflow-auto">
           <ChatCard />
         </div>

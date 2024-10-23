@@ -18,7 +18,7 @@ interface NavbarProps {
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
+const Navbar: React.FC<NavbarProps> = () => {
   const { user } = useUser();
   const [isPatron, setIsPatron] = useState(false);
   const setPatrons = useChatStore((state) => state.setPatrons);
