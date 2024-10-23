@@ -23,7 +23,7 @@ export const PROMPTS = {
 
     Tool: {toolName} - {toolDescription}
 
-    If question uses pronouns (ten/ta/to) or lacks clear subject:
+    If question uses pronouns (ten/ta/to/napisałeś) lacks clear subject or refers to past messages:
     RELEVANT: NO (requires missing context)
 
     Otherwise, answer YES only if:
