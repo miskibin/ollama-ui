@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import {
   Moon,
   Sun,
-  X,
   Trash2,
   Settings,
   Database,
+  Sparkles,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
@@ -23,10 +24,11 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export function AppSidebar() {
   const { setTheme, theme } = useTheme();
@@ -42,44 +44,40 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="px-4 py-3 border-b">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Settings className="w-5 h-5 text-primary" />
-            <span className="text-lg font-semibold text-primary">
-              Ustawienia
-            </span>
+          <div className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            <span className="text-sm font-medium">Ustawienia</span>
           </div>
-          <div className="flex items-center space-x-2">
-            {mounted && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                aria-label="Toggle theme"
-                className="text-muted-foreground hover:text-primary"
-              >
-                {theme === "light" ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
-              </Button>
-            )}
-          </div>
+          {mounted && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              className="h-8 w-8"
+              aria-label="Przełącz motyw"
+            >
+              {theme === "light" ? (
+                <Moon className="h-6 w-6" />
+              ) : (
+                <Sun className="h-6 w-6" />
+              )}
+            </Button>
+          )}
         </div>
       </SidebarHeader>
       <SidebarContent>
         <ScrollArea className="h-[calc(100vh-8rem)]">
           <SidebarGroup>
-            <div className="space-y-4 p-4">
+            <div className="space-y-2 p-4">
               {plugins.map((plugin) => (
                 <div
                   key={plugin.name}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/10 hover:bg-secondary/20 transition-colors"
+                  className="flex items-center justify-between py-2"
                 >
-                  <span className="text-sm font-medium flex items-center">
-                    <Database className="w-4 h-4 mr-2 text-primary" />
+                  <span className="text-sm flex items-center gap-2">
+                    <Database className="w-4 h-4" />
                     {plugin.name}
                   </span>
                   <Switch
@@ -90,35 +88,60 @@ export function AppSidebar() {
               ))}
             </div>
           </SidebarGroup>
-          <Separator className="my-4" />
+          <Separator />
           <SidebarGroup>
-            <div className="p-4">
+            <div className="p-4 space-y-4">
               {!isPatron && (
-                <div className="bg-primary/10 p-4 rounded-lg border border-primary/20 mb-4">
-                  <p className="text-sm text-primary font-medium">
-                    <Link
-                      href="https://patronite.pl/sejm-stats"
-                      className="text-primary font-semibold hover:underline"
-                    >
-                      Zostań patronem
-                    </Link>
-                    , aby korzystać z płatnych modeli.
-                  </p>
-                </div>
+                <>
+                  <Alert variant="default">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Każde zapytanie do AI wiąże się z kosztami, które ponoszę.
+                    </AlertDescription>
+                  </Alert>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2 text-primary">
+                        <Sparkles className="w-4 h-4" />
+                        <span className="font-medium text-sm">
+                          Zostań patronem i zyskaj:
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <ul className="text-sm space-y-2">
+                        <li className="flex items-center gap-2">
+                          • Dostęp do zaawansowanych modeli AI
+                        </li>
+                        <li className="flex items-center gap-2">
+                          • Nielimitowane zapytania
+                        </li>
+                      </ul>
+                      <Link
+                        href="https://patronite.pl/sejm-stats"
+                        className="inline-flex items-center gap-2 text-primary hover:text-primary/90 text-sm font-medium"
+                      >
+                        Wesprzyj projekt
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </>
               )}
               <ChatSettings />
             </div>
           </SidebarGroup>
         </ScrollArea>
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 border-t">
         <Button
           onClick={clearMessages}
-          className="w-full text-sm"
           variant="destructive"
+          className="w-full text-sm"
         >
           <Trash2 className="w-4 h-4 mr-2" />
-          Usuń historię
+          Wyczyść historię
         </Button>
       </SidebarFooter>
     </Sidebar>

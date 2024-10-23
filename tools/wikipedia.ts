@@ -1,70 +1,124 @@
-"use client";
+import { z } from "zod";
+import { DynamicStructuredTool } from "@langchain/core/tools";
 import {
-  RunnableSequence,
   RunnablePassthrough,
+  RunnableSequence,
 } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
-import { searchWikipedia } from "./wikipedia-search";
 import { TogetherLLM } from "@/lib/TogetherLLm";
+import { PROMPTS } from "@/lib/prompts";
+import { Artifact } from "@/lib/types";
 
-const extractSearchTopic = async (input: string, model: TogetherLLM) => {
-  console.log("Extracting search topic from input:", input);
-  const prompt = PromptTemplate.fromTemplate(
-    "Extract the main topic or keyword for a Wikipedia search from the following question. Provide only the topic, without any additional text.\n\nQuestion: {question}\nTopic:"
-  );
+// Function to search Wikipedia
+async function searchWikipedia(query: string) {
+  try {
+    const response = await fetch(
+      `https://pl.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+        query
+      )}&format=json&origin=*&srlimit=3`
+    );
+    const data = await response.json();
+    return data.query.search;
+  } catch (error) {
+    console.error("Error searching Wikipedia:", error);
+    throw error;
+  }
+}
 
-  const chain = prompt.pipe(model).pipe(new StringOutputParser());
-  const topic = await chain.invoke({ question: input });
-  console.log("Extracted search topic:", topic);
-  return topic;
-};
+// Function to get page content
+async function getWikipediaContent(pageId: number) {
+  try {
+    const response = await fetch(
+      `https://pl.wikipedia.org/w/api.php?action=query&pageids=${pageId}&prop=extracts&exintro=1&format=json&origin=*`
+    );
+    const data = await response.json();
+    return data.query.pages[pageId].extract;
+  } catch (error) {
+    console.error("Error fetching Wikipedia content:", error);
+    throw error;
+  }
+}
 
-const processWikipediaResult = async (
-  result: string,
-  question: string,
-  model: TogetherLLM
-) => {
-  console.log("Processing Wikipedia result");
-  const prompt = PromptTemplate.fromTemplate(
-    "Summarize and format the following Wikipedia information to answer the given question. Make sure the response is concise, relevant, and well-structured.\n\nQuestion: {question}\n\nWikipedia Information: {result}\n\nFormatted Answer:"
-  );
+const wikipediaSchema = z.object({
+  question: z
+    .string()
+    .describe("The question to analyze using Wikipedia information"),
+});
 
-  const chain = prompt.pipe(model).pipe(new StringOutputParser());
-  const processedResult = await chain.invoke({ question, result });
-  console.log("Processed Wikipedia result:", processedResult);
-  return processedResult;
-};
+export const createWikipediaTool = (model: TogetherLLM) => {
+  return new DynamicStructuredTool({
+    name: "wikipedia_analyzer",
+    description:
+      "Analyzes information from Polish Wikipedia based on natural language questions",
+    schema: wikipediaSchema,
+    func: async ({ question }: z.infer<typeof wikipediaSchema>) => {
+      try {
+        const sequence = RunnableSequence.from([
+          new RunnablePassthrough(),
+          async ({ question }) => {
+            // Generate search query using the model
+            const query = await PROMPTS.generateSearchQuery.format({
+              question: question,
+            });
+            const searchQuery = await model.invoke(query);
+            const cleanedQuery = searchQuery
+              .replace(/^(Query:|Search query:|Generated query:)/i, "")
+              .trim();
 
-export const createWikipediaSearchChain = (
-  model: TogetherLLM,
-  updateMessage: (id: string, content: string, pluginData?: string) => void
-) => {
-  return RunnableSequence.from([
-    new RunnablePassthrough(),
-    async ({ question, newMessageId }) => {
-      updateMessage(newMessageId, "Extracting search topic...");
-      const searchTopic = await extractSearchTopic(question, model);
-      console.log("Extracted search topic:", searchTopic);
+            console.info("WIKIPEDIA", {
+              question,
+              searchQuery: cleanedQuery,
+            });
 
-      updateMessage(
-        newMessageId,
-        `Search topic: ${searchTopic}. Searching Wikipedia...`
-      );
-      const result = await searchWikipedia(searchTopic);
-      console.log("Wikipedia search result:", result);
+            // Search Wikipedia
+            const searchResults = await searchWikipedia(cleanedQuery);
 
-      updateMessage(newMessageId, "Processing Wikipedia result...");
-      const processedResult = await processWikipediaResult(
-        result,
-        question,
-        model
-      );
+            // Get detailed content for top results
+            const contentPromises = searchResults.map(
+              (result: { pageid: number }) => getWikipediaContent(result.pageid)
+            );
+            const contents = await Promise.all(contentPromises);
 
-      updateMessage(newMessageId, result);
+            // Combine search results with their contents
+            const data = searchResults.map(
+              (
+                result: { title: any; snippet: any; pageid: any },
+                index: number
+              ) => ({
+                title: result.title,
+                snippet: result.snippet,
+                content: contents[index],
+                pageId: result.pageid,
+                url: `https://pl.wikipedia.org/?curid=${result.pageid}`,
+              })
+            );
 
-      return processedResult;
+            const artifact: Artifact = {
+              type: "wikipedia",
+              question,
+              searchQuery: cleanedQuery,
+              data,
+            };
+
+            return {
+              result: `Retrieved Wikipedia data for query: "${cleanedQuery}"`,
+              artifact,
+            };
+          },
+        ]);
+
+        const result = await sequence.invoke({ question });
+        return JSON.stringify(result);
+      } catch (error) {
+        console.error("Error in wikipedia_analyzer:", error);
+        return JSON.stringify({
+          result:
+            error instanceof Error
+              ? `Error analyzing Wikipedia information: ${error.message}`
+              : "Error analyzing Wikipedia information: Unknown error",
+          artifact: null,
+        });
+      }
     },
-    new StringOutputParser(),
-  ]);
+    returnDirect: false,
+  });
 };

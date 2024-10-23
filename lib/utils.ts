@@ -22,11 +22,11 @@ export function checkEasterEggs(input: string) {
 
 export function convertRPMessageToLangChainMessage(message: Message) {
   if (message.role === "user") {
-    return new HumanMessage(message.content);
+    return new HumanMessage(message.content) as ChatMessage;
   } else if (message.role === "assistant") {
-    return new AIMessage(message.content);
+    return new AIMessage(message.content) as ChatMessage;
   }
-  return new ChatMessage(message.content, message.role);
+  return new ChatMessage(message.content, message.role) as ChatMessage;
 }
 
 export function convertLangChainMessageToRPMessage(message: ChatMessage) {

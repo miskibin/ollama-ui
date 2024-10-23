@@ -89,8 +89,9 @@ export const useChatLogic = () => {
         body: JSON.stringify({
           messages: messageHistory,
           systemPrompt,
-          isPluginEnabled:
-            disableSejmStats !== undefined ? false : isPluginEnabled,
+          enabledPluginIds: plugins
+            .filter((plugin) => plugin.enabled)
+            .map((plugin) => plugin.name),
           modelName: selectedModel,
         }),
         signal: abortControllerRef.current.signal,

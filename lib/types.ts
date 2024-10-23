@@ -1,3 +1,6 @@
+import React, { ReactNode } from "react";
+import { TogetherLLM } from "./TogetherLLm";
+
 export type Message = {
   id: string;
   role: "user" | "assistant" | "tool";
@@ -22,10 +25,9 @@ export type SummarableText = {
 };
 
 export type ChatPlugin = {
-  enabled: boolean
-  name: string
-}
-
+  enabled: boolean;
+  name: string;
+};
 export type ChatOptions = {
   temperature: number;
   topP: number;

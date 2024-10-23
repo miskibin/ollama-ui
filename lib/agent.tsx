@@ -104,7 +104,7 @@ export class AgentRP {
     // Initial status
     yield {
       type: "status",
-      content: "Analyzing query for relevant tools...",
+      content: "Analizuję zapytanie...",
     };
 
     const relevantToolNames = await this.analyzeQuery(query);
@@ -112,9 +112,9 @@ export class AgentRP {
     if (relevantToolNames.length > 0) {
       yield {
         type: "status",
-        content: `Found ${
+        content: `Postanowiłem użyć ${
           relevantToolNames.length
-        } relevant tools: ${relevantToolNames.join(", ")}`,
+        } narzędzi: ${relevantToolNames.join(", ")}`,
       };
     }
 
@@ -127,7 +127,7 @@ export class AgentRP {
 
       yield {
         type: "status",
-        content: `Executing ${toolName} tool...`,
+        content: `Wykonuję narzędzie ${toolName}...`,
       };
 
       const { result, artifact } = await this.executeTool(tool, query);
@@ -143,7 +143,7 @@ export class AgentRP {
 
       yield {
         type: "tool_execution",
-        content: `Tool ${toolName} execution complete`,
+        content: `Wykonanie narzędzia ${toolName} zakończone`,
         artifacts: artifact ? [artifact] : undefined,
       };
     }
@@ -154,7 +154,7 @@ export class AgentRP {
 
     yield {
       type: "status",
-      content: "Generating final response...",
+      content: "Generuję ostateczną odpowiedź...",
     };
 
     const finalPrompt = await PROMPTS.processDataPrompt.format({
@@ -191,7 +191,7 @@ export class AgentRP {
     }
 
     if (!lastContent) {
-      throw new Error("No response generated");
+      throw new Error("Nie wygenerowano odpowiedzi");
     }
 
     return {

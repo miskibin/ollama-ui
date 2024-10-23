@@ -13,18 +13,24 @@ import {
 import { TogetherLLM } from "@/lib/TogetherLLm";
 import { AgentRP } from "@/lib/agent";
 import { generateUniqueId } from "@/utils/common";
+import { PluginNames } from "@/lib/plugins";
+import { PlugIcon } from "lucide-react";
+import { createWikipediaTool } from "@/tools/wikipedia";
 
-const AGENT_SYSTEM_TEMPLATE = `You are Polish laywer and you are helping a friend who is a journalist. You never answer if you are not sure.
-If you don't know how to answer a question, use the available tools to look up relevant information. You should particularly do this for questions about Polish parliament.`;
+const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
+  [PluginNames.SejmStats]: createSejmStatsTool,
+  [PluginNames.Wikipedia]: createWikipediaTool,
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const { messages, systemPrompt, _, modelName } =
+    const { messages, systemPrompt, enabledPluginIds, modelName } =
       await req.json();
 
-    const langChainMessages = [
-      new SystemMessage(systemPrompt || AGENT_SYSTEM_TEMPLATE),
-      ...messages.map(convertRPMessageToLangChainMessage),
-    ];
+    const langChainMessages: ChatMessage[] = [
+      new SystemMessage(systemPrompt),
+      ...messages,
+    ].map(convertRPMessageToLangChainMessage);
 
     const llm = new TogetherLLM({
       apiKey: process.env.TOGETHER_API_KEY!,
@@ -32,11 +38,13 @@ export async function POST(req: NextRequest) {
       streaming: true,
       temperature: 0.7,
     });
+    const plugins = enabledPluginIds.map((id: PluginNames) =>
+      PLUGIN_MAPPING[id](llm)
+    );
 
-    const sejmStatsTool = createSejmStatsTool(llm);
     const agent = new AgentRP({
       llm,
-      tools: [sejmStatsTool],
+      tools: plugins,
     });
 
     const stream = new TransformStream();

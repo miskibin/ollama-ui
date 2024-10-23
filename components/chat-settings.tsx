@@ -100,23 +100,6 @@ const ChatSettings = () => {
         </Select>
       </div>
 
-      <div>
-        <LabelWithIcon
-          icon={Thermometer}
-          text="Kreatywność"
-          value={options.temperature.toFixed(1)}
-        />
-        <Slider
-          min={0}
-          max={1}
-          step={0.1}
-          value={[options.temperature]}
-          onValueChange={([temperature]) =>
-            setOptions({ ...options, temperature })
-          }
-        />
-      </div>
-
       <div className="flex items-center justify-between">
         <LabelWithIcon icon={Zap} text="Odpowiadaj na bieżąco" />
         <Switch
@@ -165,7 +148,22 @@ const ChatSettings = () => {
                 }
               />
             </div>
-
+            <div>
+              <LabelWithIcon
+                icon={Thermometer}
+                text="Kreatywność"
+                value={options.temperature.toFixed(1)}
+              />
+              <Slider
+                min={0}
+                max={1}
+                step={0.1}
+                value={[options.temperature]}
+                onValueChange={([temperature]) =>
+                  setOptions({ ...options, temperature })
+                }
+              />
+            </div>
             <div>
               <LabelWithIcon icon={Zap} text="Maks K" />
               <Input
