@@ -44,7 +44,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="px-4 py-3 border-b">
+      <SidebarHeader className="px-3 md:px-4 py-3 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5" />
@@ -70,7 +70,7 @@ export function AppSidebar() {
       <SidebarContent>
         <ScrollArea className="h-[calc(100vh-8rem)]">
           <SidebarGroup>
-            <div className="space-y-2 p-4">
+            <div className="space-y-2 p-3 md:p-4">
               {plugins.map((plugin) => (
                 <div
                   key={plugin.name}
@@ -90,7 +90,7 @@ export function AppSidebar() {
           </SidebarGroup>
           <Separator />
           <SidebarGroup>
-            <div className="p-4 space-y-4">
+            <div className="p-3 md:p-4 space-y-4">
               {!isPatron && (
                 <>
                   <Alert variant="default">
@@ -135,7 +135,7 @@ export function AppSidebar() {
           </SidebarGroup>
         </ScrollArea>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t">
+      <SidebarFooter className="p-3 md:p-4 border-t">
         <Button
           onClick={clearMessages}
           variant="destructive"

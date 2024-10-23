@@ -133,8 +133,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         <Image
           src="/logo.svg"
           alt="Assistant Avatar"
-          width={24}
-          height={24}
+          width={32}
+          height={32}
           className="mr-1 mt-1"
         />
       )}

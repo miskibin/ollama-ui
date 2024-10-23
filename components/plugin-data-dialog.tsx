@@ -61,7 +61,7 @@ const PluginDataDialogs: React.FC<PluginDataDialogsProps> = ({ artifacts }) => {
         return {
           title: "Dane",
           icon: Database,
-          buttonText: "Dane",
+          buttonText: type,
         };
     }
   };

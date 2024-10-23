@@ -87,11 +87,14 @@ export const useChatLogic = () => {
         body: JSON.stringify({
           messages: messageHistory,
           systemPrompt,
-          enabledPluginIds: disableAllPlugins
-            ? []
-            : plugins
-                .filter((plugin) => plugin.enabled)
-                .map((plugin) => plugin.name),
+          enabledPluginIds:
+            disableAllPlugins ||
+            (messages[messages.length - 1].role == "user" &&
+              messages[messages.length - 1].artifacts)
+              ? []
+              : plugins
+                  .filter((plugin) => plugin.enabled)
+                  .map((plugin) => plugin.name),
           modelName: selectedModel,
         }),
         signal: abortControllerRef.current.signal,
@@ -213,13 +216,20 @@ export const useChatLogic = () => {
       }
 
       const data = await response.json();
-      const summarizePrompt = `${data.markdown}\n\n Write a concise summary of the text in polish, return your responses with 5 lines that cover the key points of the text.`;
+      const summarizePrompt = `Write a concise summary of the text in polish, return your responses with 5 lines that cover the key points of the text.`;
 
       const userMessage: Message = {
         id: generateUniqueId(),
         role: "user",
         content: summarizePrompt,
-        artifacts: [],
+        artifacts: [
+          {
+            type: "Dokument PDF",
+            question: "",
+            searchQuery: "",
+            data: data,
+          },
+        ],
       };
 
       addMessage(userMessage);
@@ -248,27 +258,33 @@ export const useChatLogic = () => {
       ...oldMessage,
       content: newContent,
     };
-    updateMessage(id, updatedMessage);
-    setEditingMessageId(null);
 
     if (oldMessage.role === "user") {
-      const newMessages = messages.slice(0, messageIndex + 1);
+      const newMessages = messages
+        .slice(0, messageIndex + 1)
+        .map((msg) => (msg.id === id ? updatedMessage : msg));
       clearMessages();
-      newMessages.forEach((msg) => addMessage(msg));
-      updateMessage(id, updatedMessage);
+      for (const msg of newMessages) {
+        addMessage(msg);
+      }
       await getResponse(newMessages);
+    } else {
+      updateMessage(id, updatedMessage);
     }
+
+    setEditingMessageId(null);
   };
 
   const regenerateMessage = async (id: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     if (messageIndex === -1 || messages[messageIndex].role !== "assistant")
       return;
-
-    const newMessages = messages.slice(0, messageIndex);
+    const previousMessages = messages.slice(0, messageIndex);
     clearMessages();
-    newMessages.forEach((msg) => addMessage(msg));
-    await getResponse(newMessages);
+    for (const msg of previousMessages) {
+      addMessage(msg);
+    }
+    await getResponse(previousMessages);
   };
 
   const clearChat = () => {

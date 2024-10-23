@@ -89,13 +89,37 @@ export class AgentRP {
   }
 
   private messageToString(message: ChatMessage): string {
-    return typeof message.content === "string"
-      ? message.content
-      : Array.isArray(message.content)
-      ? message.content.join(" ")
-      : String(message.content);
-  }
+    let content =
+      typeof message.content === "string"
+        ? message.content
+        : Array.isArray(message.content)
+        ? message.content.join(" ")
+        : String(message.content);
 
+    // If message has artifacts, prepend their content
+    if (
+      "artifacts" in message &&
+      Array.isArray(message.artifacts) &&
+      message.artifacts.length > 0
+    ) {
+      const artifactContent = message.artifacts
+        .map((artifact) => {
+          if (artifact.data) {
+            return `Data: ${artifact.type}:\n${JSON.stringify(
+              artifact.data,
+              null,
+              2
+            )}\n`;
+          }
+          return "";
+        })
+        .join("\n");
+
+      content = artifactContent + "\n" + content;
+    }
+
+    return content;
+  }
   async *invoke(input: string | ChatMessage[]): AsyncGenerator<AgentProgress> {
     const query = Array.isArray(input)
       ? this.messageToString(input[input.length - 1])
