@@ -100,7 +100,7 @@ export const createWikipediaTool = (model: TogetherLLM) => {
             };
 
             return {
-              result: `Retrieved Wikipedia data for query: "${cleanedQuery}"`,
+              result: JSON.stringify(data),
               artifact,
             };
           },

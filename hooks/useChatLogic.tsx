@@ -65,7 +65,7 @@ export const useChatLogic = () => {
 
   const getResponse = async (
     messageHistory: Message[],
-    disableSejmStats?: boolean
+    disableAllPlugins?: boolean
   ) => {
     setIsLoading(true);
     setStatus(null);
@@ -81,17 +81,17 @@ export const useChatLogic = () => {
       };
       addMessage(initialMessage);
 
-      const isPluginEnabled = plugins.some((plugin) => plugin.enabled);
-
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: messageHistory,
           systemPrompt,
-          enabledPluginIds: plugins
-            .filter((plugin) => plugin.enabled)
-            .map((plugin) => plugin.name),
+          enabledPluginIds: disableAllPlugins
+            ? []
+            : plugins
+                .filter((plugin) => plugin.enabled)
+                .map((plugin) => plugin.name),
           modelName: selectedModel,
         }),
         signal: abortControllerRef.current.signal,

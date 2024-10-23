@@ -48,7 +48,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
             };
 
             return {
-              result: `Retrieved data for query: "${cleanedQuery}"`,
+              result: JSON.stringify(data),
               artifact,
             };
           },

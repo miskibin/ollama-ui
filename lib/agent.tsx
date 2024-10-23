@@ -127,7 +127,7 @@ export class AgentRP {
 
       yield {
         type: "status",
-        content: `Wykonuję narzędzie ${toolName}...`,
+        content: `Wywołuję narzędzie ${toolName}...`,
       };
 
       const { result, artifact } = await this.executeTool(tool, query);

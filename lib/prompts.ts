@@ -13,7 +13,7 @@ export const PROMPTS = {
     4. Focus on the primary subject, not actions related to it.
     6. Omit words like "projekt", "ustawa", "sejm", "głosowanie", "pomoc".
     7. Use lowercase letters, correct Polish spelling, no special characters.
-
+    8. If there is url field provided - Wrap act name with markdown link like this. [ELI value](url value) 
     Example: For "Jakie ustawy uchwalono w sprawie ochrony środowiska?" use "ochrona środowiska"
     Example: For "prawo dotyczące aborcji ?" use "przerywanie ciąży"
 
@@ -38,10 +38,8 @@ export const PROMPTS = {
     Dane: {dataString}
     Data obecna: ${new Date().toLocaleDateString("pl-PL")}
     Instrukcje:
-    0. Pamiętaj, że dane są ograniczcone do 5 najnowszych wyników.
-    1. Odpowiedz bezpośrednio na pytanie w maksymalnie 2 zdaniach.
+    1. Odpowiedz bezpośrednio na pytanie w maksymalnie 4 zdaniach.
     2. Podaj tylko informacje istotne dla pytania.
-    3. Jeśli brak odpowiedzi w danych, napisz to krótko.
     4. Użyj '**pogrubienia**' dla kluczowych dat lub liczb.
     5. Cytuj tytuł dokumentu tylko jeśli jest bezpośrednio związany z pytaniem.
     6. Nie opisuj dostarczonych danych ani ich zakresu.

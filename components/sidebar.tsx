@@ -119,6 +119,7 @@ export function AppSidebar() {
                         </li>
                       </ul>
                       <Link
+                        target="_blank"
                         href="https://patronite.pl/sejm-stats"
                         className="inline-flex items-center gap-2 text-primary hover:text-primary/90 text-sm font-medium"
                       >
