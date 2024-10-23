@@ -24,7 +24,7 @@ export class AgentRP {
   constructor(options: AgentOptions) {
     this.llm = options.llm;
     this.tools = options.tools;
-    this.logger = new LoggerService(options.verbose ?? true);
+    this.logger = new LoggerService(process.env.NODE_ENV === "development");
   }
 
   private async analyzeToolRelevance(

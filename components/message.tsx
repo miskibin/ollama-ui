@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,8 @@ import {
   Check,
   X,
   Trash2,
-  Database,
+  FileText,
+  Download,
 } from "lucide-react";
 import { useChatContext } from "@/app/ChatContext";
 import { Message, Artifact } from "@/lib/types";
@@ -38,8 +39,20 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const [editInput, setEditInput] = useState(message.content);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [actUrl, setActUrl] = useState<string | null>(null);
 
   const isGenerating = isLoading && isLastMessage;
+
+  useEffect(() => {
+    // Regular expression to find ELI links in the format [SOMETHING](URL)
+    const eliLinkRegex = /\[.*?\]\((https?:\/\/[^\s)]+\.pdf)\)/;
+    const match = message.content.match(eliLinkRegex);
+    if (match) {
+      setActUrl(match[1]);
+    } else {
+      setActUrl(null);
+    }
+  }, [message.content]);
 
   const handleEditStart = () => {
     setEditingMessageId(message.id);
@@ -62,6 +75,40 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       setCopiedMessageId(message.id);
       setTimeout(() => setCopiedMessageId(null), 2000);
     });
+  };
+
+  const handleDownloadAndSummarize = async () => {
+    if (actUrl) {
+      await handleSummarize(actUrl);
+    }
+  };
+
+  const renderActSummaryPrompt = () => {
+    if (
+      !actUrl ||
+      !isLastMessage ||
+      message.role !== "assistant" ||
+      isGenerating
+    ) {
+      return null;
+    }
+
+    return (
+      <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+        <FileText className="h-4 w-4" />
+        <span>Czy chcesz, żebym pobrał i wspomniany akt prawny?</span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDownloadAndSummarize}
+          className="ml-2 gap-2"
+          disabled={isLoading}
+        >
+          <Download className="h-4 w-4" />
+          Pobierz i streść
+        </Button>
+      </div>
+    );
   };
 
   const renderMessageButtons = () => {
@@ -107,6 +154,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       </div>
     );
   };
+
   const renderArtifacts = () => {
     if (!message.artifacts?.length || isGenerating) {
       return null;
@@ -163,6 +211,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           <div className="text-left">
             <MarkdownResponse content={message.content} />
             {renderArtifacts()}
+            {renderActSummaryPrompt()}
             {!isGenerating && renderMessageButtons()}
           </div>
         )}
