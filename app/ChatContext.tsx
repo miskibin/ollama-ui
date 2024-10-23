@@ -2,14 +2,7 @@
 import React, { createContext, useContext, ReactNode, useState } from "react";
 import { useChatLogic } from "@/hooks/useChatLogic";
 import { useFileHandling } from "@/hooks/useFileHandling";
-import {
-  ChatOptions,
-  Model,
-  Message,
-  Test,
-  ResponseMetadata,
-  ChatPlugin,
-} from "@/lib/types";
+import { ChatOptions, Model, Message, ChatPlugin } from "@/lib/types";
 import { useChatStore } from "@/lib/store";
 
 interface ChatContextType {
@@ -29,9 +22,9 @@ interface ChatContextType {
   plugins: ChatPlugin[];
   // From useChatLogic
   isLoading: boolean;
+  status: string;
   handleSubmit: (e: React.FormEvent, text?: string) => Promise<void>;
   stopGenerating: () => void;
-  responseMetadata: ResponseMetadata | null;
   editingMessageId: string | null;
   setEditingMessageId: React.Dispatch<React.SetStateAction<string | null>>;
   regenerateMessage: (id: string) => Promise<void>;
@@ -43,8 +36,6 @@ interface ChatContextType {
   // Local state
   isPromptDialogOpen: boolean;
   setIsPromptDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  currentTest: Test | undefined;
-  setCurrentTest: React.Dispatch<React.SetStateAction<Test | undefined>>;
   togglePlugin: any; // TODO fix type
 }
 
@@ -56,7 +47,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const chatStore = useChatStore();
   const chatLogic = useChatLogic();
   const fileLogic = useFileHandling(chatStore.setInput);
-  const [currentTest, setCurrentTest] = useState<Test>();
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
 
   return (
@@ -67,8 +57,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         ...fileLogic,
         isPromptDialogOpen,
         setIsPromptDialogOpen,
-        currentTest,
-        setCurrentTest,
       }}
     >
       {children}

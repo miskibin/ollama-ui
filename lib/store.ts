@@ -1,12 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  ChatOptions,
-  Message,
-  Model,
-  ChatPlugin,
-  SummarableText,
-} from "./types";
+import { ChatOptions, Message, Model, ChatPlugin, Artifact } from "./types";
 import { plugins } from "./plugins";
 import { BufferMemory, MemoryVariables } from "langchain/memory";
 
@@ -21,7 +15,7 @@ interface ChatState {
   models: Model[];
   selectedModel: string;
   addMessage: (message: Message) => void;
-  updateMessage: (id: string, content: string, pluginData?: string) => void;
+  updateMessage: (id: string, message: Message) => void;
   deleteMessage: (id: string) => void;
   clearMessages: () => void;
   setOptions: (options: Partial<ChatOptions>) => void;
@@ -49,7 +43,8 @@ export const useChatStore = create<ChatState>()(
         repeatPenalty: 1.1,
         num_predict: 4096,
       },
-      systemPrompt: "You are a specialized keyword extractor for Polish legislative topics.",
+      systemPrompt:
+        "You are a specialized keyword extractor for Polish legislative topics.",
       input: "",
       plugins: plugins,
       memory: new BufferMemory({
@@ -66,45 +61,59 @@ export const useChatStore = create<ChatState>()(
         },
         {
           name: "meta-llama/Meta-Llama-3-70B-Instruct-Lite",
-          description: "Zaawansowany", // 54
+          description: "Zaawansowany",
         },
         {
           name: "google/gemma-2-27b-it",
-          description: "Zaawansowany", // 80
+          description: "Zaawansowany",
         },
         {
           name: "google/gemma-2-9b-it",
-          description: "Kompaktowy", // 30
+          description: "Kompaktowy",
         },
       ],
       selectedModel: "meta-llama/Llama-Vision-Free",
+
       addMessage: (message) =>
-        set((state) => ({ messages: [...state.messages, message] })),
-      updateMessage: (id, content, pluginData?) =>
+        set((state) => ({
+          messages: [
+            ...state.messages,
+            {
+              ...message,
+              artifacts: message.artifacts || [], // Ensure artifacts array exists
+            },
+          ],
+        })),
+
+      updateMessage: (id, updatedMessage) =>
         set((state) => ({
           messages: state.messages.map((msg) =>
             msg.id === id
               ? {
-                  ...msg,
-                  content,
-                  ...(pluginData && { pluginData }),
+                  ...updatedMessage,
+                  artifacts: updatedMessage.artifacts || [], // Ensure artifacts array exists
                 }
               : msg
           ),
         })),
+
       deleteMessage: (id) =>
         set((state) => ({
           messages: state.messages.filter((msg) => msg.id !== id),
         })),
+
       clearMessages: () => {
         set({ messages: [] });
         get().clearMemory();
       },
+
       setOptions: (newOptions) =>
         set((state) => ({ options: { ...state.options, ...newOptions } })),
+
       setSystemPrompt: (prompt) => set({ systemPrompt: prompt }),
       setInput: (input) => set({ input }),
       setPlugins: (plugins) => set({ plugins }),
+
       togglePlugin: (name) =>
         set((state) => ({
           plugins: state.plugins.map((plugin) =>
@@ -113,16 +122,19 @@ export const useChatStore = create<ChatState>()(
               : plugin
           ),
         })),
+
       getMemoryVariables: async () => {
         const memoryVariables = await get().memory.loadMemoryVariables({});
         return memoryVariables;
       },
+
       addToMemory: async (humanMessage: string, aiMessage: string) => {
         await get().memory.saveContext(
           { input: humanMessage },
           { output: aiMessage }
         );
       },
+
       clearMemory: () => {
         set({
           memory: new BufferMemory({
@@ -132,6 +144,7 @@ export const useChatStore = create<ChatState>()(
           }),
         });
       },
+
       setPatrons: (patrons) => set({ patrons }),
       setModels: (models) => set({ models }),
       setSelectedModel: (model) => set({ selectedModel: model }),
@@ -139,7 +152,10 @@ export const useChatStore = create<ChatState>()(
     {
       name: "chat-storage",
       partialize: (state) => ({
-        messages: state.messages,
+        messages: state.messages.map((msg) => ({
+          ...msg,
+          artifacts: msg.artifacts || [], // Ensure artifacts are persisted
+        })),
         options: state.options,
         systemPrompt: state.systemPrompt,
         selectedModel: state.selectedModel,

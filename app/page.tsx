@@ -6,7 +6,7 @@ import { ChatProvider } from "./ChatContext";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import ChatHeader from "@/components/header";
+import Navbar from "@/components/navbar";
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
@@ -95,7 +95,7 @@ export default function Home() {
           />
         </div>
         <div className="flex flex-col flex-grow w-full md:w-auto overflow-hidden">
-          <ChatHeader
+          <Navbar
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />

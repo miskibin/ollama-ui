@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Message, ResponseMetadata } from "@/lib/types";
+import { Artifact, Message } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
 import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
+import { stat } from "fs";
+
+type ProgressUpdate = {
+  type: "status" | "tool_execution" | "response" | "error";
+  messages: Message[];
+};
 
 export const useChatLogic = () => {
   const {
@@ -15,18 +21,14 @@ export const useChatLogic = () => {
     setSystemPrompt,
     input,
     setInput,
-    getMemoryVariables,
-    addToMemory,
     selectedModel,
-    togglePlugin,
     plugins,
     clearMemory,
   } = useChatStore();
+
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [pluginStatus, setPluginStatus] = useState<string | null>(null);
-  const [responseMetadata, setResponseMetadata] =
-    useState<ResponseMetadata | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -34,10 +36,12 @@ export const useChatLogic = () => {
     e.preventDefault();
     const inputText = text || input;
     if (!inputText.trim()) return;
+
     const userMessage: Message = {
       id: generateUniqueId(),
       role: "user",
       content: inputText,
+      artifacts: [],
     };
     addMessage(userMessage);
     setInput("");
@@ -50,6 +54,7 @@ export const useChatLogic = () => {
         id: generateUniqueId(),
         role: "assistant",
         content: `![Easter Egg](${easterEgg})`,
+        artifacts: [],
       };
       addMessage(easterEggMessage);
       setIsLoading(false);
@@ -57,30 +62,33 @@ export const useChatLogic = () => {
       await getResponse([...messages, userMessage]);
     }
   };
+
   const getResponse = async (
     messageHistory: Message[],
     disableSejmStats?: boolean
   ) => {
     setIsLoading(true);
-    setPluginStatus(null);
+    setStatus(null);
     abortControllerRef.current = new AbortController();
 
     try {
-      const lastUserMessage = messageHistory[messageHistory.length - 1].content;
       const newMessageId = generateUniqueId();
-      addMessage({ id: newMessageId, role: "assistant", content: "" });
+      const initialMessage: Message = {
+        id: newMessageId,
+        role: "assistant",
+        content: "",
+        artifacts: [],
+      };
+      addMessage(initialMessage);
 
-      const memoryVariables = await getMemoryVariables();
       const isPluginEnabled = plugins.some((plugin) => plugin.enabled);
-      console.log("selected model", selectedModel);
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: messageHistory,
           systemPrompt,
-          memoryVariables,
-          stream: options.streaming,
           isPluginEnabled:
             disableSejmStats !== undefined ? false : isPluginEnabled,
           modelName: selectedModel,
@@ -95,48 +103,70 @@ export const useChatLogic = () => {
       if (response.body) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let finalResponse = "";
+        let currentContent = "";
+        let currentArtifacts: Artifact[] = [];
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+
           const chunk = decoder.decode(value);
           const lines = chunk.split("\n");
+
           for (const line of lines) {
             if (line.startsWith("data: ")) {
               try {
-                const data = JSON.parse(line.slice(6));
-                if (data.status) {
-                  setPluginStatus(data.status);
-                  if (
-                    data.status === "plugin_data_fetched" &&
-                    data.pluginData
-                  ) {
-                    updateMessage(
-                      newMessageId,
-                      finalResponse,
-                      JSON.stringify(data.pluginData)
-                    );
-                  }
-                } else if (data.response && typeof data.response === "string") {
-                  finalResponse += data.response;
-                  updateMessage(newMessageId, finalResponse);
+                const data = JSON.parse(line.slice(6)) as ProgressUpdate;
+
+                // Handle different types of updates
+                switch (data.type) {
+                  case "status":
+                    setStatus(data.messages[0].content);
+                    break;
+
+                  case "tool_execution":
+                    setStatus(data.messages[0].content);
+                    if (data.messages[0].artifacts?.length) {
+                      currentArtifacts.push(...data.messages[0].artifacts);
+                    }
+                    break;
+
+                  case "response":
+                    currentContent += data.messages[0].content;
+                    // Update with accumulated content and artifacts
+                    const updatedMessage: Message = {
+                      id: newMessageId,
+                      role: "assistant",
+                      content: currentContent,
+                      artifacts: currentArtifacts,
+                    };
+                    updateMessage(newMessageId, updatedMessage);
+                    break;
+
+                  case "error":
+                    throw new Error(data.messages[0].content);
                 }
               } catch (error) {
-                console.error("Error parsing JSON:", error);
+                console.error("Error parsing SSE data:", error);
               }
             }
           }
         }
 
-        const trimmedResponse = finalResponse.trim();
-        updateMessage(newMessageId, trimmedResponse);
+        // Final update with trimmed content
+        const finalMessage: Message = {
+          id: newMessageId,
+          role: "assistant",
+          content: currentContent.trim(),
+          artifacts: currentArtifacts,
+        };
+        updateMessage(newMessageId, finalMessage);
       }
     } catch (error) {
       handleError(error);
     } finally {
       setIsLoading(false);
-      setPluginStatus(null);
+      setStatus(null);
       abortControllerRef.current = null;
     }
   };
@@ -148,13 +178,14 @@ export const useChatLogic = () => {
         id: generateUniqueId(),
         role: "assistant",
         content: `An error occurred while fetching the response. ${error.message}`,
+        artifacts: [],
       });
     }
   };
 
   const handleSummarize = async (pdfUrl: string) => {
     setIsLoading(true);
-    setPluginStatus(null);
+    setStatus(null);
 
     try {
       const pdfResponse = await fetch(pdfUrl);
@@ -163,12 +194,14 @@ export const useChatLogic = () => {
           `Failed to download PDF. HTTP status: ${pdfResponse.status}`
         );
       }
+
       const arrayBuffer = await pdfResponse.arrayBuffer();
       const formData = new FormData();
       formData.append(
         "pdf",
         new Blob([arrayBuffer], { type: "application/pdf" })
       );
+
       const response = await fetch("/api/parse-pdf", {
         method: "POST",
         body: formData,
@@ -179,23 +212,25 @@ export const useChatLogic = () => {
       }
 
       const data = await response.json();
-      const markdownContent = data.markdown;
-      const summarizePrompt = `${markdownContent}\n\n  Write a concise summary of the text in polish, return your responses with 5 lines that cover the key points of the text.
-`;
+      const summarizePrompt = `${data.markdown}\n\n Write a concise summary of the text in polish, return your responses with 5 lines that cover the key points of the text.`;
+
       const userMessage: Message = {
         id: generateUniqueId(),
         role: "user",
         content: summarizePrompt,
+        artifacts: [],
       };
+
       addMessage(userMessage);
       await getResponse([...messages, userMessage], true);
     } catch (error) {
       handleError(error);
     } finally {
       setIsLoading(false);
-      setPluginStatus(null);
+      setStatus(null);
     }
   };
+
   const stopGenerating = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -206,14 +241,20 @@ export const useChatLogic = () => {
   const editMessage = async (id: string, newContent: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     if (messageIndex === -1) return;
-    updateMessage(id, newContent);
+
+    const oldMessage = messages[messageIndex];
+    const updatedMessage: Message = {
+      ...oldMessage,
+      content: newContent,
+    };
+    updateMessage(id, updatedMessage);
     setEditingMessageId(null);
-    if (messages[messageIndex].role === "user") {
+
+    if (oldMessage.role === "user") {
       const newMessages = messages.slice(0, messageIndex + 1);
       clearMessages();
       newMessages.forEach((msg) => addMessage(msg));
-      updateMessage(id, newContent);
-
+      updateMessage(id, updatedMessage);
       await getResponse(newMessages);
     }
   };
@@ -222,6 +263,7 @@ export const useChatLogic = () => {
     const messageIndex = messages.findIndex((msg) => msg.id === id);
     if (messageIndex === -1 || messages[messageIndex].role !== "assistant")
       return;
+
     const newMessages = messages.slice(0, messageIndex);
     clearMessages();
     newMessages.forEach((msg) => addMessage(msg));
@@ -235,14 +277,13 @@ export const useChatLogic = () => {
 
   return {
     isLoading,
-    pluginStatus,
+    status,
     handleSummarize,
     editMessage,
     customSystem: systemPrompt,
     setCustomSystem: setSystemPrompt,
     regenerateMessage,
     handleSubmit,
-    responseMetadata,
     clearChat,
     stopGenerating,
     setEditingMessageId,

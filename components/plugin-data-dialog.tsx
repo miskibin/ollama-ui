@@ -9,36 +9,28 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Database, Info, X } from "lucide-react";
+import { Database, Info, Search, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/lib/store";
+import { Artifact } from "@/lib/types";
 
 interface PluginDataDialogProps {
-  pluginData: string;
+  artifacts: Artifact[];
 }
 
-const PluginDataDialog: React.FC<PluginDataDialogProps> = ({ pluginData }) => {
+const PluginDataDialog: React.FC<PluginDataDialogProps> = ({ artifacts }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { plugins } = useChatStore();
-  const formatPluginData = (data: string): string => {
-    try {
-      const parsedData = JSON.parse(data);
-      return JSON.stringify(parsedData, null, 2);
-    } catch (error) {
-      return data; // If it's not JSON, return as is
-    }
-  };
+
+  if (!artifacts.length) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Badge
-          className="text-xs cursor-pointer hover:bg-accent transition-colors"
-          variant="secondary"
-        >
-          <Database className="w-3 h-3 mr-1" />
-          Dane zewnętrzne
-        </Badge>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Database className="h-4 w-4" />
+          {artifacts[0].type === "sejm_stats" ? "Dane sejmowe" : "Dane"}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[900px] max-h-[80vh] p-0">
         <DialogHeader className="px-6 py-4 border-b">
@@ -48,14 +40,32 @@ const PluginDataDialog: React.FC<PluginDataDialogProps> = ({ pluginData }) => {
           </DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(80vh-100px)]">
-          <pre className="p-6 text-sm bg-muted rounded-b-lg overflow-x-auto whitespace-pre-wrap break-words">
-            {formatPluginData(pluginData)}
-          </pre>
+          {artifacts.map((artifact, index) => (
+            <div key={index} className="border-b last:border-b-0">
+              <div className="px-6 py-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    {artifact.question}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  <Badge variant="outline" className="text-xs">
+                    {artifact.searchQuery}
+                  </Badge>
+                </div>
+                <pre className="p-4 text-sm bg-muted rounded-lg overflow-x-auto whitespace-pre-wrap break-words">
+                  {JSON.stringify(artifact.data, null, 2)}
+                </pre>
+              </div>
+            </div>
+          ))}
           <DialogFooter className="px-6 py-3 border-t bg-muted/50">
             <div className="flex items-center justify-center w-full text-sm text-muted-foreground">
               <Info className="w-4 h-4 mr-2" />
               <span>
-                Wyświetlone dane są pochodzą z rozszerzeń i mogą być wstępnie
+                Wyświetlone dane pochodzą z rozszerzeń i mogą być wstępnie
                 przetworzone.
               </span>
             </div>

@@ -2,16 +2,18 @@ import React, { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Send, StopCircle, FileText } from "lucide-react";
+import { Send, StopCircle, FileText, Loader2 } from "lucide-react";
 import InitialChatContent from "@/components/initial-page";
 import { useChatContext } from "@/app/ChatContext";
 import LoadingDots from "./loadingDots";
 import { ChatMessage } from "./message";
+import { cn } from "@/lib/utils";
 
 export function ChatCard() {
   const {
     messages,
     isLoading,
+    status,
     input,
     setInput,
     handleSubmit,
@@ -65,6 +67,44 @@ export function ChatCard() {
     }
   };
 
+  const renderLoadingState = () => {
+    if (!isLoading || messages[messages.length - 1]?.content !== "") {
+      return null;
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 my-8">
+        <div className="flex items-center justify-center space-x-2 text-muted-foreground ">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-sm font-medium">Asystent myśli...</span>
+        </div>
+
+        {status && (
+          <div
+            className={cn(
+              "text-sm px-3 py-1 rounded-full",
+              "bg-primary/5 text-primary/80",
+              "flex items-center gap-2 max-w-md",
+              status.includes("Executing") && "animate-pulse"
+            )}
+          >
+            <div className="relative flex-shrink-0 h-2 w-2">
+              <div className="absolute h-2 w-2 bg-primary/60 rounded-full animate-ping" />
+              <div className="relative h-2 w-2 bg-primary rounded-full" />
+            </div>
+            <span className="truncate">
+              {status.includes("Executing")
+                ? status
+                    .replace("Executed", "Sprawdzam")
+                    .replace("tool...", "dane...")
+                : status}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Card className="h-full flex flex-col items-center border-t-0 shadow-none rounded-t-none">
       <CardContent className="flex-grow w-full max-w-6xl overflow-y-auto px-2 sm:px-4">
@@ -78,28 +118,20 @@ export function ChatCard() {
             }
           />
         ) : (
-          messages
-            .filter((message) => message.content !== "")
-            .map((message, index) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                isLastMessage={index === messages.length - 1}
-              />
-            ))
-        )}
-        <div ref={messagesEndRef} />
-        {isLoading && messages[messages.length - 1].content === "" && (
-          <div className="flex flex-col items-center mt-4">
-            <LoadingDots />
-            <p className="text-sm text-gray-500 italic mt-2">
-              {messages[messages.length - 1]?.pluginData &&
-              (messages[messages.length - 1]?.pluginData?.length ?? 0) < 100
-                ? messages[messages.length - 1]?.pluginData
-                : "Myślę..."}
-            </p>
+          <div className="space-y-4">
+            {messages
+              .filter((message) => message.content !== "")
+              .map((message, index) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  isLastMessage={index === messages.length - 1}
+                />
+              ))}
+            {renderLoadingState()}
           </div>
         )}
+        <div ref={messagesEndRef} />
       </CardContent>
       <CardFooter className="w-full mt-1 items-center justify-center sticky bottom-0">
         <form
@@ -115,7 +147,9 @@ export function ChatCard() {
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Wpisz wiadomość..."
+              placeholder={
+                isLoading ? "Czekam na odpowiedź..." : "Wpisz wiadomość..."
+              }
               disabled={isLoading || isPdfParsing}
               className="pr-24 pl-4 py-3 resize-none min-h-[56px] max-h-[200px] w-full rounded-2xl border-2 focus:ring-2 focus:ring-primary/50 transition-all overflow-y-auto scrollbar-hide hover:scrollbar-default"
               rows={1}
@@ -135,7 +169,7 @@ export function ChatCard() {
                       <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   ) : (
-                    <FileText className="h-5 w-5 " />
+                    <FileText className="h-5 w-5" />
                   )}
                 </Button>
                 <input

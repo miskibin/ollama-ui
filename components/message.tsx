@@ -3,11 +3,19 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import MarkdownResponse from "@/components/markdownResponse";
-import PluginDataDialog from "./plugin-data-dialog";
-import SummarableTextDialog from "./SummarableTextDialog";
-import { Edit, RefreshCw, Copy, Check, X, Trash2 } from "lucide-react";
+import {
+  Edit,
+  RefreshCw,
+  Copy,
+  Check,
+  X,
+  Trash2,
+  Database,
+} from "lucide-react";
 import { useChatContext } from "@/app/ChatContext";
-import { Message } from "@/lib/types";
+import { Message, Artifact } from "@/lib/types";
+import PluginDataDialog from "./plugin-data-dialog";
+import { SummarableTextDialog } from "./SummarableTextDialog";
 
 interface ChatMessageProps {
   message: Message;
@@ -24,14 +32,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setEditingMessageId,
     editMessage,
     regenerateMessage,
-    deleteMessage,
     handleSummarize,
+    deleteMessage,
   } = useChatContext();
 
   const [editInput, setEditInput] = useState(message.content);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
-  // Update the condition for when a message is being generated
   const isGenerating = isLoading && isLastMessage;
 
   const handleEditStart = () => {
@@ -40,7 +47,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const handleEditSave = () => {
-    editMessage(message.id, editInput);
+    const updatedMessage = { ...message, content: editInput };
+    editMessage(message.id, updatedMessage.content);
     setEditingMessageId(null);
   };
 
@@ -99,6 +107,21 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       </div>
     );
   };
+  const renderArtifacts = () => {
+    if (!message.artifacts?.length || isGenerating) {
+      return null;
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        <PluginDataDialog artifacts={message.artifacts} />
+        <SummarableTextDialog
+          artifacts={message.artifacts}
+          onSummarize={handleSummarize}
+        />
+      </div>
+    );
+  };
 
   return (
     <div
@@ -139,15 +162,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         ) : (
           <div className="text-left">
             <MarkdownResponse content={message.content} />
-            {message.pluginData && !isGenerating && (
-              <div className="flex justify-start mt-2 space-x-2">
-                <PluginDataDialog pluginData={message.pluginData} />
-                <SummarableTextDialog
-                  onSummarize={(item) => handleSummarize(item.url)}
-                  message={message}
-                />
-              </div>
-            )}
+            {renderArtifacts()}
             {!isGenerating && renderMessageButtons()}
           </div>
         )}
