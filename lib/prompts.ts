@@ -27,7 +27,7 @@ export const PROMPTS = {
       Answer YES if:
       1. Query needs this tool's data (directly or via context)
       2. Cannot be answered without it
-      3. References information from previous response that needs this tool
+      3. Does NOT Reference information from previous response
   
       RELEVANT: YES/NO
       (reason in one line)`),
@@ -83,6 +83,6 @@ Jeśli jakaś informacja nie występuje w dokumencie, pomiń dany punkt.
 - [zmiana 2]
 - [zmiana 3]
 
-⏰ Data wejścia w życie (jeśli podano): [**data**]
+⏰ Data wejścia w życie: [**data**]
 
 Pisz prostym językiem, liczby i daty zapisuj w **pogrubieniu**.`;

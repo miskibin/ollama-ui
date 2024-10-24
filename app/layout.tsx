@@ -20,7 +20,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Asystent RP",
+  title: "Asystent Parlamentarny",
   description:
     "Inteligentny asystent do analizy danych Sejmu Rzeczypospolitej Polskiej",
   keywords: [

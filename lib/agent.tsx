@@ -135,7 +135,7 @@ export class AgentRP {
             })
             .join("\n")
         : "";
-    const prompt = `${artifactContent}${JSON.stringify(
+    const prompt = `${artifactContent.slice(0, 16000)}${JSON.stringify(
       context
     )}\n\nUser: ${this.messageToString(userMessage, false)}`;
 

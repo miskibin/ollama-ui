@@ -102,6 +102,7 @@ export const useChatLogic = () => {
                   .filter((plugin) => plugin.enabled)
                   .map((plugin) => plugin.name),
           modelName: selectedModel,
+          options: options
         }),
         signal: abortControllerRef.current.signal,
       });
