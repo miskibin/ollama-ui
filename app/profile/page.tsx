@@ -82,7 +82,7 @@ export default function ProfileClient() {
             <Button
               variant="outline"
               className="mt-4 w-full"
-              onClick={() => window.location.reload()}
+              onClick={() => (window.location.href = "/")}
             >
               Spróbuj ponownie
             </Button>
