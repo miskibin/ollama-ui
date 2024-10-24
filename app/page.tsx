@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import { ChatCard } from "@/components/chatCard";
 import { ChatProvider } from "./ChatContext";
