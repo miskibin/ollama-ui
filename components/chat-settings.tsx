@@ -48,7 +48,7 @@ const LabelWithIcon = ({
   </label>
 );
 
-const ChatSettings = () => {
+const ChatSettings = (isPatron: any) => {
   const {
     systemPrompt,
     setSystemPrompt,
@@ -59,8 +59,6 @@ const ChatSettings = () => {
     setSelectedModel,
     patrons,
   } = useChatStore();
-  const { user } = useUser();
-  const isPatron = user?.email ? patrons.includes(user.email) : false;
 
   const handleModelChange = (value: string) => {
     if (isPatron) {

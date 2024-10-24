@@ -32,6 +32,10 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "./ui/badge";
 import { Database } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import {
+  createClientComponentClient,
+  User,
+} from "@supabase/auth-helpers-nextjs";
 
 const Sidebar = () => {
   const { plugins, togglePlugin } = useChatStore();
@@ -70,11 +74,30 @@ const Sidebar = () => {
 export function AppSidebar() {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const { user } = useUser();
   const { clearMessages, patrons } = useChatStore();
+  const [user, setUser] = useState<User | null>(null);
   const [isPatron, setIsPatron] = useState(
     process.env.NODE_ENV === "development"
   );
+  const supabase = createClientComponentClient();
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
 
   useEffect(() => {
     setMounted(true);
@@ -193,7 +216,7 @@ export function AppSidebar() {
                   </CardContent>
                 </Card>
               )}
-              <ChatSettings />
+              <ChatSettings isPatron={isPatron} />
             </div>
           </SidebarGroup>
         </ScrollArea>

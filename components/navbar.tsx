@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Star, Heart } from "lucide-react";
+import { LogOut, Star, Heart, User2 } from "lucide-react";
+
 import Link from "next/link";
 import {
   DropdownMenuContent,
@@ -13,16 +14,19 @@ import {
 import { getPatrons } from "@/lib/get-patronite-users";
 import { useChatStore } from "@/lib/store";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import {
+  createClientComponentClient,
+  User,
+} from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 
 const Navbar: React.FC = () => {
-  const supabase = createClientComponentClient();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
   const [isPatron, setIsPatron] = useState(false);
   const setPatrons = useChatStore((state) => state.setPatrons);
 
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClientComponentClient();
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -112,13 +116,13 @@ const Navbar: React.FC = () => {
                 }
               >
                 <span className="sr-only">Opcje</span>
-                <User className="h-6 w-6" />
+                <User2 className="h-6 w-6" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
                 <Link href="/profile" className="flex items-center w-full">
-                  <User className="mr-2 h-4 w-4" />
+                  <User2 className="mr-2 h-4 w-4" />
                   <span>Profil</span>
                 </Link>
               </DropdownMenuItem>
