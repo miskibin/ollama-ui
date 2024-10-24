@@ -8,11 +8,11 @@ import {
   User,
 } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import Navbar from "@/components/navbar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/navbar";
+import { Mail } from "lucide-react";
 
 export default function Home() {
   const supabase = createClientComponentClient();
@@ -58,13 +58,17 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
 
-  const handleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+  const handleOAuthSignIn = async (provider: "google" | "discord") => {
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+    } catch (error) {
+      console.error(`Error signing in with ${provider}:`, error);
+    }
   };
 
   if (loading) {
@@ -87,11 +91,23 @@ export default function Home() {
         className="flex items-center justify-center p-4"
         style={{ height: windowHeight }}
       >
-        <div className="text-center">
-          <p className="mb-4">
-            Musisz być zalogowany, aby uzyskać dostęp do tej strony.
-          </p>
-          <Button onClick={handleSignIn}>Zaloguj się przez Google</Button>
+        <div className="max-w-sm w-full p-6 bg-white rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-center mb-6">Zaloguj się</h2>
+          <div className="space-y-4">
+            <Button
+              onClick={() => handleOAuthSignIn("google")}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Mail className="h-5 w-5" />
+              Zaloguj się przez Google
+            </Button>
+            <Button
+              onClick={() => handleOAuthSignIn("discord")}
+              className="w-full flex items-center justify-center gap-2 bg-[#5865F2] hover:bg-[#4752C4]"
+            >
+              Zaloguj się przez Discord
+            </Button>
+          </div>
         </div>
       </div>
     );
