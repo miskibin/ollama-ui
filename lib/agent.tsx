@@ -1,7 +1,7 @@
 import { BaseMessage, AIMessage, ChatMessage } from "@langchain/core/messages";
 import { StructuredToolInterface } from "@langchain/core/tools";
 import { TogetherLLM } from "./TogetherLLm";
-import { PROMPTS } from "./prompts";
+import { FirstIrrelevantUserQuestion, PROMPTS } from "./prompts";
 import { LoggerService } from "./logger";
 import { Artifact } from "@/lib/types";
 
@@ -47,11 +47,12 @@ export class AgentRP {
       query,
       toolName: tool.name,
       toolDescription: tool.description,
-      previousResponse: previousResponse.slice(0, 500), // Limit context size
+      previousResponse: previousResponse.slice(0, 900), // Limit context size
     });
 
     this.logger.debug(prompt);
     const response = await this.llm.invoke(prompt);
+    this.logger.debug(response);
     const lines = response.split("\n");
     const relevantLine =
       lines.find((line) => line.startsWith("RELEVANT:"))?.trim() || "";
@@ -106,6 +107,11 @@ export class AgentRP {
     messages: ChatMessage[]
   ): AsyncGenerator<string> {
     // Get last three messages and find most recent artifacts
+    console.log(messages);
+    if (messages.length < 3) {
+      yield FirstIrrelevantUserQuestion;
+      return;
+    }
     const lastThreeMessages = messages.slice(-5);
     const artifacts = (lastThreeMessages
       .reverse()

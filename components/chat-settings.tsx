@@ -90,7 +90,7 @@ const ChatSettings = () => {
                 value={model.name}
                 className="flex justify-between"
               >
-                <span>{model.name.split("/")[1]}</span>
+                <span>{model.name.split("/")[1].split("-", 3).join("-")}</span>
                 <Badge variant="secondary" className="ml-2">
                   {model.description}
                 </Badge>

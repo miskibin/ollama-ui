@@ -38,7 +38,7 @@ const Navbar: React.FC = () => {
     <nav
       className={`flex items-center justify-between w-full ${
         isPatron
-          ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
+          ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg dark:from-purple-800 dark:to-indigo-900"
           : "bg-card"
       } border-b border-border md:p-4 p-2 py-3 mx-0`}
     >

@@ -19,16 +19,19 @@ export const PROMPTS = {
     Keyword or short phrase (in Polish):`),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
-      Question: {query}
-      Previous Response: {previousResponse}
-      Tool: {toolName} - {toolDescription}
-        
-      Evaluate if tool is needed by checking ALL:
-      1. Query directly relates to tool's specific domain
-      2. Info NOT found in previous response
-        
-      RELEVANT: YES/NO
-      (reason in one line)`),
+      Given:
+      - User Question: {query}
+      - Last Assistant Response: {previousResponse}
+      - Tool: {toolName}
+      - Tool Purpose: {toolDescription}
+      
+      Check two conditions:
+      1. Does the question specifically ask about what this tool provides?
+      2. Is this a new topic (not following up on previous response)?
+      
+      Answer format:
+      RELEVANT: [YES or NO]
+      REASON: [single clear explanation why]`),
   // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
     Context: You are an AI that can ONLY see and use the data provided in the "Data:" field below. You have NO access to any other information.
@@ -37,12 +40,10 @@ export const PROMPTS = {
     Data: {dataString}
     Current date: ${new Date().toLocaleDateString("pl-PL")}
     Instructions:
-    1. Answer the question directly in maximum 7 sentences.
-    2. Provide only information relevant to the question.
-    4. Use '**bold**' for key dates or numbers.
+    1. Answer the question directly in maximum 6 sentences.
     5. Quote document title only if directly related to the question.
     6. Don't describe the provided data or its scope.
-    7. If there is url field provided - Wrap act name with markdown link like this: [ELI value](url value). Wrap only 1 most relevant document with **bold**.
+    7. ALWAYS Wrap act name with markdown link like this: [ELI value](url value). Wrap only 1 most relevant document with **bold**.
     IMPORTANT: Base your answer ONLY on the provided Data. Do not use any external knowledge.
     Answer in Polish:`),
 
@@ -51,23 +52,22 @@ export const PROMPTS = {
     Tool Results: {tool_results}`),
 
   answerQuestion: PromptTemplate.fromTemplate(`
-    Odpowiedz na pytanie użytkownika na podstawie przekazanego dokumentu.
-    Pytanie: {question}
-
-    Format odpowiedzi:
-    📝 Odpowiedź: [krótka odpowiedź max 2 zdania]
-    
-    🔍 Szczegóły (jeśli są istotne):
-    - [konkretny szczegół 1]
-    - [konkretny szczegół 2]
-    
-    📖 Źródło: [podaj nr artykułu tylko jeśli jest kluczowy]
-    
-    Instrukcje:
-    - Używaj prostego języka
-    - Podawaj daty i liczby w **pogrubieniu**
-    - Max 3 punkty w szczegółach
-    - Zachowaj emotikony w odpowiedzi`),
+      Bazując na dokumencie, odpowiedz na pytanie:
+      {question}
+      
+      Format odpowiedzi:
+      📝 GŁÓWNA ODPOWIEDŹ:
+      > [zwięzła odpowiedź 1-2 zdania, zawiera najważniejsze informacje]
+      
+      🔍 KLUCZOWE FRAGMENTY Z DOKUMENTU:
+      > [dosłowny fragment z dokumentu z najistotniejszymi informacjami]
+      
+      💡 DODATKOWE INFORMACJE:
+      - [data] lub [liczba] pogrubione jako **data** lub **liczba**
+      - Max 2 punkty dodatkowych informacji
+      - Tylko istotne szczegóły
+      
+      Używaj prostego języka i zachowaj emotikony.`),
 };
 
 export const SummarizePrompt = `Przygotuj proste podsumowanie aktu prawnego.
@@ -84,3 +84,17 @@ Jeśli jakaś informacja nie występuje w dokumencie, pomiń dany punkt.
 ⏰ Data wejścia w życie: [**data**]
 
 Pisz prostym językiem, liczby i daty zapisuj w **pogrubieniu**.`;
+
+export const FirstIrrelevantUserQuestion = `
+Przepraszam Aktualnie potrafię odpowiadać tylko na pytania dotyczące **obowiązujących aktów prawnych** znajdujących się w [Monitorze Polskim](https://monitorpolski.gov.pl/MP)
+
+---
+
+W przyszłości będę umiał rozmawiać również o:
+- 🗳️ głosowaniach
+- 🏛️ posiedzeniach sejmu 
+- 📝 interpelacjach poselskich
+- 📊 i innych danych
+
+
+> **Wskazówka**: Jeśli chcesz porozmawiać o czymś innym wyłącz rozszerzenie sejm-stats.`;

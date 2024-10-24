@@ -7,7 +7,6 @@ import {
   Sun,
   Trash2,
   Settings,
-  Database,
   Sparkles,
   ChevronRight,
   AlertCircle,
@@ -15,13 +14,12 @@ import {
   Star,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Switch } from "@/components/ui/switch";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import Link from "next/link";
 import ChatSettings from "./chat-settings";
 import { useChatStore } from "@/lib/store";
 import {
-  Sidebar,
+  Sidebar as SidebarComponent,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
@@ -32,13 +30,51 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "./ui/badge";
+import { Database } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+
+const Sidebar = () => {
+  const { plugins, togglePlugin } = useChatStore();
+
+  const handleTogglePlugin = (pluginName: string) => {
+    togglePlugin(pluginName);
+    // Ensure only one plugin is enabled at a time
+    plugins.forEach((plugin) => {
+      if (plugin.name !== pluginName && plugin.enabled) {
+        togglePlugin(plugin.name);
+      }
+    });
+  };
+
+  return (
+    <div>
+      {plugins.map((plugin) => (
+        <div
+          key={plugin.name}
+          className="flex items-center justify-between py-2"
+        >
+          <span className="text-sm flex items-center gap-2">
+            <Database className="w-4 h-4" />
+            {plugin.name}
+          </span>
+          <Switch
+            checked={plugin.enabled}
+            onCheckedChange={() => handleTogglePlugin(plugin.name)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export function AppSidebar() {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { user } = useUser();
-  const { clearMessages, patrons, plugins, togglePlugin } = useChatStore();
-  const [isPatron, setIsPatron] = useState(process.env.NODE_ENV === "development");
+  const { clearMessages, patrons } = useChatStore();
+  const [isPatron, setIsPatron] = useState(
+    process.env.NODE_ENV === "development"
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -50,7 +86,7 @@ export function AppSidebar() {
   }, [user, patrons]);
   if (!user && process.env.NODE_ENV !== "development") return null;
   return (
-    <Sidebar className="border-r">
+    <SidebarComponent className="border-r">
       <SidebarHeader className="px-3 md:px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -86,21 +122,7 @@ export function AppSidebar() {
         <ScrollArea className="h-[calc(100vh-8rem)]">
           <SidebarGroup>
             <div className="space-y-2 p-3 md:p-4">
-              {plugins.map((plugin) => (
-                <div
-                  key={plugin.name}
-                  className="flex items-center justify-between py-2"
-                >
-                  <span className="text-sm flex items-center gap-2">
-                    <Database className="w-4 h-4" />
-                    {plugin.name}
-                  </span>
-                  <Switch
-                    checked={plugin.enabled}
-                    onCheckedChange={() => togglePlugin(plugin.name)}
-                  />
-                </div>
-              ))}
+              <Sidebar />
             </div>
           </SidebarGroup>
           <Separator />
@@ -186,6 +208,6 @@ export function AppSidebar() {
           Wyczyść historię
         </Button>
       </SidebarFooter>
-    </Sidebar>
+    </SidebarComponent>
   );
 }

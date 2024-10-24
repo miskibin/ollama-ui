@@ -2,7 +2,14 @@ import React, { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Send, StopCircle, FileText, Loader2 } from "lucide-react";
+import {
+  Send,
+  StopCircle,
+  FileText,
+  Loader2,
+  Info,
+  AlertTriangle,
+} from "lucide-react";
 import InitialChatContent from "@/components/initial-page";
 import { useChatContext } from "@/app/ChatContext";
 import LoadingDots from "./loadingDots";
@@ -27,10 +34,16 @@ export function ChatCard() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const shouldScroll = messages.length > 0 || isLoading || status;
+
+    if (shouldScroll) {
+      const timeoutId = setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100); // Small delay to ensure content is rendered
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [messages]);
+  }, [messages, isLoading, status]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -104,7 +117,6 @@ export function ChatCard() {
       </div>
     );
   };
-
   return (
     <Card className="h-full flex flex-col items-center border-t-0 shadow-none rounded-t-none">
       <CardContent className="flex-grow w-full max-w-6xl overflow-y-auto px-2 sm:px-4">
@@ -133,6 +145,20 @@ export function ChatCard() {
         )}
         <div ref={messagesEndRef} />
       </CardContent>
+      {isLoading && (
+        <div className="w-full max-w-3xl mx-auto px-4 mb-4">
+          <div className="flex items-start gap-3 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p>
+                Asystent może popełniać błędy. Aby je zminimalizować, korzystaj
+                z lepszych modeli.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CardFooter className="w-full mt-1 items-center justify-center sticky bottom-0">
         <form
           onSubmit={(e) => {

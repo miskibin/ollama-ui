@@ -47,10 +47,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-200 dark:bg-gray-800`}
         >
           <ThemeProvider attribute="class" defaultTheme="system">
-            <SidebarProvider>
-              <AppSidebar />
-              <main className="w-full">{children}</main>
-            </SidebarProvider>
+            {children}
           </ThemeProvider>
           <Analytics />
           <SpeedInsights />

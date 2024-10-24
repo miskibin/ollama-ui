@@ -1,120 +1,61 @@
-# Ollama Prompt Engineer (integrated with sejm-stats and wikipedia)
+# Prawny Asystent AI 🤖⚖️
 
+ - inteligentny asystent prawny wspierający obywateli w zrozumieniu polskiego prawa i przepisów.
+Projekt jest oparty na danych z  [sejm-stats.pl](https://sejm-stats.pl)
+## ✨ Funkcjonalności
 
-![image](https://github.com/user-attachments/assets/a2e5f5ae-3186-4dff-8882-9ba7dd9af3d1)
+- 🤖 Inteligentny czat oparty o duże modele językowe (LLM)
+- 🔍 Integracja z bazą danych sejm-stats.pl
+- 💬 Proaktywne sugestie tematów prawnych
+- 🎯 Precyzyjne odpowiedzi oparte o aktualne przepisy
+- 🎨 Nowoczesny, responsywny interfejs
 
-## Overview
+## 🚀 Jak uruchomić projekt
 
-Ollama Prompt Engineer is a sophisticated web-based chat interface that interacts with Ollama, an open-source large language model runner. This application empowers users to engage with AI models, process PDFs, and fine-tune AI interactions through a user-friendly interface.
+### Wymagania
+- Node.js (v18+)
+- npm/yarn/pnpm
+- Konto na platformie [Together.ai](https://together.ai)
+- Konto w [Auth0](https://auth0.com)
+- Dostęp do API sejm-stats.pl
 
-## Features
+### Konfiguracja zmiennych środowiskowych
 
-### 📊 Dynamic Chat Interface
-- Real-time interaction with Ollama AI models
-- Markdown rendering of AI responses
-- Message editing and regeneration capabilities
+Utwórz plik `.env.local` w głównym katalogu projektu:
 
-![Chat Interface](https://github.com/user-attachments/assets/19af0df8-2be3-42fa-91c5-93dadbab1e9d)
+```env
+TOGETHER_API_KEY=           # Klucz API do Together.ai
+AUTH0_SECRET=              # Secret dla Auth0
+AUTH0_BASE_URL=            # URL Twojej aplikacji
+AUTH0_ISSUER_BASE_URL=     # URL wydawcy Auth0
+AUTH0_CLIENT_ID=           # ID klienta Auth0
+AUTH0_CLIENT_SECRET=       # Secret klienta Auth0
+PATRONITE_API_KEY=         # Klucz API Patronite (opcjonalnie)
+PATRONITE_API_URL=         # URL API Patronite (opcjonalnie)
+```
 
-### 📄 PDF Processing
-- Upload and parse PDFs to markdown
-- Seamless integration of parsed content into the chat
+### Instalacja i uruchomienie
 
-![PDF Parsing](https://github.com/user-attachments/assets/2101fb10-c2b1-4b2f-ac38-9a0f5602819b)
+```bash
+# Instalacja zależności
+npm install
 
-### 🎛️ Advanced AI Settings
-- Model selection from available Ollama models
-- Customizable AI parameters:
-  - Temperature
-  - Top P
-  - Repeat Penalty
-  - Top K
-- Streaming responses toggle
-- Custom system prompts for specialized interactions
+# Uruchomienie w trybie deweloperskim
+npm run dev
 
-### 🧪 Prompt Testing and Creation
-- Dedicated interface for crafting and testing prompts
-- Real-time feedback on prompt effectiveness
+# Build produkcyjny
+npm run build
 
-![Prompt Testing](https://github.com/user-attachments/assets/7b5f3dcb-69cf-4f4d-9e8f-ede1c1e7d23e)
+# Uruchomienie wersji produkcyjnej
+npm start
+```
 
-### 🎨 Responsive Design
-- Fluid and adaptive UI for various screen sizes
-- Resizable components for personalized layout
+## 🛠️ Technologie
 
-## Prerequisites
-
-- Node.js (v14 or later) and npm
-- Ollama installed and running locally (http://localhost:11434)
-
-## Quick Start
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/miskibin/ollama-ui
-   cd ollama-ui
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Ensure Ollama is running on your local machine.
-
-4. Launch the development server:
-   ```bash
-   npm run dev
-   ```
-
-5. Open your browser and navigate to `http://localhost:3000`
-
-## Usage Guide
-
-### Chat Interface
-- Choose an AI model from the top-left dropdown
-- Type your message and press Enter or click the Send icon
-- Use Shift+Enter for multi-line input
-
-### PDF Processing
-- Click the file icon in the chat input to upload a PDF
-- Parsed content will automatically populate the chat input
-
-### Customizing AI Behavior
-- Adjust sliders in the settings panel to modify AI parameters
-- Toggle "Stream Responses" for real-time or complete responses
-- Enter custom system prompts to guide AI behavior
-
-### Prompt Testing
-- Navigate to the Prompt Testing section
-- Craft your prompt and observe AI responses
-- Iterate and refine for optimal results
-
-## Troubleshooting
-
-- **Model Loading Issues**: Ensure Ollama is running and accessible at http://localhost:11434
-- **PDF Parsing Errors**: Check that the PDF contains extractable text (not scanned images)
-- **Unresponsive UI**: Clear browser cache and reload, or check console for error messages
-
-## Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a new branch: `git checkout -b feature-branch-name`
-3. Make your changes and commit them: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature-branch-name`
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Ollama team for the incredible AI model runner
-- All contributors and users of this project
-
----
-
-For more information, visit our [GitHub repository](https://github.com/miskibin/ollama-ui) or reach out to the maintainers.
+- Next.js 14
+- React
+- Tailwind CSS
+- LangChain
+- Together.ai LLM
+- Auth0
+- shadcn/ui

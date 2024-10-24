@@ -23,17 +23,19 @@ function trimText(text: string, maxLength: number = MAX_LENGTH): string {
 
   return truncated.substring(0, lastSentenceEnd + 1);
 }
-
 function formatToMarkdown(text: string): string {
   // First trim the text if it's too long
   const trimmedText = trimText(text);
 
-  const lines = trimmedText.split("\n").map((line) => line.trim());
+  // Remove multiple consecutive dots (keeping ellipsis if exactly three dots)
+  const cleanedText = trimmedText.replace(/\.{4,}/g, ".");
+
+  const lines = cleanedText.split("\n").map((line) => line.trim());
   let markdown = "";
   let inList = false;
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
+    let line = lines[i].replace(/\.{4,}/g, "."); // Also clean each line individually
     // Handle headers
     if (line.match(/^[A-Z][\w\s]{0,20}$/)) {
       markdown += `\n## ${line}\n\n`;
@@ -75,13 +77,12 @@ function formatToMarkdown(text: string): string {
     }
   }
 
-  // Clean up: remove multiple consecutive newlines and trailing spaces
   return markdown
     .replace(/\n{3,}/g, "\n\n")
     .replace(/\s+$/gm, "")
+    .replace(/\.{4,}/g, ".")
     .trim();
 }
-
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
