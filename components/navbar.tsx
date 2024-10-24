@@ -1,8 +1,9 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, Star, Heart } from "lucide-react";
 import Link from "next/link";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   DropdownMenuContent,
   DropdownMenu,
@@ -12,18 +13,41 @@ import {
 import { getPatrons } from "@/lib/get-patronite-users";
 import { useChatStore } from "@/lib/store";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 
 const Navbar: React.FC = () => {
-  const { user } = useUser();
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
   const [isPatron, setIsPatron] = useState(false);
   const setPatrons = useChatStore((state) => state.setPatrons);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
 
   useEffect(() => {
     const fetchAndSetPatrons = async () => {
       try {
         const patronList = await getPatrons();
         setPatrons(patronList);
-        if (user && user.email) {
+        if (user?.email) {
           setIsPatron(patronList.includes(user.email));
         }
       } catch (error) {
@@ -33,6 +57,11 @@ const Navbar: React.FC = () => {
 
     fetchAndSetPatrons();
   }, [user, setPatrons]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   return (
     <nav
@@ -87,17 +116,18 @@ const Navbar: React.FC = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Link href="/profile-client" className="flex items-center">
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="flex items-center w-full">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profil</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="/api/auth/logout" className="flex items-center">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Wyloguj</span>
-                </Link>
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="flex items-center cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Wyloguj</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

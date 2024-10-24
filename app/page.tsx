@@ -81,7 +81,7 @@ export default function Home() {
     );
   }
 
-  if (!user) {
+  if (!user && !isDev) {
     return (
       <div
         className="flex items-center justify-center p-4"
