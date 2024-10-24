@@ -20,18 +20,45 @@ import {
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/lib/store";
 import { Artifact } from "@/lib/types";
+import ReactMarkdown from "react-markdown";
 
 interface PluginDataDialogsProps {
   artifacts: Artifact[];
 }
 
-const PluginDataDialogs: React.FC<PluginDataDialogsProps> = ({ artifacts }) => {
+// Helper component to format artifact content
+const ArtifactContent: React.FC<{ data: any }> = ({ data }) => {
+  // Check if data is a string
+  if (typeof data === "string") {
+    // Check if it's markdown (look for common markdown patterns)
+    const hasMarkdown = /[#*`\[\]\-]/.test(data);
+    if (hasMarkdown) {
+      return (
+        <div className="markdown-content">
+          <ReactMarkdown className="prose dark:prose-invert max-w-none">
+            {data}
+          </ReactMarkdown>
+        </div>
+      );
+    }
+    // Plain text
+    return <div className="whitespace-pre-wrap">{data}</div>;
+  }
+
+  // JSON data
+  return (
+    <pre className="p-4 text-sm bg-muted rounded-lg overflow-x-auto whitespace-pre-wrap break-words">
+      {JSON.stringify(data, null, 2)}
+    </pre>
+  );
+};
+
+const ArtifactDialogs: React.FC<PluginDataDialogsProps> = ({ artifacts }) => {
   const [openDialogs, setOpenDialogs] = useState<Record<string, boolean>>({});
   const { plugins } = useChatStore();
 
   if (!artifacts.length) return null;
 
-  // Group artifacts by type
   const artifactsByType = artifacts.reduce(
     (acc: Record<string, Artifact[]>, artifact) => {
       if (!acc[artifact.type]) {
@@ -56,6 +83,12 @@ const PluginDataDialogs: React.FC<PluginDataDialogsProps> = ({ artifacts }) => {
           title: "Wikipedia",
           icon: BookOpen,
           buttonText: "Dane z Wikipedii",
+        };
+      case "markdown":
+        return {
+          title: "Tekst formatowany",
+          icon: BookOpen,
+          buttonText: "Tekst formatowany",
         };
       default:
         return {
@@ -97,21 +130,25 @@ const PluginDataDialogs: React.FC<PluginDataDialogsProps> = ({ artifacts }) => {
                 {typeArtifacts.map((artifact, index) => (
                   <div key={index} className="border-b last:border-b-0">
                     <div className="px-6 py-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
-                          {artifact.question}
-                        </span>
+                      {artifact.question && (
+                        <div className="flex items-center gap-2 mb-4">
+                          <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">
+                            {artifact.question}
+                          </span>
+                        </div>
+                      )}
+                      {artifact.searchQuery && (
+                        <div className="flex items-center gap-2 mb-4">
+                          <Search className="w-4 h-4 text-muted-foreground" />
+                          <Badge variant="outline" className="text-xs">
+                            {artifact.searchQuery}
+                          </Badge>
+                        </div>
+                      )}
+                      <div className="artifact-content">
+                        <ArtifactContent data={artifact.data} />
                       </div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Search className="w-4 h-4 text-muted-foreground" />
-                        <Badge variant="outline" className="text-xs">
-                          {artifact.searchQuery}
-                        </Badge>
-                      </div>
-                      <pre className="p-4 text-sm bg-muted rounded-lg overflow-x-auto whitespace-pre-wrap break-words">
-                        {JSON.stringify(artifact.data, null, 2)}
-                      </pre>
                     </div>
                   </div>
                 ))}
@@ -133,4 +170,4 @@ const PluginDataDialogs: React.FC<PluginDataDialogsProps> = ({ artifacts }) => {
   );
 };
 
-export default PluginDataDialogs;
+export default ArtifactDialogs;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,10 @@ export default function SummarableTextDialog({
   artifacts,
   onSummarize,
 }: SummarableTextDialogProps) {
-  const summarableTexts = extractSummarableTexts(artifacts);
+  const summarableTexts = useMemo(
+    () => extractSummarableTexts(artifacts),
+    [artifacts]
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   if (summarableTexts.length === 0) {

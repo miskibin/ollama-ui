@@ -26,14 +26,14 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
         const sequence = RunnableSequence.from([
           new RunnablePassthrough(),
           async ({ question }) => {
-            const query = await PROMPTS.generateSearchQuery.format({
-              question: question,
-            });
-            const searchQuery = await model.invoke(query);
-            const cleanedQuery = searchQuery
-              .replace(/^(Query:|Search query:|Generated query:)/i, "")
-              .trim();
-
+            // const query = await PROMPTS.generateSearchQuery.format({
+            //   question: question,
+            // });
+            // const searchQuery = await model.invoke(query);
+            // const cleanedQuery = searchQuery
+            //   .replace(/^(Query:|Search query:|Generated query:)/i, "")
+            //   .trim();
+            const cleanedQuery = question
             console.info("SEJM-STATS", {
               question,
               searchQuery: cleanedQuery,

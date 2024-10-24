@@ -31,17 +31,22 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Badge } from "./ui/badge";
 
 export function AppSidebar() {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { user } = useUser();
   const { clearMessages, patrons, plugins, togglePlugin } = useChatStore();
-  const [isPatron, setIsPatron] = useState(false);
+  const [isPatron, setIsPatron] = useState(process.env.NODE_ENV === "development");
 
   useEffect(() => {
     setMounted(true);
-    setIsPatron(user?.email ? patrons.includes(user.email) : false);
+    setIsPatron(
+      user?.email
+        ? patrons.includes(user.email) || process.env.NODE_ENV === "development"
+        : false
+    );
   }, [user, patrons]);
   if (!user && process.env.NODE_ENV !== "development") return null;
   return (
@@ -50,7 +55,15 @@ export function AppSidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Settings className="w-6 h-6" />
-            <span className="text-sm font-medium">Ustawienia</span>
+            <div className="relative">
+              <span className="text-sm font-medium">Ustawienia</span>
+              <Badge
+                variant="destructive"
+                className="absolute -top-2 -right-6 text-[0.65rem] px-1 py-0 rounded-sm font-normal"
+              >
+                beta
+              </Badge>
+            </div>
           </div>
           {mounted && (
             <Button

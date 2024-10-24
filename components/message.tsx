@@ -45,13 +45,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const isGenerating = isLoading && isLastMessage;
 
   useEffect(() => {
-    // Regular expression to find ELI links in the format [SOMETHING](URL)
-    const eliLinkRegex = /\[.*?\]\((https?:\/\/[^\s)]+\.pdf)\)/;
-    const match = message.content.match(eliLinkRegex);
-    if (match) {
-      setActUrl(match[1]);
+    const wrappedLinkRegex = /\*\*\[.*?\]\((https?:\/\/[^\s)]+\.pdf)\)\*\*/;
+    const regularLinkRegex = /\[.*?\]\((https?:\/\/[^\s)]+\.pdf)\)/;
+    const wrappedMatch = message.content.match(wrappedLinkRegex);
+    if (wrappedMatch) {
+      setActUrl(wrappedMatch[1]);
     } else {
-      setActUrl(null);
+      const regularMatch = message.content.match(regularLinkRegex);
+      if (regularMatch) {
+        setActUrl(regularMatch[1]);
+      } else {
+        setActUrl(null);
+      }
     }
   }, [message.content]);
 

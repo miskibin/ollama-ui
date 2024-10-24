@@ -19,12 +19,6 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 
 const conversationStarters = [
   {
-    icon: <Heart className="text-pink-500" size={24} />,
-    text: "Przerywanie ciąży",
-    action:
-      "Jakie są obecnie obowiązujące przepisy dotyczące przerywania ciąży?",
-  },
-  {
     icon: <Wine className="text-purple-500" size={24} />,
     text: "Sprzedaż alkoholu",
     action: "Jakie są aktualne przepisy regulujące sprzedaż alkoholu?",

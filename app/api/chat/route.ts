@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       apiKey: process.env.TOGETHER_API_KEY!,
       model: modelName,
       streaming: true,
-      temperature: 0.7,
+      temperature: 0.6,
     });
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm)

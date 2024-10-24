@@ -26,18 +26,30 @@ export class AgentRP {
     this.tools = options.tools;
     this.logger = new LoggerService(process.env.NODE_ENV === "development");
   }
-
   private async analyzeToolRelevance(
     query: string,
-    tool: StructuredToolInterface
+    tool: StructuredToolInterface,
+    messages: ChatMessage[]
   ): Promise<boolean> {
     this.logger.debug(`Analyzing relevance for tool: ${tool.name}`);
+
+    // Get the last AI response if it exists
+    const lastAIResponse = messages
+      .slice()
+      .reverse()
+      .find((msg) => msg instanceof AIMessage || msg.role === "assistant");
+
+    const previousResponse = lastAIResponse
+      ? this.messageToString(lastAIResponse, true)
+      : "";
 
     const prompt = await PROMPTS.analyzeToolRelevance.format({
       query,
       toolName: tool.name,
       toolDescription: tool.description,
+      previousResponse: previousResponse.slice(0, 500), // Limit context size
     });
+
     this.logger.debug(prompt);
     const response = await this.llm.invoke(prompt);
     const lines = response.split("\n");
@@ -48,11 +60,14 @@ export class AgentRP {
     return isRelevant;
   }
 
-  private async analyzeQuery(query: string): Promise<string[]> {
+  private async analyzeQuery(
+    query: string,
+    messages: ChatMessage[]
+  ): Promise<string[]> {
     const relevantTools: string[] = [];
 
     for (const tool of this.tools) {
-      const isRelevant = await this.analyzeToolRelevance(query, tool);
+      const isRelevant = await this.analyzeToolRelevance(query, tool, messages);
       if (isRelevant) {
         relevantTools.push(tool.name);
       }
@@ -87,47 +102,56 @@ export class AgentRP {
       return { result: `Error: Failed to execute tool ${tool.name}` };
     }
   }
+  private async *processWithoutTools(
+    messages: ChatMessage[]
+  ): AsyncGenerator<string> {
+    // Get last three messages and find most recent artifacts
+    const lastThreeMessages = messages.slice(-5);
+    const artifacts = (lastThreeMessages
+      .reverse()
+      .find((msg) => (msg.additional_kwargs?.artifacts as any)?.length)
+      ?.additional_kwargs?.artifacts || []) as Artifact[];
 
-  private async processWithoutTools(messages: ChatMessage[]): Promise<string> {
-    // Take last two messages if available
-    const contextMessages = messages.slice(-2);
-    const context = contextMessages.map((msg) => {
-      const content = this.messageToString(msg);
-      const artifacts: Artifact[] = Array.isArray(
-        msg.additional_kwargs?.artifacts
-      )
-        ? msg.additional_kwargs.artifacts
-        : [];
+    // Get last user message for context
+    const userMessage = messages[messages.length - 1];
+    const context = [
+      {
+        role: userMessage.role,
+        content: this.messageToString(userMessage, false), // Don't include artifacts in the message
+      },
+    ];
+    const artifactContent =
+      artifacts.length > 0
+        ? artifacts
+            .map((artifact) => {
+              if (artifact.data) {
+                return `Data: ${artifact.type}:\n${JSON.stringify(
+                  artifact.data,
+                  null,
+                  2
+                )}\n`;
+              }
+              return "";
+            })
+            .join("\n")
+        : "";
+    const prompt = `${artifactContent}${JSON.stringify(
+      context
+    )}\n\nUser: ${this.messageToString(userMessage, false)}`;
 
-      return {
-        role: msg.role,
-        content,
-        artifacts,
-      };
-    });
+    this.logger.debug(prompt);
 
-    // Format context for the model
-    const formattedContext = context
-      .map(
-        (msg) =>
-          `${msg.role}: ${msg.content}\n${msg.artifacts
-            .map(
-              (a) => `[Artifact: ${a.type}]\n${JSON.stringify(a.data, null, 2)}`
-            )
-            .join("\n")}`
-      )
-      .join("\n\n");
+    // Use streaming API instead of invoke
+    const stream = await this.llm._streamResponseChunks(prompt, {});
 
-    // Generate response using the context
-    const prompt = await PROMPTS.generateResponse.format({
-      question: this.messageToString(messages[messages.length - 1]),
-      tool_results: formattedContext,
-    });
-
-    return await this.llm.invoke(prompt);
+    for await (const chunk of stream) {
+      yield chunk.text;
+    }
   }
-
-  private messageToString(message: ChatMessage): string {
+  private messageToString(
+    message: ChatMessage,
+    includeArtifacts: boolean = false
+  ): string {
     // Handle content
     let content =
       typeof message.content === "string"
@@ -136,53 +160,54 @@ export class AgentRP {
         ? message.content.join(" ")
         : String(message.content);
 
-    const artifacts = message.additional_kwargs?.artifacts || [];
-    if (artifacts && Array.isArray(artifacts) && artifacts.length > 0) {
-      const artifactContent = artifacts
-        .map((artifact) => {
-          if (artifact.data) {
-            return `Data: ${artifact.type}:\n${JSON.stringify(
-              artifact.data,
-              null,
-              2
-            )}\n`;
-          }
-          return "";
-        })
-        .join("\n");
+    // Only include artifacts if specifically requested
+    if (includeArtifacts) {
+      const artifacts = message.additional_kwargs?.artifacts || [];
+      if (artifacts && Array.isArray(artifacts) && artifacts.length > 0) {
+        const artifactContent = artifacts
+          .map((artifact) => {
+            if (artifact.data) {
+              return `Data: ${artifact.type}:\n${JSON.stringify(
+                artifact.data,
+                null,
+                2
+              )}\n`;
+            }
+            return "";
+          })
+          .join("\n");
 
-      content = artifactContent + "\n" + content;
+        content = artifactContent + "\n" + content;
+      }
     }
 
     return content;
   }
+
   async *invoke(input: string | ChatMessage[]): AsyncGenerator<AgentProgress> {
     const messages = Array.isArray(input)
       ? input
       : [new ChatMessage({ content: input, role: "user" })];
-    const query = this.messageToString(messages[messages.length - 1]);
+    const query = this.messageToString(messages[messages.length - 1], false);
 
-    // Initial status
     yield {
       type: "status",
       content: "Analizuję zapytanie...",
     };
-
-    const relevantToolNames = await this.analyzeQuery(query);
-
+    const relevantToolNames = await this.analyzeQuery(query, messages);
     if (relevantToolNames.length === 0) {
       yield {
         type: "status",
         content: "Generuję odpowiedź na podstawie kontekstu...",
       };
-
-      // Process without tools if we have messages context
       if (Array.isArray(input)) {
-        const response = await this.processWithoutTools(messages);
-        yield {
-          type: "response",
-          content: response,
-        };
+        // Iterate through the streaming response
+        for await (const chunk of this.processWithoutTools(messages)) {
+          yield {
+            type: "response",
+            content: chunk,
+          };
+        }
         return;
       }
     }

@@ -3,7 +3,7 @@ import { Artifact, Message } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
 import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
-import { SummarizePrompt } from "@/lib/prompts";
+import { PROMPTS, SummarizePrompt } from "@/lib/prompts";
 
 type ProgressUpdate = {
   type: "status" | "tool_execution" | "response" | "error";
@@ -254,7 +254,11 @@ export const useChatLogic = () => {
         id: generateUniqueId(),
         role: "user",
         content: context
-          ? `Bazując na danych odpowiedz na pytanie: ${context}`
+          ? await PROMPTS.answerQuestion.format(
+            {
+              question: context
+            }
+          )
           : SummarizePrompt,
         artifacts: [
           {
@@ -265,7 +269,7 @@ export const useChatLogic = () => {
           },
         ],
       };
-
+      console.log(userMessage)
       addMessage(userMessage);
       await getResponse([...messages, userMessage], true);
     } catch (error) {

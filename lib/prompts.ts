@@ -19,19 +19,18 @@ export const PROMPTS = {
     Keyword or short phrase (in Polish):`),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
-    Question: {query}
-
-    Tool: {toolName} - {toolDescription}
-
-    If question uses pronouns (ten/ta/to/napisałeś) lacks clear subject or refers to past messages:
-    RELEVANT: NO (requires missing context)
-
-    Otherwise, answer YES only if:
-    1. Query needs THIS EXACT tool's data
-    2. Can't be answered without it
-
-    RELEVANT: YES/NO
-    (reason in one line)`),
+      Question: {query}
+      Previous Response: {previousResponse}
+      Tool: {toolName} - {toolDescription}
+  
+      Evaluate if tool is relevant considering both the question and previous response context.
+      Answer YES if:
+      1. Query needs this tool's data (directly or via context)
+      2. Cannot be answered without it
+      3. References information from previous response that needs this tool
+  
+      RELEVANT: YES/NO
+      (reason in one line)`),
   // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
     Context: You are an AI that can ONLY see and use the data provided in the "Data:" field below. You have NO access to any other information.
@@ -45,29 +44,45 @@ export const PROMPTS = {
     4. Use '**bold**' for key dates or numbers.
     5. Quote document title only if directly related to the question.
     6. Don't describe the provided data or its scope.
-    7. If there is url field provided - Wrap act name with markdown link like this: [ELI value](url value)
+    7. If there is url field provided - Wrap act name with markdown link like this: [ELI value](url value). Wrap only 1 most relevant document with **bold**.
     IMPORTANT: Base your answer ONLY on the provided Data. Do not use any external knowledge.
     Answer in Polish:`),
 
-  generateResponse:
-    PromptTemplate.fromTemplate(`You are a helpful AI assistant. Using the information gathered from the tools, provide a clear and direct answer to the user's question.
-    Focus on being concise and informative based on the tool outputs provided.
-    
+  generateResponse: PromptTemplate.fromTemplate(`
     Question: {question}
     Tool Results: {tool_results}`),
+
+  answerQuestion: PromptTemplate.fromTemplate(`
+    Odpowiedz na pytanie użytkownika na podstawie przekazanego dokumentu.
+    Pytanie: {question}
+
+    Format odpowiedzi:
+    📝 Odpowiedź: [krótka odpowiedź max 2 zdania]
+    
+    🔍 Szczegóły (jeśli są istotne):
+    - [konkretny szczegół 1]
+    - [konkretny szczegół 2]
+    
+    📖 Źródło: [podaj nr artykułu tylko jeśli jest kluczowy]
+    
+    Instrukcje:
+    - Używaj prostego języka
+    - Podawaj daty i liczby w **pogrubieniu**
+    - Max 3 punkty w szczegółach
+    - Zachowaj emotikony w odpowiedzi`),
 };
 
-export const SummarizePrompt = `Przygotuj zwięzłe podsumowanie aktu prawnego w prostym języku:
+export const SummarizePrompt = `Przygotuj proste podsumowanie aktu prawnego.
+Jeśli jakaś informacja nie występuje w dokumencie, pomiń dany punkt.
 
-1. 🎯 Cel: [1 zdanie o głównym celu]
+🎯 Cel: 
+[Jedno proste zdanie rozpoczynające się od "Ustawa..."]
 
-2. ⚡ Kluczowe zmiany:
+📋 Główne zmiany (jeśli są):
 - [zmiana 1]
 - [zmiana 2]
 - [zmiana 3]
 
-3. 👥 Dla kogo: [kogo dotyczy]
+⏰ Data wejścia w życie (jeśli podano): [**data**]
 
-4. ⏰ Od kiedy: [**data wejścia w życie**]
-
-❗ Używaj prostego języka. Wyjaśniaj terminy prawne. Podawaj konkretne daty i kwoty w **pogrubieniu**.`;
+Pisz prostym językiem, liczby i daty zapisuj w **pogrubieniu**.`;
