@@ -14,7 +14,6 @@ import {
   Star,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import Link from "next/link";
 import ChatSettings from "./chat-settings";
 import { useChatStore } from "@/lib/store";

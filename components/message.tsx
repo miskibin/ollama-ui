@@ -14,9 +14,12 @@ import {
   Download,
 } from "lucide-react";
 import { useChatContext } from "@/app/ChatContext";
-import { Message, Artifact } from "@/lib/types";
+import { Message } from "@/lib/types";
+import { FeedbackDialog } from "@/components/feedback-dialog";
 import PluginDataDialog from "./plugin-data-dialog";
 import SummarableTextDialog from "./SummarableTextDialog";
+import { cn } from "@/lib/utils";
+import { useFeedbackLogic } from "@/hooks/feedback";
 
 interface ChatMessageProps {
   message: Message;
@@ -35,14 +38,22 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     regenerateMessage,
     handleSummarize,
     messages,
-    deleteMessage,
   } = useChatContext();
 
   const [editInput, setEditInput] = useState(message.content);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [actUrl, setActUrl] = useState<string | null>(null);
-
   const isGenerating = isLoading && isLastMessage;
+
+  const {
+    isDialogOpen,
+    setIsDialogOpen,
+    feedbackSent,
+    isSubmitting,
+    reason,
+    setReason,
+    handleFeedback,
+  } = useFeedbackLogic();
 
   useEffect(() => {
     const wrappedLinkRegex = /\*\*\[.*?\]\((https?:\/\/[^\s)]+\.pdf)\)\*\*/;
@@ -66,8 +77,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const handleEditSave = () => {
-    const updatedMessage = { ...message, content: editInput };
-    editMessage(message.id, updatedMessage.content);
+    editMessage(message.id, editInput);
     setEditingMessageId(null);
   };
 
@@ -148,15 +158,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 <Copy className="w-4 h-4" />
               )}
             </Button>
+            <FeedbackDialog
+              isOpen={isDialogOpen}
+              onOpenChange={setIsDialogOpen}
+              feedbackSent={feedbackSent}
+              isSubmitting={isSubmitting}
+              reason={reason}
+              onReasonChange={setReason}
+              onSubmit={handleFeedback}
+            />
           </>
         )}
-        <Button
-          onClick={() => deleteMessage(message.id)}
-          size="sm"
-          variant="ghost"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
       </div>
     );
   };
@@ -196,9 +208,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         }`}
       >
         <div
-          className={`inline-block py-2 px-3 shadow-md rounded-md ${
-            message.role === "user" ? "bg-primary/10" : "border-0 shadow-none"
-          } ${editingMessageId === message.id ? "w-full" : "max-w-[95%]"}`}
+          className={cn(
+            "inline-block py-2 px-3 shadow-md rounded-md",
+            message.role === "user" ? "bg-primary/10" : "border-0 shadow-none",
+            editingMessageId === message.id ? "w-full" : "max-w-[95%]"
+          )}
         >
           {editingMessageId === message.id ? (
             <div className="w-full">

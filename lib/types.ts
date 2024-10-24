@@ -6,6 +6,7 @@ export type Message = {
 };
 
 export interface Artifact {
+  content: any;
   type: string;
   question: string;
   searchQuery: string;

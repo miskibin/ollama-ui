@@ -27,7 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useChatStore } from "@/lib/store";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import { Badge } from "@/components/ui/badge";
 
 const LabelWithIcon = ({
