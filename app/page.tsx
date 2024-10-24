@@ -11,7 +11,7 @@ import Navbar from "@/components/navbar";
 export default function Home() {
   const { user, error, isLoading } = useUser();
   const isDev = process.env.NODE_ENV === "development";
-  const [windowHeight, setWindowHeight] = useState("100vh");
+  const [windowHeight, setWindowHeight] = useState("100dvh");
 
   useEffect(() => {
     const handleResize = () => {

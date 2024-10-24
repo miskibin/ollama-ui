@@ -102,7 +102,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     return (
       <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
         <FileText className="h-4 w-4" />
-        <span>Czy chcesz, żebym pobrał i wspomniany akt prawny?</span>
+        <span>Czy mam przeanalizować wspomniany akt?</span>
         <Button
           variant="outline"
           size="sm"
@@ -178,49 +178,53 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   return (
-    <div
-      className={`mt-2 mb-1 flex ${
-        message.role === "user" ? "justify-end" : "justify-start"
-      }`}
-    >
+    <div className="relative mt-2 mb-1">
       {message.role === "assistant" && (
-        <Image
-          src="/logo.svg"
-          alt="Assistant Avatar"
-          width={32}
-          height={32}
-          className="mr-1 mt-1"
-        />
+        <div className="absolute left-0 top-0">
+          <Image
+            src="/logo.svg"
+            alt="Assistant Avatar"
+            width={32}
+            height={32}
+            className="mt-1"
+          />
+        </div>
       )}
       <div
-        className={`inline-block py-2 px-3 shadow-md rounded-md ${
-          message.role === "user" ? "bg-primary/10" : "border-0 shadow-none"
-        } ${editingMessageId === message.id ? "w-full" : "max-w-[95%]"}`}
+        className={`flex ${
+          message.role === "user" ? "justify-end" : "justify-start pl-10"
+        }`}
       >
-        {editingMessageId === message.id ? (
-          <div className="w-full">
-            <Textarea
-              value={editInput}
-              onChange={(e) => setEditInput(e.target.value)}
-              className="w-full mb-2 min-h-[100px] max-h-[300px] resize-vertical"
-            />
-            <div className="flex justify-end space-x-2">
-              <Button onClick={handleEditSave} size="sm" variant="ghost">
-                <Check className="w-4 h-4" />
-              </Button>
-              <Button onClick={handleEditCancel} size="sm" variant="ghost">
-                <X className="w-4 h-4" />
-              </Button>
+        <div
+          className={`inline-block py-2 px-3 shadow-md rounded-md ${
+            message.role === "user" ? "bg-primary/10" : "border-0 shadow-none"
+          } ${editingMessageId === message.id ? "w-full" : "max-w-[95%]"}`}
+        >
+          {editingMessageId === message.id ? (
+            <div className="w-full">
+              <Textarea
+                value={editInput}
+                onChange={(e) => setEditInput(e.target.value)}
+                className="w-full mb-2 min-h-[100px] max-h-[300px] resize-vertical"
+              />
+              <div className="flex justify-end space-x-2">
+                <Button onClick={handleEditSave} size="sm" variant="ghost">
+                  <Check className="w-4 h-4" />
+                </Button>
+                <Button onClick={handleEditCancel} size="sm" variant="ghost">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="text-left">
-            <MarkdownResponse content={message.content} />
-            {renderArtifacts()}
-            {renderActSummaryPrompt()}
-            {!isGenerating && renderMessageButtons()}
-          </div>
-        )}
+          ) : (
+            <div className="text-left">
+              <MarkdownResponse content={message.content} />
+              {renderArtifacts()}
+              {renderActSummaryPrompt()}
+              {!isGenerating && renderMessageButtons()}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

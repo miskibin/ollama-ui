@@ -22,13 +22,11 @@ export const PROMPTS = {
       Question: {query}
       Previous Response: {previousResponse}
       Tool: {toolName} - {toolDescription}
-  
-      Evaluate if tool is relevant considering both the question and previous response context.
-      Answer YES if:
-      1. Query needs this tool's data (directly or via context)
-      2. Cannot be answered without it
-      3. Does NOT Reference information from previous response
-  
+        
+      Evaluate if tool is needed by checking ALL:
+      1. Query directly relates to tool's specific domain
+      2. Info NOT found in previous response
+        
       RELEVANT: YES/NO
       (reason in one line)`),
   // context could be moved
