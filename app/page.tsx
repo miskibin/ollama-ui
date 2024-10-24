@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
 import { Mail, Loader2, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import LoginPage from "@/components/landing-page";
 
 export default function Home() {
   const supabase = createClientComponentClient();
@@ -87,35 +88,12 @@ export default function Home() {
     );
   }
 
-  if (!user && !isDev) {
+  if (!user) {
     return (
-      <div
-        className="grid place-items-center w-full px-4"
-        style={{ height: windowHeight }}
-      >
-        <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle className="text-center">Zaloguj się</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button
-              onClick={() => handleOAuthSignIn("google")}
-              variant="outline"
-              className="w-full"
-            >
-              <Mail className="mr-2 h-5 w-5" />
-              Zaloguj się przez Google
-            </Button>
-            <Button
-              onClick={() => handleOAuthSignIn("discord")}
-              className="w-full bg-[#5865F2] hover:bg-[#4752C4]"
-            >
-              <Lock className="mr-2 h-5 w-5" />
-              Zaloguj się przez Discord
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <LoginPage
+        onOAuthSignIn={handleOAuthSignIn}
+        windowHeight={windowHeight}
+      />
     );
   }
 
