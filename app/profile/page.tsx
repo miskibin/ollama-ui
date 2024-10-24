@@ -11,6 +11,7 @@ import {
   Calendar,
   Shield,
   MessageSquare,
+  ThumbsDown,
 } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { FeedbackHistory } from "@/components/feedback-history";
 
 export default function ProfileClient() {
   const supabase = createClientComponentClient();
@@ -164,53 +166,19 @@ export default function ProfileClient() {
                       <p>{user.email}</p>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="bg-primary/5">
-                      <CardContent className="p-4 flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        <div>
-                          <p className="text-sm font-medium">Dołączył</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formattedJoinDate}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-primary/5">
-                      <CardContent className="p-4 flex items-center gap-3">
-                        <MessageSquare className="h-5 w-5 text-primary" />
-                        <div>
-                          <p className="text-sm font-medium">Wiadomości</p>
-                          <p className="text-xs text-muted-foreground">
-                            0 wysłanych
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-primary/5">
-                      <CardContent className="p-4 flex items-center gap-3">
-                        <Shield className="h-5 w-5 text-primary" />
-                        <div>
-                          <p className="text-sm font-medium">Status</p>
-                          <p className="text-xs text-muted-foreground">
-                            Aktywny
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  <div className="border-t pt-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <ThumbsDown className="h-4 w-4" />
+                      Historia zgłoszeń
+                    </h3>
+                    <FeedbackHistory />
                   </div>
 
                   <div className="border-t pt-6 mt-6">
                     <h3 className="text-lg font-semibold mb-4">
                       Informacje dodatkowe
                     </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Tu możesz dodać dodatkowe informacje o użytkowniku lub
-                      ustawieniach konta.
-                    </p>
+                    <p className="text-muted-foreground text-sm">Brak.</p>
                   </div>
                 </div>
               </div>
