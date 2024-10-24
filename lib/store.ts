@@ -41,7 +41,7 @@ export const useChatStore = create<ChatState>()(
         streaming: true,
         topK: 40,
         repeatPenalty: 1.1,
-        num_predict: 4096,
+        num_predict: 8096,
       },
       systemPrompt:
         "You are a specialized keyword extractor for Polish legislative topics.",

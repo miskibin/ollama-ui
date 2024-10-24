@@ -51,7 +51,7 @@ const conversationStarters = [
   {
     icon: <Building className="text-amber-600" size={24} />,
     text: "Budowa domu",
-    action: "Jakie przepisy regulują budowę domu jednorodzinnego?",
+    action: "Jakie przepisy regulują budowę domu jednorodzinnego w polsce?",
   },
   {
     icon: <FileSearch className="text-indigo-500" size={24} />,
