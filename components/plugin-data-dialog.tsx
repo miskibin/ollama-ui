@@ -74,9 +74,9 @@ const ArtifactDialogs: React.FC<PluginDataDialogsProps> = ({ artifacts }) => {
     switch (type) {
       case "sejm_stats":
         return {
-          title: "Dane sejmowe",
+          title: "Dane z API",
           icon: Building2,
-          buttonText: "Dane sejmowe",
+          buttonText: "Dane z API",
         };
       case "wikipedia":
         return {

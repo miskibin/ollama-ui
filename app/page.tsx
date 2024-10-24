@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { ChatCard } from "@/components/chatCard";
 import { ChatProvider } from "./ChatContext";
@@ -12,7 +10,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
-import { Mail } from "lucide-react";
+import { Mail, Loader2, Lock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
   const supabase = createClientComponentClient();
@@ -74,12 +73,14 @@ export default function Home() {
   if (loading) {
     return (
       <div
-        className="flex items-center justify-center"
+        className="grid place-items-center w-full"
         style={{ height: windowHeight }}
       >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
-          <p className="text-lg font-medium">Ładowanie...</p>
+          <Loader2 className="h-16 w-16 animate-spin mx-auto text-primary" />
+          <p className="mt-4 text-lg font-medium text-muted-foreground">
+            Ładowanie...
+          </p>
         </div>
       </div>
     );
@@ -88,27 +89,31 @@ export default function Home() {
   if (!user) {
     return (
       <div
-        className="flex items-center justify-center p-4"
+        className="grid place-items-center w-full px-4"
         style={{ height: windowHeight }}
       >
-        <div className="max-w-sm w-full p-6 bg-white rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-center mb-6">Zaloguj się</h2>
-          <div className="space-y-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle className="text-center">Zaloguj się</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <Button
               onClick={() => handleOAuthSignIn("google")}
-              className="w-full flex items-center justify-center gap-2"
+              variant="outline"
+              className="w-full"
             >
-              <Mail className="h-5 w-5" />
+              <Mail className="mr-2 h-5 w-5" />
               Zaloguj się przez Google
             </Button>
             <Button
               onClick={() => handleOAuthSignIn("discord")}
-              className="w-full flex items-center justify-center gap-2 bg-[#5865F2] hover:bg-[#4752C4]"
+              className="w-full bg-[#5865F2] hover:bg-[#4752C4]"
             >
+              <Lock className="mr-2 h-5 w-5" />
               Zaloguj się przez Discord
             </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -118,7 +123,7 @@ export default function Home() {
       <SidebarProvider>
         <AppSidebar />
         <main className="w-full">
-          <div className="flex flex-col h-screen overflow-hidden">
+          <div className="flex flex-col h-[100dvh] overflow-hidden">
             <Navbar />
             <div className="flex-grow overflow-auto">
               <ChatCard />
