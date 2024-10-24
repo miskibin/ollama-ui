@@ -119,7 +119,7 @@ export function ChatCard() {
   };
   return (
     <Card className="h-full flex flex-col items-center border-t-0 shadow-none rounded-t-none">
-      <CardContent className="flex-grow w-full max-w-6xl overflow-y-auto px-2 sm:px-4">
+      <CardContent className="flex-grow w-full max-w-6xl overflow-y-auto px-1 sm:px-4">
         {messages.length === 0 ? (
           <InitialChatContent
             onStarterClick={(text) =>

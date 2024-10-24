@@ -204,7 +204,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       )}
       <div
         className={`flex ${
-          message.role === "user" ? "justify-end" : "justify-start pl-10"
+          message.role === "user" ? "justify-end" : "justify-start pl-8"
         }`}
       >
         <div
