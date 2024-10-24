@@ -1,20 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import pdf from "pdf-parse";
 
+const MAX_LENGTH = 50000;
+
+function trimText(text: string, maxLength: number = MAX_LENGTH): string {
+  if (text.length <= maxLength) return text;
+
+  // Find the last complete sentence within the limit
+  const truncated = text.substring(0, maxLength);
+  const lastPeriod = truncated.lastIndexOf(".");
+  const lastQuestion = truncated.lastIndexOf("?");
+  const lastExclamation = truncated.lastIndexOf("!");
+
+  // Find the last sentence ending
+  const lastSentenceEnd = Math.max(lastPeriod, lastQuestion, lastExclamation);
+
+  if (lastSentenceEnd === -1) {
+    // If no sentence ending found, cut at the last space
+    const lastSpace = truncated.lastIndexOf(" ");
+    return lastSpace === -1 ? truncated : truncated.substring(0, lastSpace);
+  }
+
+  return truncated.substring(0, lastSentenceEnd + 1);
+}
+
 function formatToMarkdown(text: string): string {
-  const lines = text.split("\n").map((line) => line.trim());
+  // First trim the text if it's too long
+  const trimmedText = trimText(text);
+
+  const lines = trimmedText.split("\n").map((line) => line.trim());
   let markdown = "";
   let inList = false;
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
-
     // Handle headers
     if (line.match(/^[A-Z][\w\s]{0,20}$/)) {
       markdown += `\n## ${line}\n\n`;
       continue;
     }
-
     // Handle bullet points
     if (line.startsWith("•") || line.startsWith("-")) {
       if (!inList) {
@@ -24,7 +48,6 @@ function formatToMarkdown(text: string): string {
       markdown += `${line}\n`;
       continue;
     }
-
     // Handle numbered lists
     if (line.match(/^\d+\./)) {
       if (!inList) {
@@ -34,7 +57,6 @@ function formatToMarkdown(text: string): string {
       markdown += `${line}\n`;
       continue;
     }
-
     // End list if encountered non-list item
     if (
       inList &&
@@ -45,7 +67,6 @@ function formatToMarkdown(text: string): string {
       markdown += "\n";
       inList = false;
     }
-
     // Handle paragraphs
     if (line.length > 0) {
       markdown += `${line} `;
@@ -60,6 +81,7 @@ function formatToMarkdown(text: string): string {
     .replace(/\s+$/gm, "")
     .trim();
 }
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -81,10 +103,15 @@ export async function POST(request: NextRequest) {
       const data = await pdf(uint8Array as Buffer);
       console.log("PDF parsed successfully. Text length:", data.text.length);
 
-      // Convert the extracted text to optimized markdown
       const markdown = formatToMarkdown(data.text);
+      const wasTrimmed = data.text.length > MAX_LENGTH;
 
-      return NextResponse.json({ markdown });
+      return NextResponse.json({
+        markdown,
+        wasTrimmed,
+        originalLength: data.text.length,
+        trimmedLength: markdown.length,
+      });
     } catch (pdfError) {
       console.error("Error in pdf-parse:", pdfError);
       return NextResponse.json(

@@ -176,7 +176,7 @@ export function AppSidebar() {
           </SidebarGroup>
         </ScrollArea>
       </SidebarContent>
-      <SidebarFooter className="p-3 md:p-4 border-t">
+      <SidebarFooter className="p-3 pb-6 md:p-4 border-t">
         <Button
           onClick={clearMessages}
           variant="destructive"
