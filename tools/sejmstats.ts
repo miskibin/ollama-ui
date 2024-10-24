@@ -19,7 +19,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
   return new DynamicStructuredTool({
     name: "sejm_stats_analyzer",
     description:
-      "Analyzes statistics and data about the Polish Sejm and Polish Law, and all politics based on natural language questions",
+      "Searches and analyzes laws, legal regulations based on user questions. Can provide information about various laws.",
     schema: sejmStatsSchema,
     func: async ({ question }: z.infer<typeof sejmStatsSchema>) => {
       try {
@@ -33,7 +33,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
             // const cleanedQuery = searchQuery
             //   .replace(/^(Query:|Search query:|Generated query:)/i, "")
             //   .trim();
-            const cleanedQuery = question
+            const cleanedQuery = question;
             console.info("SEJM-STATS", {
               question,
               searchQuery: cleanedQuery,

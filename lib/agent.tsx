@@ -45,7 +45,6 @@ export class AgentRP {
 
     const prompt = await PROMPTS.analyzeToolRelevance.format({
       query,
-      toolName: tool.name,
       toolDescription: tool.description,
       previousResponse: previousResponse.slice(0, 900), // Limit context size
     });

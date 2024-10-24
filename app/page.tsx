@@ -87,7 +87,7 @@ export default function Home() {
     );
   }
 
-  if (!user) {
+  if (!user && !isDev) {
     return (
       <div
         className="grid place-items-center w-full px-4"

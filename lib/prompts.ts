@@ -22,7 +22,6 @@ export const PROMPTS = {
       Given:
       - User Question: {query}
       - Last Assistant Response: {previousResponse}
-      - Tool: {toolName}
       - Tool Purpose: {toolDescription}
       
       Check two conditions:
