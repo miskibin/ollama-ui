@@ -47,7 +47,7 @@ const LabelWithIcon = ({
   </label>
 );
 
-const ChatSettings = (isPatron: any) => {
+const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
   const {
     systemPrompt,
     setSystemPrompt,
@@ -60,7 +60,7 @@ const ChatSettings = (isPatron: any) => {
   } = useChatStore();
 
   const handleModelChange = (value: string) => {
-    if (isPatron) {
+    if (isPatron === true) {
       setSelectedModel(value);
     }
   };

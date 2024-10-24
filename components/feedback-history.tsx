@@ -51,7 +51,7 @@ export function FeedbackHistory() {
 
   if (loading) {
     return (
-      <div className="flex justify-center p-4">
+      <div className="flex justify-center p-2">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
@@ -59,29 +59,29 @@ export function FeedbackHistory() {
 
   if (feedbacks.length === 0) {
     return (
-      <div className="text-center text-muted-foreground p-4">
+      <div className="text-center text-muted-foreground p-2">
         Nie zgłoszono jeszcze żadnych uwag do odpowiedzi asystenta.
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
+    <div className="space-y-3 p-2 md:space-y-4 md:p-4">
       {feedbacks.map((feedback) => (
         <Card
           key={feedback.id}
           className="bg-muted/50 hover:bg-muted/80 transition-colors"
         >
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-              <div className="flex items-center sm:block">
-                <div className="bg-background rounded-full p-2 shadow-sm">
+          <CardContent className="p-2 sm:p-3">
+            <div className="flex gap-2 sm:gap-3">
+              <div className="shrink-0">
+                <div className="bg-background rounded-full p-1.5 shadow-sm">
                   <ThumbsDown className="h-4 w-4 text-primary" />
                 </div>
               </div>
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-2">
-                  <div className="space-y-1 flex-1">
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex flex-col gap-1">
+                  <div className="space-y-1">
                     {feedback.reason ? (
                       <p className="font-medium text-sm text-foreground break-words">
                         {feedback.reason}
@@ -101,29 +101,28 @@ export function FeedbackHistory() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full sm:w-auto"
+                    className="w-full justify-between"
                     onClick={() => toggleExpand(feedback.id)}
                   >
+                    <span className="text-sm">
+                      {expandedItems[feedback.id]
+                        ? "Zwiń"
+                        : "Rozwiń konwersację"}
+                    </span>
                     {expandedItems[feedback.id] ? (
-                      <span className="flex items-center gap-2">
-                        Zwiń
-                        <ChevronUp className="h-4 w-4" />
-                      </span>
+                      <ChevronUp className="h-4 w-4 ml-2" />
                     ) : (
-                      <span className="flex items-center gap-2">
-                        Rozwiń konwersację
-                        <ChevronDown className="h-4 w-4" />
-                      </span>
+                      <ChevronDown className="h-4 w-4 ml-2" />
                     )}
                   </Button>
                 </div>
                 {expandedItems[feedback.id] && (
-                  <div className="space-y-2 pt-2">
+                  <div className="space-y-2">
                     {feedback.context.map((msg, idx) => (
                       <div
                         key={idx}
                         className={cn(
-                          "text-sm p-2 sm:p-3 rounded-md border shadow-sm overflow-hidden",
+                          "text-sm p-2 rounded-md border shadow-sm",
                           msg.role === "assistant"
                             ? "bg-background text-foreground"
                             : "bg-primary/10 text-foreground"
