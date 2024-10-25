@@ -1,4 +1,7 @@
-# Prawny Asystent AI 🤖⚖️
+# [Asystent RP](https://chat.sejm-stats.pl/)
+
+![image](https://github.com/user-attachments/assets/0bc87d98-16e5-4bd5-87cb-4e4aeb2197c0)
+
 
  - inteligentny asystent prawny wspierający obywateli w zrozumieniu polskiego prawa i przepisów.
 Projekt jest oparty na danych z  [sejm-stats.pl](https://sejm-stats.pl)
