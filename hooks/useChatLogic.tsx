@@ -4,13 +4,18 @@ import { generateUniqueId } from "@/utils/common";
 import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
 import { PROMPTS, SummarizePrompt } from "@/lib/prompts";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useToast } from "./use-toast";
 
 type ProgressUpdate = {
   type: "status" | "tool_execution" | "response" | "error";
   messages: Message[];
 };
+const DAILY_CHAT_LIMIT = 30;
 
 export const useChatLogic = () => {
+  const supabase = createClientComponentClient();
+  const { toast } = useToast();
   const {
     messages,
     addMessage,
@@ -31,11 +36,50 @@ export const useChatLogic = () => {
   const [status, setStatus] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const checkRateLimit = async (): Promise<boolean> => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const { data, error } = await supabase.rpc("increment_rate_limit", {
+        p_user_id: user?.id,
+        p_limit_type: "chat_submission",
+      });
+
+      if (error) throw error;
+
+      if (data > DAILY_CHAT_LIMIT) {
+        toast({
+          title: "Osiągnięto dzienny limit",
+          description: `Osiągnąłeś limit ${DAILY_CHAT_LIMIT} wiadomości na dzień. Spróbuj ponownie jutro.`,
+          variant: "destructive",
+          duration: 5000,
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error checking rate limit:", error);
+      toast({
+        title: "Błąd",
+        description:
+          "Nie udało się sprawdzić limitu. Spróbuj ponownie później.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return false;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent, text?: string) => {
     e.preventDefault();
     const inputText = text || input;
     if (!inputText.trim()) return;
+
+    // Check rate limit before proceeding
+    const canProceed = await checkRateLimit();
+    if (!canProceed) return;
 
     const userMessage: Message = {
       id: generateUniqueId(),
@@ -102,7 +146,7 @@ export const useChatLogic = () => {
                   .filter((plugin) => plugin.enabled)
                   .map((plugin) => plugin.name),
           modelName: selectedModel,
-          options: options
+          options: options,
         }),
         signal: abortControllerRef.current.signal,
       });
@@ -221,7 +265,11 @@ export const useChatLogic = () => {
       });
     }
   };
-  const handleSummarize = async (pdfUrl: string, context?: string) => {
+  const handleSummarize = async (
+    pdfUrl: string,
+    context?: string,
+    summary?: string
+  ) => {
     setIsLoading(true);
     setStatus(null);
 
@@ -255,11 +303,9 @@ export const useChatLogic = () => {
         id: generateUniqueId(),
         role: "user",
         content: context
-          ? await PROMPTS.answerQuestion.format(
-            {
-              question: context
-            }
-          )
+          ? await PROMPTS.answerQuestion.format({
+              question: context,
+            })
           : SummarizePrompt,
         artifacts: [
           {
@@ -270,9 +316,19 @@ export const useChatLogic = () => {
           },
         ],
       };
-      console.log(userMessage)
+      console.log(userMessage);
       addMessage(userMessage);
-      await getResponse([...messages, userMessage], true);
+      if (summary) {
+        const userMessage: Message = {
+          id: generateUniqueId(),
+          role: "assistant",
+          content: `${summary}`,
+          artifacts: [],
+        };
+        addMessage(userMessage);
+      } else {
+        await getResponse([...messages, userMessage], true);
+      }
     } catch (error) {
       handleError(error);
     } finally {

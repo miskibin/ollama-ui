@@ -37,6 +37,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     editMessage,
     regenerateMessage,
     handleSummarize,
+    deleteMessage,
     messages,
   } = useChatContext();
 
@@ -134,9 +135,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
     return (
       <div className="flex justify-start mt-2 space-x-2">
-        <Button variant="ghost" onClick={handleEditStart} size="sm">
-          <Edit className="w-4 h-4" />
-        </Button>
         {message.role === "assistant" && (
           <>
             <Button
@@ -169,6 +167,20 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             />
           </>
         )}
+        {message.role === "user" && (
+          <>
+            <Button
+              onClick={() => deleteMessage(message.id)}
+              size="sm"
+              variant="ghost"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" onClick={handleEditStart} size="sm">
+              <Edit className="w-4 h-4" />
+            </Button>
+          </>
+        )}
       </div>
     );
   };
@@ -181,10 +193,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     return (
       <div className="flex flex-wrap gap-2 mt-2">
         <PluginDataDialog artifacts={message.artifacts} />
-        <SummarableTextDialog
-          artifacts={message.artifacts}
-          onSummarize={handleSummarize}
-        />
+        <SummarableTextDialog artifacts={message.artifacts} />
       </div>
     );
   };

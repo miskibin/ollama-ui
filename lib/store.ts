@@ -41,7 +41,7 @@ export const useChatStore = create<ChatState>()(
         streaming: true,
         topK: 40,
         repeatPenalty: 1.1,
-        num_predict: 8096,
+        maxTokens: 512,
       },
       systemPrompt:
         "You are a specialized keyword extractor for Polish legislative topics.",
@@ -62,18 +62,18 @@ export const useChatStore = create<ChatState>()(
         },
         {
           name: "gpt-4o-mini",
-          description: "Inteligentny",
+          description: "",
           short: "gpt-4o-mini",
         },
         {
           short: "Llama-3.2-11B",
           name: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
-          description: "Zaawansowany",
+          description: "",
         },
         {
           short: "Qwen2.5-7B",
           name: "Qwen/Qwen2.5-7B-Instruct-Turbo",
-          description: "Zaawansowany",
+          description: "",
         },
       ],
       selectedModel: "meta-llama/Llama-Vision-Free",

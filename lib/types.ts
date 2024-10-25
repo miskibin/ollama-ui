@@ -19,6 +19,8 @@ export type Model = {
 
 export type SummarableText = {
   title: string;
+  summary: string;
+  text_length: number;
   url: string;
 };
 
@@ -33,5 +35,5 @@ export type ChatOptions = {
   topK: number;
   streaming: boolean;
   repeatPenalty: number;
-  num_predict?: number;
+  maxTokens?: number;
 };

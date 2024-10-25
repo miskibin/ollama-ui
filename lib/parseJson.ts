@@ -4,35 +4,38 @@ export function extractSummarableTexts(
   artifacts: Artifact[]
 ): SummarableText[] {
   const result: SummarableText[] = [];
-  const urlRegex = /^(?!.*video).*(url|transcript|link)/i;
 
   for (const artifact of artifacts) {
-    if (artifact.type !== "sejm_stats" || !artifact.data) continue;
-
     try {
       // If data is a string, try to parse it
-      const data =
-        typeof artifact.data === "string"
-          ? JSON.parse(artifact.data)
-          : artifact.data;
+      let data;
+      try {
+        data =
+          typeof artifact.data === "string"
+            ? JSON.parse(artifact.data)
+            : artifact.data;
+      } catch (error) {
+        console.debug("Failed to parse JSON:", error);
+        continue;
+      }
 
       // Ensure we're working with an array
-      const itemsArray = Array.isArray(data) ? data : [];
+      const itemsArray = Array.isArray(data) ? data : [data];
 
       itemsArray.forEach((item: any) => {
-        let title = item.title || item.topic || item.description || item.agenda;
-        let url = "";
-
-        // Look for URL in item properties
-        for (const key in item) {
-          if (urlRegex.test(key)) {
-            url = item[key];
-            break;
-          }
-        }
-
-        if (title && url) {
-          result.push({ title, url });
+        // Check if item has required fields for SummarableText
+        if (
+          item.title &&
+          item.url &&
+          item.summary &&
+          typeof item.text_length === "number"
+        ) {
+          result.push({
+            title: item.title,
+            summary: item.summary,
+            text_length: item.text_length,
+            url: item.url,
+          });
         }
       });
     } catch (error) {
@@ -40,7 +43,6 @@ export function extractSummarableTexts(
     }
   }
 
-  console.log("Extracted summarable texts:", result);
   return result;
 }
 

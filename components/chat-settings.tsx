@@ -88,9 +88,11 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
                 className="flex justify-between"
               >
                 <span>{model.short}</span>
-                <Badge variant="secondary" className="ml-2">
-                  {model.description}
-                </Badge>
+                {model.description && (
+                  <Badge variant="secondary" className="ml-2">
+                    {model.description}
+                  </Badge>
+                )}
               </SelectItem>
             ))}
           </SelectContent>
@@ -195,11 +197,11 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
               <LabelWithIcon icon={Zap} text="Maks. liczba tokenów" />
               <Input
                 type="number"
-                value={options.num_predict || ""}
+                value={options.maxTokens || ""}
                 onChange={(e) =>
                   setOptions({
                     ...options,
-                    num_predict: e.target.value
+                    maxTokens: e.target.value
                       ? parseInt(e.target.value)
                       : undefined,
                   })

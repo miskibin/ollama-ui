@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Message } from "@/lib/types";
 import {
@@ -17,9 +17,8 @@ export function useFeedbackLogic(): UseFeedbackLogicReturn {
   const [reason, setReason] = useState("");
   const { toast } = useToast();
   const supabase = createClientComponentClient();
-  console.log(messages.slice(-3).map(trimMessage));
 
-  const handleFeedback = async () => {
+  const handleFeedback = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -67,7 +66,7 @@ export function useFeedbackLogic(): UseFeedbackLogicReturn {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [feedbackSent, isSubmitting, messages, reason, supabase, toast]);
 
   return {
     isDialogOpen,

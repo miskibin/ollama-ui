@@ -69,20 +69,7 @@ export const PROMPTS = {
       Używaj prostego języka i zachowaj emotikony.`),
 };
 
-export const SummarizePrompt = `Przygotuj proste podsumowanie aktu prawnego.
-Jeśli jakaś informacja nie występuje w dokumencie, pomiń dany punkt.
-
-🎯 Cel: 
-[Jedno proste zdanie rozpoczynające się od "Ustawa..."]
-
-📋 Główne zmiany (jeśli są):
-- [zmiana 1]
-- [zmiana 2]
-- [zmiana 3]
-
-⏰ Data wejścia w życie: [**data**]
-
-Pisz prostym językiem, liczby i daty zapisuj w **pogrubieniu**.`;
+export const SummarizePrompt = `Streść mi to`;
 
 export const FirstIrrelevantUserQuestion = `
 Przepraszam Aktualnie potrafię odpowiadać tylko na pytania dotyczące **obowiązujących aktów prawnych** znajdujących się w [Monitorze Polskim](https://monitorpolski.gov.pl/MP)

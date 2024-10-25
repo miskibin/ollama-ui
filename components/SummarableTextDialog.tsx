@@ -13,20 +13,20 @@ import { Button } from "@/components/ui/button";
 import { Artifact } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { extractSummarableTexts } from "@/lib/parseJson";
+import { useChatLogic } from "@/hooks/useChatLogic";
 
 interface SummarableTextDialogProps {
   artifacts: Artifact[];
-  onSummarize: (pdfUrl: string) => void;
 }
 
 export default function SummarableTextDialog({
   artifacts,
-  onSummarize,
 }: SummarableTextDialogProps) {
   const summarableTexts = useMemo(
     () => extractSummarableTexts(artifacts),
     [artifacts]
   );
+  const { handleSummarize } = useChatLogic();
   const [isOpen, setIsOpen] = useState(false);
 
   if (summarableTexts.length === 0) {
@@ -88,7 +88,11 @@ export default function SummarableTextDialog({
                       variant="outline"
                       onClick={() => {
                         setIsOpen(false);
-                        onSummarize(item.url);
+                        handleSummarize(
+                          item.url,
+                          "",
+                          `Podsumowanie dokumentu: [${item.title}](${item.url})\n\n${item.summary}`
+                        );
                       }}
                     >
                       <FileSearch className="mr-2 h-4 w-4" />
