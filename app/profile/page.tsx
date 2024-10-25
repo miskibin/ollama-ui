@@ -24,7 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { FeedbackHistory } from "@/components/feedback-history";
+import FeedbackHistory from "@/components/feedback-history";
 
 export default function ProfileClient() {
   const supabase = createClientComponentClient();
