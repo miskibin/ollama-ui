@@ -87,7 +87,7 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
                 value={model.name}
                 className="flex justify-between"
               >
-                <span>{model.name.split("/")[1].split("-", 3).join("-")}</span>
+                <span>{model.name}</span>
                 <Badge variant="secondary" className="ml-2">
                   {model.description}
                 </Badge>

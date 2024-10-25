@@ -60,16 +60,16 @@ export const useChatStore = create<ChatState>()(
           description: "Prymitywny",
         },
         {
-          name: "meta-llama/Meta-Llama-3-70B-Instruct-Lite",
+          name: "gpt-4o-mini",
+          description: "Inteligentny",
+        },
+        {
+          name: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
           description: "Zaawansowany",
         },
         {
-          name: "google/gemma-2-27b-it",
+          name: "Qwen/Qwen2.5-7B-Instruct-Turbo",
           description: "Zaawansowany",
-        },
-        {
-          name: "google/gemma-2-9b-it",
-          description: "Kompaktowy",
         },
       ],
       selectedModel: "meta-llama/Llama-Vision-Free",

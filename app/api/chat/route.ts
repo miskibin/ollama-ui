@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SystemMessage, ChatMessage } from "@langchain/core/messages";
+import { OpenAI } from "@langchain/openai";
 import { createSejmStatsTool } from "@/tools/sejmstats";
 import { convertRPMessageToLangChainMessage } from "@/lib/utils";
 import { TogetherAPIError, TogetherLLM } from "@/lib/TogetherLLm";
@@ -8,10 +9,30 @@ import { generateUniqueId } from "@/utils/common";
 import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
 
-const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
+const PLUGIN_MAPPING: Record<
+  PluginNames,
+  (model: TogetherLLM) => any
+> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
   [PluginNames.Wikipedia]: createWikipediaTool,
 };
+
+function createLLM(modelName: string, options: any) {
+  if (modelName.startsWith("gpt")) {
+    return new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
+      model: modelName,
+      ...options,
+    });
+  }
+
+  return new TogetherLLM({
+    apiKey: process.env.TOGETHER_API_KEY!,
+    model: modelName,
+    ...options,
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { messages, systemPrompt, enabledPluginIds, modelName, options } =
@@ -22,14 +43,10 @@ export async function POST(req: NextRequest) {
       ...messages,
     ].map(convertRPMessageToLangChainMessage);
 
-    const llm = new TogetherLLM({
-      apiKey: process.env.TOGETHER_API_KEY!,
-      model: modelName,
-      ...options,
-    });
+    const llm = createLLM(modelName, options);
 
     const plugins = enabledPluginIds.map((id: PluginNames) =>
-      PLUGIN_MAPPING[id](llm)
+      PLUGIN_MAPPING[id]((llm as TogetherLLM))
     );
 
     const agent = new AgentRP({

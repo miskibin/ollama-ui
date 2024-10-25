@@ -4,7 +4,7 @@ import { TogetherLLM } from "./TogetherLLm";
 import { FirstIrrelevantUserQuestion, PROMPTS } from "./prompts";
 import { LoggerService } from "./logger";
 import { Artifact } from "@/lib/types";
-
+import { OpenAI } from "@langchain/openai";
 interface AgentProgress {
   type: "status" | "tool_execution" | "response";
   content: string;
@@ -17,7 +17,7 @@ interface AgentOptions {
 }
 
 export class AgentRP {
-  private llm: TogetherLLM;
+  private llm: TogetherLLM | OpenAI;
   private tools: StructuredToolInterface[];
   private logger: LoggerService;
 

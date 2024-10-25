@@ -75,6 +75,7 @@ export function AppSidebar() {
   const [mounted, setMounted] = useState(false);
   const { clearMessages, patrons } = useChatStore();
   const [user, setUser] = useState<User | null>(null);
+  const isDev = process.env.NODE_ENV === "development";
   const [isPatron, setIsPatron] = useState(false);
   const supabase = createClientComponentClient();
   useEffect(() => {
@@ -213,7 +214,7 @@ export function AppSidebar() {
                   </CardContent>
                 </Card>
               )}
-              <ChatSettings isPatron={isPatron} />
+              <ChatSettings isPatron={isPatron ||isDev } />
             </div>
           </SidebarGroup>
         </ScrollArea>

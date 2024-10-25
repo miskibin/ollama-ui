@@ -17,7 +17,6 @@ import LoginPage from "@/components/landing-page";
 
 export default function Home() {
   const supabase = createClientComponentClient();
-  const router = useRouter();
   const isDev = process.env.NODE_ENV === "development";
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,7 +87,7 @@ export default function Home() {
     );
   }
 
-  if (!user) {
+  if (!user && !isDev) {
     return (
       <LoginPage
         onOAuthSignIn={handleOAuthSignIn}

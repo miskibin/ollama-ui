@@ -16,7 +16,7 @@ Projekt jest oparty na danych z  [sejm-stats.pl](https://sejm-stats.pl)
 - Node.js (v18+)
 - npm/yarn/pnpm
 - Konto na platformie [Together.ai](https://together.ai)
-- Konto w [Auth0](https://auth0.com)
+- Konto subpase 
 - Dostęp do API sejm-stats.pl
 
 ### Konfiguracja zmiennych środowiskowych

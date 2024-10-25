@@ -31,9 +31,6 @@ export class TogetherLLM extends LLM {
   model: string;
   temperature: number;
   maxTokens: number;
-  topP: number;
-  topK: number;
-  repetitionPenalty: number;
   streaming: boolean;
 
   constructor(fields: TogetherLLMInput) {
@@ -45,32 +42,10 @@ export class TogetherLLM extends LLM {
     this.streaming = fields.streaming ?? false;
     this.temperature = fields.temperature ?? 0.7;
     this.maxTokens = fields.maxTokens ?? 512;
-    this.topP = fields.topP ?? 0.7;
-    this.topK = fields.topK ?? 50;
-    this.repetitionPenalty = fields.repetitionPenalty ?? 1;
   }
 
   _llmType() {
     return "together";
-  }
-
-  private handleAPIError(error: any) {
-    if (error.response) {
-      // The request was made and the server responded with a non-2xx status
-      throw new TogetherAPIError(
-        `API request failed: ${error.response.status} - ${
-          error.response.data?.error || "Unknown error"
-        }`,
-        error.response.status,
-        error.response.data
-      );
-    } else if (error.request) {
-      // The request was made but no response was received
-      throw new TogetherAPIError("No response received from API");
-    } else {
-      // Something happened in setting up the request
-      throw new TogetherAPIError(`Error making API request: ${error.message}`);
-    }
   }
 
   async _call(
@@ -84,9 +59,6 @@ export class TogetherLLM extends LLM {
         messages: [{ role: "user", content: prompt }],
         max_tokens: this.maxTokens,
         temperature: this.temperature,
-        top_p: this.topP,
-        top_k: this.topK,
-        repetition_penalty: this.repetitionPenalty,
         stop: ["<|eot_id|>", "<|eom_id|>"],
         stream: false,
       });
@@ -96,7 +68,6 @@ export class TogetherLLM extends LLM {
       }
       throw new TogetherAPIError("Response content is undefined");
     } catch (error: any) {
-      this.handleAPIError(error);
       return error;
     }
   }
@@ -112,9 +83,6 @@ export class TogetherLLM extends LLM {
         messages: [{ role: "user", content: prompt }],
         max_tokens: this.maxTokens,
         temperature: this.temperature,
-        top_p: this.topP,
-        top_k: this.topK,
-        repetition_penalty: this.repetitionPenalty,
         stop: ["<|eot_id|>", "<|eom_id|>"],
         stream: true,
       });
@@ -137,7 +105,7 @@ export class TogetherLLM extends LLM {
         );
       }
     } catch (error: any) {
-      this.handleAPIError(error);
+      console.error(error);
     }
   }
 }
