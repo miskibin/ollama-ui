@@ -13,6 +13,7 @@ export interface Artifact {
 }
 export type Model = {
   name: string;
+  short: string;
   description: string;
 };
 

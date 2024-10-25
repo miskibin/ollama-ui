@@ -58,16 +58,20 @@ export const useChatStore = create<ChatState>()(
         {
           name: "meta-llama/Llama-Vision-Free",
           description: "Prymitywny",
+          short: "Llama-Vision-Free",
         },
         {
           name: "gpt-4o-mini",
           description: "Inteligentny",
+          short: "gpt-4o-mini",
         },
         {
+          short: "Llama-3.2-11B",
           name: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
           description: "Zaawansowany",
         },
         {
+          short: "Qwen2.5-7B",
           name: "Qwen/Qwen2.5-7B-Instruct-Turbo",
           description: "Zaawansowany",
         },
