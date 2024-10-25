@@ -68,7 +68,7 @@ export default function FeedbackHistory() {
   }
 
   return (
-    <div className="space-y-2 p-2 sm:space-y-3 sm:p-4">
+    <div className="space-y-2 px-0 py-2 sm:space-y-3 sm:p-4">
       {feedbacks.map((feedback) => (
         <Card
           key={feedback.id}
@@ -76,11 +76,7 @@ export default function FeedbackHistory() {
         >
           <CardContent className="p-2 sm:p-3">
             <div className="flex gap-2 sm:gap-3">
-              <div className="shrink-0">
-                <div className="bg-background rounded-full p-1.5 shadow-sm">
-                  <ThumbsDown className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-                </div>
-              </div>
+              <div className="shrink-0"></div>
               <div className="min-w-0 flex-1 space-y-1 sm:space-y-2">
                 <div className="flex flex-col gap-1">
                   <div className="space-y-1">
@@ -106,15 +102,15 @@ export default function FeedbackHistory() {
                     className="w-full justify-between text-xs sm:text-sm py-1 h-auto"
                     onClick={() => toggleExpand(feedback.id)}
                   >
-                    <span>
+                    <span className="truncate">
                       {expandedItems[feedback.id]
                         ? "Zwiń"
                         : "Rozwiń konwersację"}
                     </span>
                     {expandedItems[feedback.id] ? (
-                      <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4 ml-2" />
+                      <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4 ml-2 flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 ml-2" />
+                      <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 ml-2 flex-shrink-0" />
                     )}
                   </Button>
                 </div>

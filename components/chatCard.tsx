@@ -179,6 +179,7 @@ export function ChatCard() {
               disabled={isLoading || isPdfParsing}
               className="pr-24 pl-4 py-3 resize-none min-h-[56px] max-h-[200px] w-full rounded-2xl border-2 focus:ring-2 focus:ring-primary/50 transition-all overflow-y-auto scrollbar-hide hover:scrollbar-default"
               rows={1}
+              maxLength={800}
             />
             <div className="absolute bottom-2 right-2 flex items-center space-x-1">
               <div className="relative">

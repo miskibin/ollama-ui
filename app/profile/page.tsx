@@ -93,11 +93,6 @@ export default function ProfileClient() {
   }
 
   const joinDate = user?.created_at ? new Date(user.created_at) : null;
-  const formattedJoinDate = joinDate?.toLocaleDateString("pl-PL", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
   return (
     user && (
@@ -166,7 +161,7 @@ export default function ProfileClient() {
                       <p>{user.email}</p>
                     </div>
                   </div>
-                  <div className="border-t pt-6 mt-6">
+                  <div className="border-t pt-6  px-0 mx-0 mt-6">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <ThumbsDown className="h-4 w-4" />
                       Historia zgłoszeń

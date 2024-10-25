@@ -11,7 +11,7 @@ type ProgressUpdate = {
   type: "status" | "tool_execution" | "response" | "error";
   messages: Message[];
 };
-const DAILY_CHAT_LIMIT = 30;
+const DAILY_CHAT_LIMIT = 50;
 
 export const useChatLogic = () => {
   const supabase = createClientComponentClient();
@@ -51,7 +51,9 @@ export const useChatLogic = () => {
       if (data > DAILY_CHAT_LIMIT) {
         toast({
           title: "Osiągnięto dzienny limit",
-          description: `Osiągnąłeś limit ${DAILY_CHAT_LIMIT} wiadomości na dzień. Spróbuj ponownie jutro.`,
+          description: `Osiągnąłeś limit ${DAILY_CHAT_LIMIT} wiadomości na dzień. 
+          Ponieważ każde zapytanie mnie kosztuje, muszę ograniczyć liczbę zapytań, które mogę obsłużyć.
+          `,
           variant: "destructive",
           duration: 5000,
         });
