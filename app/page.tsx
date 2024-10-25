@@ -6,13 +6,10 @@ import {
   createClientComponentClient,
   User,
 } from "@supabase/auth-helpers-nextjs";
-import { Button } from "@/components/ui/button";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
-import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
 import { Mail, Loader2, Lock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LoginPage from "@/components/landing-page";
 
 export default function Home() {

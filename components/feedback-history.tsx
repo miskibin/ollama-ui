@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +16,7 @@ interface FeedbackItem {
   created_at: string;
 }
 
-export function FeedbackHistory() {
+export default function FeedbackHistory() {
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
@@ -59,14 +61,14 @@ export function FeedbackHistory() {
 
   if (feedbacks.length === 0) {
     return (
-      <div className="text-center text-muted-foreground p-2">
+      <div className="text-center text-muted-foreground p-2 text-sm">
         Nie zgłoszono jeszcze żadnych uwag do odpowiedzi asystenta.
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 p-2 md:space-y-4 md:p-4">
+    <div className="space-y-2 p-2 sm:space-y-3 sm:p-4">
       {feedbacks.map((feedback) => (
         <Card
           key={feedback.id}
@@ -76,18 +78,18 @@ export function FeedbackHistory() {
             <div className="flex gap-2 sm:gap-3">
               <div className="shrink-0">
                 <div className="bg-background rounded-full p-1.5 shadow-sm">
-                  <ThumbsDown className="h-4 w-4 text-primary" />
+                  <ThumbsDown className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
                 </div>
               </div>
-              <div className="min-w-0 flex-1 space-y-2">
+              <div className="min-w-0 flex-1 space-y-1 sm:space-y-2">
                 <div className="flex flex-col gap-1">
                   <div className="space-y-1">
                     {feedback.reason ? (
-                      <p className="font-medium text-sm text-foreground break-words">
+                      <p className="font-medium text-xs sm:text-sm text-foreground break-words">
                         {feedback.reason}
                       </p>
                     ) : (
-                      <p className="text-muted-foreground text-sm italic">
+                      <p className="text-muted-foreground text-xs sm:text-sm italic">
                         Nie podano powodu
                       </p>
                     )}
@@ -101,18 +103,18 @@ export function FeedbackHistory() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-between"
+                    className="w-full justify-between text-xs sm:text-sm py-1 h-auto"
                     onClick={() => toggleExpand(feedback.id)}
                   >
-                    <span className="text-sm">
+                    <span>
                       {expandedItems[feedback.id]
                         ? "Zwiń"
                         : "Rozwiń konwersację"}
                     </span>
                     {expandedItems[feedback.id] ? (
-                      <ChevronUp className="h-4 w-4 ml-2" />
+                      <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4 ml-2" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 ml-2" />
+                      <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 ml-2" />
                     )}
                   </Button>
                 </div>
@@ -122,7 +124,7 @@ export function FeedbackHistory() {
                       <div
                         key={idx}
                         className={cn(
-                          "text-sm p-2 rounded-md border shadow-sm",
+                          "text-xs sm:text-sm p-1.5 sm:p-2 rounded-md border shadow-sm",
                           msg.role === "assistant"
                             ? "bg-background text-foreground"
                             : "bg-primary/10 text-foreground"
