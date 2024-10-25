@@ -9,10 +9,7 @@ import { generateUniqueId } from "@/utils/common";
 import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
 
-const PLUGIN_MAPPING: Record<
-  PluginNames,
-  (model: TogetherLLM) => any
-> = {
+const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
   [PluginNames.Wikipedia]: createWikipediaTool,
 };
@@ -46,11 +43,11 @@ export async function POST(req: NextRequest) {
     const llm = createLLM(modelName, options);
 
     const plugins = enabledPluginIds.map((id: PluginNames) =>
-      PLUGIN_MAPPING[id]((llm as TogetherLLM))
+      PLUGIN_MAPPING[id](llm as TogetherLLM)
     );
 
     const agent = new AgentRP({
-      llm,
+      llm: llm as TogetherLLM,
       tools: plugins,
     });
 
