@@ -105,7 +105,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       !actUrl ||
       !isLastMessage ||
       message.role !== "assistant" ||
-      isGenerating
+      isGenerating ||
+      message.content.startsWith("Podsumowanie") // Already summarized
     ) {
       return null;
     }
