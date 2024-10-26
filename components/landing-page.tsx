@@ -39,7 +39,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       style={{ minHeight: windowHeight }}
     >
       <div className="w-full mx-auto px-4 mb-12">
-        <div className="grid md:grid-cols-2 py-8 md:py-12 gap-12 items-center h-screen max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 py-8 md:py-12 gap-12 items-center min-h-screen max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -74,14 +74,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </motion.div>
           </motion.div>
 
-          <LoginCard onOAuthSignIn={onOAuthSignIn} />
+          <div className="relative z-10">
+            {" "}
+            {/* Added relative positioning and z-index */}
+            <LoginCard onOAuthSignIn={onOAuthSignIn} />
+          </div>
         </div>
-
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="grid md:grid-cols-2 gap-12 items-start"
+          className="grid md:grid-cols-2 gap-12 items-start relative z-0 mt-12"
         >
           <AboutSection />
           <FlowDiagram />

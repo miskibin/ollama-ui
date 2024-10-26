@@ -26,7 +26,7 @@ const AboutSection = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-3xl mx-auto px-4"
+      className="relative max-w-3xl mx-auto px-4 z-0" // Added relative positioning and z-0
     >
       <motion.h2
         initial={{ opacity: 0, y: 10 }}
