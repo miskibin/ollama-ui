@@ -8,7 +8,6 @@ export function trimMessage(message: Message): Message {
     artifacts:
       message.artifacts?.map((artifact) => ({
         type: artifact.type,
-        content: JSON.stringify(artifact.data)?.slice(0, 300) ?? "",
         question: artifact.question,
         searchQuery: artifact.searchQuery,
         data: artifact.data,

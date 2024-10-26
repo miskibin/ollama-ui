@@ -34,7 +34,6 @@ export const useChatLogic = () => {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string | null>(null);
-
   const abortControllerRef = useRef<AbortController | null>(null);
   const checkRateLimit = async (): Promise<boolean> => {
     try {
@@ -114,7 +113,6 @@ export const useChatLogic = () => {
       setIsLoading(false);
     }
   };
-
   const getResponse = async (
     messageHistory: Message[],
     disableAllPlugins?: boolean
@@ -259,11 +257,11 @@ export const useChatLogic = () => {
       error instanceof Error ? error.message : "An unknown error occurred";
 
     if (error instanceof Error && error.name !== "AbortError") {
-      addMessage({
-        id: generateUniqueId(),
-        role: "assistant",
-        content: `An error occurred while fetching the response: ${errorMessage}`,
-        artifacts: [],
+      toast({
+        title: "Błąd podczas odpowiadania",
+        description: `${error} -  ${errorMessage}`,
+        variant: "destructive",
+        duration: 5000,
       });
     }
   };

@@ -12,6 +12,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 export function checkEasterEggs(input: string) {
+  if (input.length > 100) return null;
   for (const egg of easterEggMapping) {
     if (egg.regex.test(input)) {
       return egg.photo;
@@ -45,3 +46,9 @@ export function convertLangChainMessageToRPMessage(message: ChatMessage) {
     return { content: message.content, role: message.getType() };
   }
 }
+export const formatNumber = (num: number): string => {
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + "k";
+  }
+  return num.toString();
+};

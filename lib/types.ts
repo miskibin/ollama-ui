@@ -22,6 +22,7 @@ export type SummarableText = {
   summary: string;
   text_length: number;
   url: string;
+  similarity: number;
 };
 
 export type ChatPlugin = {
