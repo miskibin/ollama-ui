@@ -24,8 +24,9 @@ export const PROMPTS = {
       - Last Assistant Response: {previousResponse}
       - Tool Purpose: {toolDescription}
       
-      Anwer YES only if question specifically ask about what this tool provides, and it is a new topic (not following up on previous response).
-      Otherwise, answer NO.
+      Check two conditions:
+      1. Does the question specifically ask about what this tool provides?
+      2. Is this a new topic (not following up on previous response)?
       
       Answer format:
       RELEVANT: [YES or NO]
