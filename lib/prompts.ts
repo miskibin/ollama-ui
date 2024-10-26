@@ -50,23 +50,12 @@ export const PROMPTS = {
     Question: {question}
     Tool Results: {tool_results}`),
 
-  answerQuestion: PromptTemplate.fromTemplate(`
-      Bazując na dokumencie, odpowiedz na pytanie:
+  answerQuestion:
+    PromptTemplate.fromTemplate(`Bazując na dokumencie, odpowiedz konkretnie na pytanie:
       {question}
-      
-      Format odpowiedzi:
-      📝 GŁÓWNA ODPOWIEDŹ:
-      > [zwięzła odpowiedź 1-2 zdania, zawiera najważniejsze informacje]
-      
-      🔍 KLUCZOWE FRAGMENTY Z DOKUMENTU:
-      > [dosłowny fragment z dokumentu z najistotniejszymi informacjami]
-      
-      💡 DODATKOWE INFORMACJE:
-      - [data] lub [liczba] pogrubione jako **data** lub **liczba**
-      - Max 2 punkty dodatkowych informacji
-      - Tylko istotne szczegóły
-      
-      Używaj prostego języka i zachowaj emotikony.`),
+
+      1. Korzystaj z formatowania markdown.
+      2. Jeśli znajdziesz pasujący cytat, użyj go.`),
 };
 
 export const SummarizePrompt = `Streść mi to`;
