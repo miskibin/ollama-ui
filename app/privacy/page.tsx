@@ -148,8 +148,7 @@ const PrivacyPage = () => {
             <h2 className="text-2xl font-semibold mb-4">8. Kontakt</h2>
             <p className="text-muted-foreground">
               W sprawach związanych z ochroną danych osobowych można kontaktować
-              się z administratorem poprzez formularz kontaktowy dostępny w
-              serwisie.
+              się z administratorem poprzez email: michalskibinski109@gmail.com
             </p>
           </section>
         </CardContent>
