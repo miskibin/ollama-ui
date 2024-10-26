@@ -84,7 +84,7 @@ export default function Home() {
     );
   }
 
-  if (!user && !isDev) {
+  if (!user) {
     return (
       <LoginPage
         onOAuthSignIn={handleOAuthSignIn}

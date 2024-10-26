@@ -103,14 +103,6 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
         <p className="text-sm text-muted-foreground mb-2">
           Dowiedz się więcej o aktualnie obowiązujących przepisach
         </p>
-        <Link
-          href="https://sejm-stats.pl"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-2 text-sm text-muted-foreground hover:underline"
-        >
-          powered by <strong>sejm-stats.pl</strong>
-        </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
         {randomStarters.map((starter, index) => (
