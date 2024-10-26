@@ -6,8 +6,6 @@ import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/react";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -20,12 +18,13 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Asystent Parlamentarny",
+  title: "Asystent RP",
   description:
     "Inteligentny asystent do analizy danych Sejmu Rzeczypospolitej Polskiej",
   keywords: [
     "Asystent",
     "RP",
+    "sejm-stats",
     "Sejm",
     "Polska",
     "AI",
