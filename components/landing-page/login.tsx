@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, Shield } from "lucide-react";
+import { Mail, Lock, Shield, Github, AtSign } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,9 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AuthProvider } from "../landing-page";
 
 interface LoginCardProps {
-  onOAuthSignIn: (provider: "google" | "discord") => void;
+  onOAuthSignIn: (provider: AuthProvider) => void;
 }
 
 const LoginCard: React.FC<LoginCardProps> = ({ onOAuthSignIn }) => (
@@ -58,6 +59,27 @@ const LoginCard: React.FC<LoginCardProps> = ({ onOAuthSignIn }) => (
             Zaloguj się przez Discorda
           </Button>
         </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        >
+          <Button
+            onClick={() => onOAuthSignIn("github")}
+            variant="outline"
+            className="w-full bg-gradient-to-r hover:from-secondary hover:to-secondary/50 transition-all duration-300"
+          >
+            <Github className="mr-2 h-5 w-5" />
+            Zaloguj się przez GitHub
+          </Button>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        ></motion.div>
 
         <div className="pt-4 text-center">
           <motion.div

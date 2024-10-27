@@ -10,7 +10,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
 import Navbar from "@/components/navbar";
 import { Mail, Loader2, Lock } from "lucide-react";
-import LoginPage from "@/components/landing-page";
+import LoginPage, { AuthProvider } from "@/components/landing-page";
 
 export default function Home() {
   const supabase = createClientComponentClient();
@@ -55,7 +55,7 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
 
-  const handleOAuthSignIn = async (provider: "google" | "discord") => {
+  const handleOAuthSignIn = async (provider: AuthProvider) => {
     try {
       await supabase.auth.signInWithOAuth({
         provider,

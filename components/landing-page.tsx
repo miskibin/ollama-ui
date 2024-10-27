@@ -9,10 +9,10 @@ import Footer from "./landing-page/footer";
 import FlowDiagram from "./landing-page/diagram";
 import AboutSection from "./landing-page/about";
 
-type Provider = "google" | "discord";
+export type AuthProvider = "google" | "discord" | "github";
 
 interface LoginPageProps {
-  onOAuthSignIn: (provider: Provider) => void;
+  onOAuthSignIn: (provider: AuthProvider) => void;
   windowHeight: string;
 }
 
