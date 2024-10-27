@@ -61,11 +61,9 @@ interface FlowItemProps {
 
 const FlowItem = ({ item }: FlowItemProps) => (
   <motion.div variants={itemVariants} className="w-full max-w-xs">
-    <div className="p-3 px-2 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center hover:shadow-md transition-shadow duration-300 bg-white">
+    <div className="p-3 px-1 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center hover:shadow-md transition-shadow duration-300 bg-white">
       <item.icon className="w-5 h-5 mr-2 text-purple-600" />
-      <h3 className="text-lg font-medium text-center text-gray-800">
-        {item.label}
-      </h3>
+      <h3 className="font-medium text-center text-gray-800">{item.label}</h3>
     </div>
   </motion.div>
 );

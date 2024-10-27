@@ -8,7 +8,8 @@ import LoginCard from "./landing-page/login";
 import Footer from "./landing-page/footer";
 import FlowDiagram from "./landing-page/diagram";
 import AboutSection from "./landing-page/about";
-
+import CapabilitiesSection from "./landing-page/capabilities";
+import Image from "next/image";
 export type AuthProvider = "google" | "discord" | "github";
 
 interface LoginPageProps {
@@ -47,9 +48,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             className="space-y-8"
           >
             <motion.div variants={fadeIn} className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Asystent RP
-              </h1>
+              <div className="flex items-center gap-4 mb-6">
+                <Image
+                  src="/logo.svg"
+                  alt="Asystent RP Logo"
+                  width={64}
+                  height={64}
+                  className="rounded-lg"
+                  priority
+                />
+                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Asystent RP
+                </h1>
+              </div>
               <p className="text-xl text-muted-foreground">
                 Twój inteligentny przewodnik po polskim prawie
               </p>
@@ -75,19 +86,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </motion.div>
 
           <div className="relative z-10">
-            {" "}
-            {/* Added relative positioning and z-index */}
             <LoginCard onOAuthSignIn={onOAuthSignIn} />
           </div>
         </div>
+        <CapabilitiesSection />
+
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="grid md:grid-cols-2 gap-12 items-start relative z-0 mt-12"
+          className="grid md:grid-cols-12 gap-8 items-start relative z-0 my-24"
         >
-          <AboutSection />
-          <FlowDiagram />
+          <div className="md:col-span-7">
+            <AboutSection />
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="md:col-span-5"
+          >
+            <FlowDiagram />
+          </motion.div>
         </motion.div>
       </div>
 

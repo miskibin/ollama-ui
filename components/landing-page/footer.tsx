@@ -1,45 +1,112 @@
 import React from "react";
-import { Github } from "lucide-react";
+import { Github, Heart, Youtube, Mail, ExternalLink } from "lucide-react";
+import { FaDiscord } from "react-icons/fa";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
-  return (
-    <footer className="w-full py-8 border-t border-secondary/20 bg-background/50 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6">
-        <div className="text-sm text-muted-foreground">
-          © {currentYear} Michał Skibiński. Wszelkie prawa zastrzeżone.
-        </div>
-        <nav className="flex flex-wrap justify-center items-center gap-6">
-          <a
-            href="https://github.com/miskibin/ollama-ui"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Github className="h-4 w-4" aria-hidden="true" />
-            <span>GitHub</span>
-          </a>
+  type FooterLink = {
+    href: string;
+    label: string;
+    icon?: React.ReactElement;
+  };
 
-          <a
-            href="/privacy"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Polityka prywatności
-          </a>
-          <a
-            href="/terms-of-service"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Regulamin
-          </a>
-          <a
-            href="mailto:michalskibinski109@gmail.com"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Kontakt
-          </a>
-        </nav>
+  const footerSections: { title: string; links: FooterLink[] }[] = [
+    {
+      title: "O nas",
+      links: [
+        { href: "/about", label: "O projekcie" },
+        { href: "mailto:michalskibinski109@gmail.com", label: "Kontakt" },
+      ],
+    },
+    {
+      title: "Dokumenty",
+      links: [
+        { href: "/privacy", label: "Polityka prywatności" },
+        { href: "/terms-of-service", label: "Regulamin" },
+      ],
+    },
+    {
+      title: "Społeczność",
+      links: [
+        {
+          href: "https://github.com/miskibin/ollama-ui",
+          label: "GitHub",
+          icon: <Github className="w-5 h-5" />,
+        },
+        {
+          href: "https://patronite.pl/sejm-stats",
+          label: "Patronite",
+          icon: <Heart className="w-5 h-5 text-red-600" />,
+        },
+        {
+          href: "https://www.youtube.com/@sejm-stats",
+          label: "YouTube",
+          icon: <Youtube className="w-5 h-5 text-red-600" />,
+        },
+        {
+          href: "https://discord.com/invite/zH2J3z5Wbf",
+          label: "Discord",
+          icon: <FaDiscord className="w-5 h-5 text-blue-600" />,
+        },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="w-full py-12 bg-gray-100 text-gray-800">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {footerSections.map((section) => (
+            <div key={section.title}>
+              <h2 className="text-lg font-semibold mb-4">{section.title}</h2>
+              <ul className="space-y-2">
+                {section.links.map((link) => (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      target={
+                        link.href.startsWith("http") ? "_blank" : undefined
+                      }
+                      rel={
+                        link.href.startsWith("http")
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
+                      className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    >
+                      {link.icon &&
+                        React.cloneElement(link.icon, {
+                          "aria-hidden": "true",
+                        })}
+                      <span>{link.label}</span>
+                      {link.href.startsWith("http") && (
+                        <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-gray-600">
+            © {currentYear} Michał Skibiński. Wszelkie prawa zastrzeżone.
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>powered by</span>
+            <a
+              href="https://sejm-stats.pl"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline flex items-center gap-1"
+            >
+              sejm-stats.pl
+              <ExternalLink className="w-4 h-4" aria-hidden="true" />
+            </a>
+          </div>
+        </div>
       </div>
     </footer>
   );
