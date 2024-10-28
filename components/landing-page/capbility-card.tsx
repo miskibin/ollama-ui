@@ -25,7 +25,7 @@ const getStatusConfig = (status: CapabilityStatus) => {
         icon: Clock,
         iconColor: "text-secondary-foreground",
         bgColor: "bg-secondary",
-        borderColor: "border-secondary",
+        borderColor: "border-foreground/10",
         label: "Wkrótce",
       };
     case "unavailable":

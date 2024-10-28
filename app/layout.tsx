@@ -61,14 +61,6 @@ export const metadata: Metadata = {
     title: "Asystent RP - Inteligentny asystent prawny",
     description:
       "Analizuj polskie prawo i dane Sejmu RP z pomocą sztucznej inteligencji",
-    images: [
-      {
-        url: "og.svg",
-        width: 800,
-        height: 400,
-        alt: "Asystent RP",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -76,12 +68,6 @@ export const metadata: Metadata = {
     description:
       "Analizuj polskie prawo i dane Sejmu RP z pomocą sztucznej inteligencji",
     creator: "@sejm_stats",
-    images: [
-      {
-        url: "og.svg",
-        alt: "Asystent RP",
-      },
-    ],
   },
   robots: {
     index: true,
