@@ -255,11 +255,16 @@ export const useChatLogic = () => {
     console.error("An error occurred:", error);
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
+    const errorSource =
+      error instanceof Error && error.stack
+        ? error.stack.split("\n")[1]?.trim() || "Unknown location"
+        : "Unknown location";
 
     if (error instanceof Error && error.name !== "AbortError") {
       toast({
         title: "Błąd podczas odpowiadania",
-        description: `${error} -  ${errorMessage}`,
+        description: `Location: ${errorSource}
+  Error: ${error} - ${errorMessage}`,
         variant: "destructive",
         duration: 5000,
       });
