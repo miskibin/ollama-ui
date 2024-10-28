@@ -7,9 +7,9 @@ export const config = {
     responseLimit: '10mb',
   },
 };
-
-const MAX_LENGTH = 60000;
-
+// 
+const MAX_LENGTH = 10000 * 4; // 1 token = 4 chars.  10k tokens = 0.0015$ = 0.0060PLN
+// 10 requests = 0.06PLN 
 function trimText(text: string, maxLength: number = MAX_LENGTH): string {
   if (text.length <= maxLength) return text;
   const truncated = text.substring(0, maxLength);
