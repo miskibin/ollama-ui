@@ -79,30 +79,12 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
           <Badge variant="default">Funkcja tylko dla patronów</Badge>
         </div>
 
-        {usage && (
-          <Alert className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="space-y-2">
-                <p>
-                  Wykorzystano {usage.totalUsed} z {usage.totalLimit} wiadomości
-                  dziennie
-                </p>
-                {!usage.isPatron && (
-                  <p>
-                    Wykorzystano {usage.gptUsed} z {usage.gptLimit} wiadomości z
-                    zaawansowanymi modelami
-                  </p>
-                )}
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
         <Select
           onValueChange={setSelectedModel}
           value={selectedModel}
-          disabled={!isPatron && usage?.gptUsed === usage?.gptLimit}
+          disabled={
+            !isPatron && (usage?.gptUsed ?? 0) >= (usage?.gptLimit ?? 0)
+          }
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Wybierz model" />
