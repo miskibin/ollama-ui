@@ -47,10 +47,7 @@ const CapabilityCard: React.FC<CapabilityCardProps> = ({
   const config = getStatusConfig(status);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
+    <div
       className={`h-32 p-4 rounded-lg border-2 ${config.borderColor} ${config.bgColor} backdrop-blur-sm flex flex-col justify-between shadow-sm`}
     >
       <div className="flex items-start justify-between">
@@ -69,7 +66,7 @@ const CapabilityCard: React.FC<CapabilityCardProps> = ({
           {description}
         </p>
       )}
-    </motion.div>
+    </div>
   );
 };
 

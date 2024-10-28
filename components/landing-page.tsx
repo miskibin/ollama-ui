@@ -1,16 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, Search, Database } from "lucide-react";
 import FeatureCard from "./landing-page/featureCard";
 import LoginCard from "./landing-page/login";
 import Footer from "./landing-page/footer";
-import FlowDiagram from "./landing-page/diagram";
-import AboutSection from "./landing-page/about";
-import CapabilitiesSection from "./landing-page/capabilities";
 import Image from "next/image";
 export type AuthProvider = "google" | "discord" | "github";
+
+// Lazy load non-critical sections
+const FlowDiagram = lazy(() => import("./landing-page/diagram"));
+const AboutSection = lazy(() => import("./landing-page/about"));
+const CapabilitiesSection = lazy(() => import("./landing-page/capabilities"));
+
+// Loading fallback component
+const SectionLoader = () => (
+  <div className="w-full h-48 flex items-center justify-center">
+    <div className="animate-pulse w-full max-w-2xl h-32 bg-secondary/20 rounded-lg" />
+  </div>
+);
 
 interface LoginPageProps {
   onOAuthSignIn: (provider: AuthProvider) => void;
@@ -70,7 +79,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <FeatureCard
                 icon={MessageSquare}
                 title="Inteligentna Analiza"
-                description="Zamiast przeszuwania setki aktów, poprostu spytaj"
+                description="Zamiast przeszukiwania setki aktów, poprostu spytaj"
               />
               <FeatureCard
                 icon={Search}
@@ -89,26 +98,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <LoginCard onOAuthSignIn={onOAuthSignIn} />
           </div>
         </div>
-        <CapabilitiesSection />
 
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="grid md:grid-cols-12 gap-8 items-start relative z-0 my-24"
-        >
-          <div className="md:col-span-7">
-            <AboutSection />
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="md:col-span-5"
-          >
-            <FlowDiagram />
-          </motion.div>
-        </motion.div>
+        <Suspense fallback={<SectionLoader />}>
+          <CapabilitiesSection />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <FlowDiagram />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <AboutSection />
+        </Suspense>
       </div>
 
       <Footer />
