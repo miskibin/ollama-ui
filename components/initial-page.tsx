@@ -18,6 +18,7 @@ import {
   Volume2,
   Camera,
   Car,
+  Angry,
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -59,10 +60,10 @@ const conversationStarters = [
       "W jakich sytuacjach prawo pozwala na samoobronę? Jakie są granice obrony koniecznej?",
   },
   {
-    icon: <Building2 className="text-amber-600" size={24} />,
-    text: "Głośni sąsiedzi",
+    icon: <Angry className="text-amber-600" size={24} />,
+    text: "Przemoc w rodzinie",
     action:
-      "Co można zrobić z hałasującymi sąsiadami? Jakie przepisy regulują ciszę nocną w bloku?",
+      "Jakie są kary za przemoc w rodzinie? Jakie są prawa ofiar przemocy domowej?",
   },
   {
     icon: <Camera className="text-blue-400" size={24} />,
@@ -78,8 +79,7 @@ const conversationStarters = [
   {
     icon: <PiggyBank className="text-purple-500" size={24} />,
     text: "Wysokość alimentów",
-    action:
-      "Jakie są zasady naliczania alimentów w Polsce?",
+    action: "Jakie są zasady naliczania alimentów w Polsce?",
   },
   {
     icon: <Car className="text-cyan-500" size={24} />,
