@@ -72,4 +72,4 @@ W przyszłości będę umiał rozmawiać również o:
 - 📊 i innych danych
 
 
-> **Wskazówka**: Jeśli chcesz porozmawiać o czymś innym wyłącz rozszerzenie sejm-stats.`;
+> **Wskazówka**: Jeśli uważasz, że twoje pytanie dotyczy prawa, kliknij 🔁, lub użyj lepszego modelu.`

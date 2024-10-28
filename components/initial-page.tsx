@@ -1,72 +1,53 @@
 import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  FileText,
+  Map,
+  Ruler,
+  Cigarette,
+  Trees,
+  CarFront,
+  Skull,
   Scale,
-  Building,
-  FileSearch,
-  Briefcase,
   Home,
-  Heart,
-  Shield,
-  Wine,
-  Leaf,
-  Euro,
-  Users,
 } from "lucide-react";
-import Link from "next/link";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 const conversationStarters = [
   {
-    icon: <Wine className="text-purple-500" size={24} />,
-    text: "Sprzedaż alkoholu",
-    action: "Jakie są aktualne przepisy regulujące sprzedaż alkoholu?",
+    icon: <Map className="text-green-600" size={24} />,
+    text: "Prawo własności gruntów", // TESTED
+    action:
+      "Jakie są przepisy dotyczące przekształcenia gruntów rolnych? Wyjaśnij procedurę zmiany przeznaczenia gruntu.",
   },
   {
-    icon: <Shield className="text-red-700" size={24} />,
-    text: "Broń palna",
-    action: "Pokaż obecne przepisy dotyczące posiadania broni palnej",
+    icon: <Ruler className="text-blue-500" size={24} />,
+    text: "Odległość domu od płotu", // TESTED
+    action:
+      "Jakie są wymagane odległości budynku mieszkalnego od granicy działki według prawa budowlanego?",
   },
   {
-    icon: <Home className="text-cyan-600" size={24} />,
-    text: "Eksmisja lokatora",
-    action: "Jakie przepisy regulują eksmisję lokatora z mieszkania?",
+    icon: <Cigarette className="text-gray-500" size={24} />,
+    text: "Palenie w miejscach publicznych", // TESTED
+    action:
+      "Gdzie według prawa można palić papierosy? Jakie są kary za palenie w miejscach niedozwolonych?",
   },
   {
-    icon: <Briefcase className="text-gray-500" size={24} />,
-    text: "Zwolnienie z pracy",
-    action: "Jakie są przepisy dotyczące zwolnienia pracownika?",
+    icon: <Trees className="text-green-700" size={24} />,
+    text: "Wycinka drzew - przepisy", //TESTED
+    action:
+      "Jakie są aktualne przepisy dotyczące wycinki drzew na własnej działce? Kiedy potrzebne jest zezwolenie?",
   },
   {
-    icon: <Euro className="text-yellow-600" size={24} />,
-    text: "Dziedziczenie",
-    action: "Pokaż aktualne przepisy o dziedziczeniu majątku",
+    icon: <CarFront className="text-red-600" size={24} />,
+    text: "Import samochodów",  // TESTED
+    action:
+      "Jakie przepisy regulują import samochodów do Polski? Jakie są wymogi celne i techniczne?",
   },
   {
-    icon: <Users className="text-blue-500" size={24} />,
-    text: "Rozwód",
-    action: "Jakie są obecne przepisy regulujące rozwód?",
-  },
-  {
-    icon: <Building className="text-amber-600" size={24} />,
-    text: "Budowa domu",
-    action: "Jakie przepisy regulują budowę domu jednorodzinnego w polsce?",
-  },
-  {
-    icon: <FileSearch className="text-indigo-500" size={24} />,
-    text: "Mandat drogowy",
-    action: "Pokaż aktualne przepisy dotyczące mandatów drogowych",
-  },
-  {
-    icon: <Leaf className="text-green-600" size={24} />,
-    text: "Marihuana",
-    action: "Jakie są obecne przepisy dotyczące marihuany?",
-  },
-  {
-    icon: <FileText className="text-red-500" size={24} />,
-    text: "Przemoc domowa",
-    action: "Pokaż obecne przepisy dotyczące przemocy domowej",
+    icon: <Scale className="text-indigo-600" size={24} />,
+    text: "Prawo do samoobrony", // TESTED
+    action:
+      "W jakich sytuacjach prawo pozwala na samoobronę? Jakie są granice obrony koniecznej?",
   },
 ];
 
@@ -88,36 +69,34 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
     return 6;
   }, [isPhone, isMediumScreen]);
 
-  const randomStarters = useMemo(() => {
-    return [...conversationStarters]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, starterCount);
+  const displayStarters = useMemo(() => {
+    return conversationStarters.slice(0, starterCount);
   }, [starterCount]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full p-4 sm:p-6">
-      <div className="mb-6 sm:mb-8 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
+      <div className="mb-8 sm:mb-10 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-3">
           Twój asystent prawny
         </h2>
-        <p className="text-sm text-muted-foreground mb-2">
-          Dowiedz się więcej o aktualnie obowiązujących przepisach
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Poznaj swoje prawa i aktualne przepisy
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
-        {randomStarters.map((starter, index) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full max-w-4xl">
+        {displayStarters.map((starter, index) => (
           <Button
             key={index}
             variant="outline"
-            className="flex flex-col items-center justify-center p-4 h-auto w-full text-center hover:bg-primary/10 transition-colors duration-200 border-2 border-border rounded-lg shadow-sm"
+            className="flex flex-col items-center justify-center p-6 h-auto w-full hover:scale-105 transition-transform duration-200 bg-card hover:bg-accent/10 border-2"
             onClick={() => onStarterClick(starter.action)}
           >
-            <span className="flex-shrink-0 mb-3 p-2 bg-background rounded-full shadow-sm">
+            <span className="flex-shrink-0 mb-4 p-3">
               {React.cloneElement(starter.icon, {
-                size: 32,
+                size: 28,
               })}
             </span>
-            <span className="text-foreground text-sm font-medium leading-tight">
+            <span className="text-foreground text-sm font-semibold">
               {starter.text}
             </span>
           </Button>
