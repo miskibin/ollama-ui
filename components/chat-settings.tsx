@@ -122,19 +122,6 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
             ))}
           </SelectContent>
         </Select>
-
-        {!isPatron && (
-          <Button
-            variant="outline"
-            className="w-full mt-4"
-            onClick={() =>
-              window.open("https://patronite.pl/sejm-stats", "_blank")
-            }
-          >
-            <Crown className="w-4 h-4 mr-2" />
-            Zostań patronem
-          </Button>
-        )}
       </div>
 
       <Popover>
