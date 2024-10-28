@@ -20,7 +20,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Asystent RP",
   description:
-    "Inteligentny asystent do analizy danych Sejmu Rzeczypospolitej Polskiej",
+    "Inteligentny asystent do analizy polskiego prawa oraz danych Sejmu Rzeczypospolitej Polskiej",
   keywords: [
     "Asystent",
     "RP",
@@ -30,8 +30,67 @@ export const metadata: Metadata = {
     "AI",
     "Analiza danych",
     "Polityka",
+    "Prawo",
+    "Ustawy",
+    "Akty prawne",
+    "Polski parlament",
+    "Sztuczna inteligencja",
+    "Analiza prawa",
+    "Legislacja",
+    "Interpelacje poselskie",
+    "Głosowania sejmowe",
+    "Komisje parlamentarne",
   ],
-  authors: [{ name: "Michał Skibiński" }],
+  authors: [
+    {
+      name: "Michał Skibiński",
+      url: "https://github.com/miskibin",
+    },
+  ],
+  creator: "Michał Skibiński",
+  publisher: "sejm-stats.pl",
+  applicationName: "Asystent RP",
+  generator: "Next.js",
+  referrer: "origin-when-cross-origin",
+  category: "legal",
+  openGraph: {
+    type: "website",
+    locale: "pl_PL",
+    url: "https://chat.sejm-stats.pl",
+    siteName: "Asystent RP",
+    title: "Asystent RP - Inteligentny asystent prawny",
+    description:
+      "Analizuj polskie prawo i dane Sejmu RP z pomocą sztucznej inteligencji",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Asystent RP - Inteligentny asystent prawny",
+    description:
+      "Analizuj polskie prawo i dane Sejmu RP z pomocą sztucznej inteligencji",
+    creator: "@sejm_stats",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://chat.sejm-stats.pl",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Asystent RP",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({

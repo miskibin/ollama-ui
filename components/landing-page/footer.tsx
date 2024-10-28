@@ -37,24 +37,24 @@ export default function Footer() {
         {
           href: "https://patronite.pl/sejm-stats",
           label: "Patronite",
-          icon: <Heart className="w-5 h-5 text-red-600" />,
+          icon: <Heart className="w-5 h-5 text-destructive" />,
         },
         {
           href: "https://www.youtube.com/@sejm-stats",
           label: "YouTube",
-          icon: <Youtube className="w-5 h-5 text-red-600" />,
+          icon: <Youtube className="w-5 h-5 text-destructive" />,
         },
         {
           href: "https://discord.com/invite/zH2J3z5Wbf",
           label: "Discord",
-          icon: <FaDiscord className="w-5 h-5 text-blue-600" />,
+          icon: <FaDiscord className="w-5 h-5 text-primary" />,
         },
       ],
     },
   ];
 
   return (
-    <footer className="w-full py-12 bg-gray-100 text-gray-800">
+    <footer className="w-full py-12 bg-card text-foreground">
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {footerSections.map((section) => (
@@ -73,7 +73,7 @@ export default function Footer() {
                           ? "noopener noreferrer"
                           : undefined
                       }
-                      className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                      className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {link.icon &&
                         React.cloneElement(link.icon, {
@@ -90,17 +90,17 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-gray-600">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-muted-foreground">
             © {currentYear} Michał Skibiński. Wszelkie prawa zastrzeżone.
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>powered by</span>
             <a
               href="https://sejm-stats.pl"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline flex items-center gap-1"
+              className="text-primary hover:underline flex items-center gap-1"
             >
               sejm-stats.pl
               <ExternalLink className="w-4 h-4" aria-hidden="true" />
