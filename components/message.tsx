@@ -12,6 +12,7 @@ import {
   Trash2,
   FileText,
   Download,
+  FastForward,
 } from "lucide-react";
 import { useChatContext } from "@/app/ChatContext";
 import { Message } from "@/lib/types";
@@ -122,8 +123,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           className="ml-2 gap-2"
           disabled={isLoading}
         >
-          <Download className="h-4 w-4" />
-          Przeczytaj i odpowiedz
+          <FastForward className="h-4 w-4" />
+          Kontynuuj odpowiedź
         </Button>
       </div>
     );

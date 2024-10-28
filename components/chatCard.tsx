@@ -151,8 +151,8 @@ export function ChatCard() {
             <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p>
-                Asystent może popełniać błędy. Aby je zminimalizować, korzystaj
-                z lepszych modeli.
+                Asystent może popełniać błędy. Aby je zminimalizować, wybierz
+                lepszy modeli.
               </p>
             </div>
           </div>

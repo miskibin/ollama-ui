@@ -6,48 +6,97 @@ import {
   Cigarette,
   Trees,
   CarFront,
-  Skull,
   Scale,
-  Home,
+  Baby,
+  Building2,
+  Wifi,
+  DollarSign,
+  PiggyBank,
+  Dog,
+  Bike,
+  Heart,
+  Volume2,
+  Camera,
+  Car,
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 const conversationStarters = [
   {
     icon: <Map className="text-green-600" size={24} />,
-    text: "Prawo własności gruntów", // TESTED
+    text: "Prawo własności gruntów",
     action:
       "Jakie są przepisy dotyczące przekształcenia gruntów rolnych? Wyjaśnij procedurę zmiany przeznaczenia gruntu.",
   },
   {
     icon: <Ruler className="text-blue-500" size={24} />,
-    text: "Odległość domu od płotu", // TESTED
+    text: "Odległość domu od płotu",
     action:
       "Jakie są wymagane odległości budynku mieszkalnego od granicy działki według prawa budowlanego?",
   },
   {
     icon: <Cigarette className="text-gray-500" size={24} />,
-    text: "Palenie w miejscach publicznych", // TESTED
+    text: "Palenie w miejscach publicznych",
     action:
       "Gdzie według prawa można palić papierosy? Jakie są kary za palenie w miejscach niedozwolonych?",
   },
   {
     icon: <Trees className="text-green-700" size={24} />,
-    text: "Wycinka drzew - przepisy", //TESTED
+    text: "Wycinka drzew - przepisy",
     action:
       "Jakie są aktualne przepisy dotyczące wycinki drzew na własnej działce? Kiedy potrzebne jest zezwolenie?",
   },
   {
     icon: <CarFront className="text-red-600" size={24} />,
-    text: "Import samochodów",  // TESTED
+    text: "Import samochodów",
     action:
       "Jakie przepisy regulują import samochodów do Polski? Jakie są wymogi celne i techniczne?",
   },
   {
     icon: <Scale className="text-indigo-600" size={24} />,
-    text: "Prawo do samoobrony", // TESTED
+    text: "Prawo do samoobrony",
     action:
       "W jakich sytuacjach prawo pozwala na samoobronę? Jakie są granice obrony koniecznej?",
+  },
+  {
+    icon: <Building2 className="text-amber-600" size={24} />,
+    text: "Głośni sąsiedzi",
+    action:
+      "Co można zrobić z hałasującymi sąsiadami? Jakie przepisy regulują ciszę nocną w bloku?",
+  },
+  {
+    icon: <Camera className="text-blue-400" size={24} />,
+    text: "Nagrywanie przez policję",
+    action: "Czy Policja może mnie nagrywać bez mojej zgody?",
+  },
+  {
+    icon: <DollarSign className="text-green-500" size={24} />,
+    text: "Dziedziczenie długów",
+    action:
+      "Czy trzeba spłacać długi po zmarłych rodzicach? Jak się bronić przed dziedziczeniem długów?",
+  },
+  {
+    icon: <PiggyBank className="text-purple-500" size={24} />,
+    text: "Wysokość alimentów",
+    action:
+      "Jakie są zasady naliczania alimentów w Polsce?",
+  },
+  {
+    icon: <Car className="text-cyan-500" size={24} />,
+    text: "Wyprzedzanie na autostradzie",
+    action: "Czy można wyprzedzać prawym pasem na autostradach?",
+  },
+  {
+    icon: <Heart className="text-red-500" size={24} />,
+    text: "Związki partnerskie",
+    action:
+      "Jakie prawa mają osoby w nieformalnych związkach? Co ze spadkiem i majątkiem?",
+  },
+  {
+    icon: <Volume2 className="text-orange-500" size={24} />,
+    text: "Imprezy w ogrodzie",
+    action:
+      "Do której godziny można organizować imprezy w ogrodzie? Jakie są przepisy o głośnej muzyce?",
   },
 ];
 
@@ -70,7 +119,8 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
   }, [isPhone, isMediumScreen]);
 
   const displayStarters = useMemo(() => {
-    return conversationStarters.slice(0, starterCount);
+    const shuffled = [...conversationStarters].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, starterCount);
   }, [starterCount]);
 
   return (
@@ -91,7 +141,7 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
             className="flex flex-col items-center justify-center p-4 sm:p-6 h-auto w-full hover:scale-105 transition-transform duration-200 bg-card hover:bg-accent/10 border-2"
             onClick={() => onStarterClick(starter.action)}
           >
-            <span className="flex-shrink-0 mb-4 p-2  sm:p-3">
+            <span className="flex-shrink-0 mb-4 p-2 sm:p-3">
               {React.cloneElement(starter.icon, {
                 size: 28,
               })}
