@@ -22,6 +22,9 @@ const nextConfig = {
         ]
     },
     experimental: {
+        serverActions: {
+            bodySizeLimit: '6mb',
+        },
         serverComponentsExternalPackages: ["pdf-parse"],
     },
 };

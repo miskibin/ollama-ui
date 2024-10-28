@@ -1,40 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 import pdf from "pdf-parse";
 
-export const config = {
-  api: {
-    bodyParser: false,
-    responseLimit: '10mb',
-  },
-};
-// 
 const MAX_LENGTH = 10000 * 4; // 1 token = 4 chars.  10k tokens = 0.0015$ = 0.0060PLN
 // 10 requests = 0.06PLN 
 function trimText(text: string, maxLength: number = MAX_LENGTH): string {
   if (text.length <= maxLength) return text;
+
+  // Find the last complete sentence within the limit
   const truncated = text.substring(0, maxLength);
   const lastPeriod = truncated.lastIndexOf(".");
   const lastQuestion = truncated.lastIndexOf("?");
   const lastExclamation = truncated.lastIndexOf("!");
-  const lastSentenceEnd = Math.max(lastPeriod, lastQuestion, lastExclamation);
-  return lastSentenceEnd === -1 
-    ? truncated.substring(0, truncated.lastIndexOf(" ") || maxLength)
-    : truncated.substring(0, lastSentenceEnd + 1);
-}
 
+  // Find the last sentence ending
+  const lastSentenceEnd = Math.max(lastPeriod, lastQuestion, lastExclamation);
+
+  if (lastSentenceEnd === -1) {
+    // If no sentence ending found, cut at the last space
+    const lastSpace = truncated.lastIndexOf(" ");
+    return lastSpace === -1 ? truncated : truncated.substring(0, lastSpace);
+  }
+
+  return truncated.substring(0, lastSentenceEnd + 1);
+}
 function formatToMarkdown(text: string): string {
+  // First trim the text if it's too long
   const trimmedText = trimText(text);
+
+  // Remove multiple consecutive dots (keeping ellipsis if exactly three dots)
   const cleanedText = trimmedText.replace(/\.{4,}/g, ".");
+
   const lines = cleanedText.split("\n").map((line) => line.trim());
   let markdown = "";
   let inList = false;
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i].replace(/\.{4,}/g, ".");
+    let line = lines[i].replace(/\.{4,}/g, "."); // Also clean each line individually
+    // Handle headers
     if (line.match(/^[A-Z][\w\s]{0,20}$/)) {
       markdown += `\n## ${line}\n\n`;
       continue;
     }
+    // Handle bullet points
     if (line.startsWith("•") || line.startsWith("-")) {
       if (!inList) {
         markdown += "\n";
@@ -43,6 +50,7 @@ function formatToMarkdown(text: string): string {
       markdown += `${line}\n`;
       continue;
     }
+    // Handle numbered lists
     if (line.match(/^\d+\./)) {
       if (!inList) {
         markdown += "\n";
@@ -51,10 +59,17 @@ function formatToMarkdown(text: string): string {
       markdown += `${line}\n`;
       continue;
     }
-    if (inList && !line.startsWith("•") && !line.startsWith("-") && !line.match(/^\d+\./)) {
+    // End list if encountered non-list item
+    if (
+      inList &&
+      !line.startsWith("•") &&
+      !line.startsWith("-") &&
+      !line.match(/^\d+\./)
+    ) {
       markdown += "\n";
       inList = false;
     }
+    // Handle paragraphs
     if (line.length > 0) {
       markdown += `${line} `;
     } else if (markdown.slice(-2) !== "\n\n") {
@@ -68,17 +83,8 @@ function formatToMarkdown(text: string): string {
     .replace(/\.{4,}/g, ".")
     .trim();
 }
-
 export async function POST(request: NextRequest) {
   try {
-    // Check content length before processing
-    const contentLength = request.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > 50 * 1024 * 1024) { // 50MB limit
-      return NextResponse.json({ 
-        error: "File too large. Maximum size is 50MB." 
-      }, { status: 413 });
-    }
-
     const formData = await request.formData();
     const file = formData.get("pdf") as File | null;
 
@@ -86,40 +92,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    if (file.size > 50 * 1024 * 1024) { // Double-check size after getting the file
-      return NextResponse.json({ 
-        error: "File too large. Maximum size is 50MB." 
-      }, { status: 413 });
-    }
-
-    console.log("Processing file:", file.name, "Size:", file.size, "bytes");
+    console.log("File received:", file.name, "Size:", file.size, "bytes");
 
     const arrayBuffer = await file.arrayBuffer();
+    console.log("ArrayBuffer size:", arrayBuffer.byteLength, "bytes");
+
     const uint8Array = new Uint8Array(arrayBuffer);
-    
+    console.log("Uint8Array length:", uint8Array.length);
+
     try {
       const data = await pdf(uint8Array as Buffer);
+      console.log("PDF parsed successfully. Text length:", data.text.length);
+
       const markdown = formatToMarkdown(data.text);
-      
+      const wasTrimmed = data.text.length > MAX_LENGTH;
+
       return NextResponse.json({
         markdown,
-        wasTrimmed: data.text.length > MAX_LENGTH,
+        wasTrimmed,
         originalLength: data.text.length,
         trimmedLength: markdown.length,
-        fileName: file.name,
       });
     } catch (pdfError) {
-      console.error("PDF parsing error:", pdfError);
-      return NextResponse.json({ 
-        error: "Failed to parse PDF content",
-        details: pdfError instanceof Error ? pdfError.message : 'Unknown error'
-      }, { status: 422 });
+      return NextResponse.json(
+        { error: "Failed to parse PDF content" },
+        { status: 422 }
+      );
     }
   } catch (error) {
-    console.error("Request processing error:", error);
-    return NextResponse.json({ 
-      error: "Failed to process request",
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error("Error processing request:", error);
+    return NextResponse.json(
+      { error: "Failed to process request" },
+      { status: 500 }
+    );
   }
 }
