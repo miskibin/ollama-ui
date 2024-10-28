@@ -88,10 +88,10 @@ const InitialChatContent: React.FC<InitialChatContentProps> = ({
           <Button
             key={index}
             variant="outline"
-            className="flex flex-col items-center justify-center p-6 h-auto w-full hover:scale-105 transition-transform duration-200 bg-card hover:bg-accent/10 border-2"
+            className="flex flex-col items-center justify-center p-4 sm:p-6 h-auto w-full hover:scale-105 transition-transform duration-200 bg-card hover:bg-accent/10 border-2"
             onClick={() => onStarterClick(starter.action)}
           >
-            <span className="flex-shrink-0 mb-4 p-3">
+            <span className="flex-shrink-0 mb-4 p-2  sm:p-3">
               {React.cloneElement(starter.icon, {
                 size: 28,
               })}
