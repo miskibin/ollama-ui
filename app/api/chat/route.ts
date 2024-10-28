@@ -32,6 +32,16 @@ function createLLM(modelName: string, options: any) {
 
 export async function POST(req: NextRequest) {
   try {
+    const referer = req.headers.get("referer");
+    const expectedReferer = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+
+    if (!referer || !referer.startsWith(expectedReferer || "")) {
+      return NextResponse.json(
+        { error: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
+
     const { messages, systemPrompt, enabledPluginIds, modelName, options } =
       await req.json();
 
