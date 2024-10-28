@@ -6,6 +6,7 @@ import { checkEasterEggs } from "@/lib/utils";
 import { PROMPTS, SummarizePrompt } from "@/lib/prompts";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useToast } from "./use-toast";
+import { useMessageLimits } from "@/lib/prompt-tracking";
 
 type ProgressUpdate = {
   type: "status" | "tool_execution" | "response" | "error";
@@ -27,6 +28,7 @@ export const useChatLogic = () => {
     input,
     setInput,
     selectedModel,
+    setSelectedModel,
     plugins,
     clearMemory,
   } = useChatStore();
@@ -35,53 +37,35 @@ export const useChatLogic = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const checkRateLimit = async (): Promise<boolean> => {
-    if (process.env.NODE_ENV === "development") return true;
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const { data, error } = await supabase.rpc("increment_rate_limit", {
-        p_user_id: user?.id,
-        p_limit_type: "chat_submission",
-      });
-
-      if (error) throw error;
-
-      if (data > DAILY_CHAT_LIMIT) {
-        toast({
-          title: "Osiągnięto dzienny limit",
-          description: `Osiągnąłeś limit ${DAILY_CHAT_LIMIT} wiadomości na dzień. 
-          Ponieważ każde zapytanie mnie kosztuje, muszę ograniczyć liczbę zapytań, które mogę obsłużyć.
-          `,
-          variant: "destructive",
-          duration: 5000,
-        });
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error checking rate limit:", error);
-      toast({
-        title: "Błąd",
-        description:
-          "Nie udało się sprawdzić limitu. Spróbuj ponownie później.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return false;
-    }
-  };
+  const { checkMessageLimits } = useMessageLimits(selectedModel);
 
   const handleSubmit = async (e: React.FormEvent, text?: string) => {
     e.preventDefault();
     const inputText = text || input;
     if (!inputText.trim()) return;
 
-    // Check rate limit before proceeding
-    const canProceed = await checkRateLimit();
-    if (!canProceed) return;
+    const isPaidModel = !selectedModel.includes("free");
+    const { canSendMessage, shouldSwitchModel, message } =
+      await checkMessageLimits(isPaidModel);
+
+    if (!canSendMessage) {
+      toast({
+        title: "Limit wiadomości",
+        description: message,
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (shouldSwitchModel) {
+      setSelectedModel("meta-llama/Llama-Vision-Free");
+      toast({
+        title: "Limit wiadomości osiągnięty",
+        description: message,
+        duration: 5000,
+      });
+    }
 
     const userMessage: Message = {
       id: generateUniqueId(),

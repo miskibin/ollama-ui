@@ -76,7 +76,7 @@ export const useChatStore = create<ChatState>()(
           description: "",
         },
       ],
-      selectedModel: "meta-llama/Llama-Vision-Free",
+      selectedModel: "gpt-4o-mini",
 
       addMessage: (message) =>
         set((state) => ({

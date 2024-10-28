@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Thermometer,
   BarChart,
@@ -8,6 +7,8 @@ import {
   Zap,
   Sprout,
   Settings2,
+  AlertCircle,
+  Crown,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -17,7 +18,6 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import { useChatContext } from "@/app/ChatContext";
 import { LucideIcon } from "lucide-react";
 import {
   Select,
@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/select";
 import { useChatStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
+import { useMessageLimits } from "@/lib/prompt-tracking";
+import { Alert, AlertDescription } from "./ui/alert";
 
 const LabelWithIcon = ({
   icon: Icon,
@@ -49,44 +51,67 @@ const LabelWithIcon = ({
 
 const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
   const {
-    systemPrompt,
-    setSystemPrompt,
     options,
     setOptions,
     models,
     selectedModel,
     setSelectedModel,
-    patrons,
+    messages,
   } = useChatStore();
+  const { getUsageStats } = useMessageLimits(selectedModel);
+  const [usage, setUsage] = useState<{
+    totalUsed: number;
+    gptUsed: number;
+    totalLimit: number;
+    gptLimit: number;
+    isPatron: boolean;
+  } | null>(null);
 
-  const handleModelChange = (value: string) => {
-    if (isPatron === true) {
-      setSelectedModel(value);
-    }
-  };
+  useEffect(() => {
+    getUsageStats().then(setUsage);
+  }, [messages.length]); // Only update when messages count changes
 
   return (
     <div className="space-y-8 pt-8">
       <div>
         <div className="flex items-center justify-between mb-2">
           <LabelWithIcon icon={Zap} text="Model" />
-          <Badge variant="default">Tylko dla patronów</Badge>
+          <Badge variant="default">
+            {isPatron ? "Patron" : "Darmowe konto"}
+          </Badge>
         </div>
+
+        {usage && (
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <p>
+                  Wykorzystano {usage.totalUsed} z {usage.totalLimit} wiadomości
+                  dziennie
+                </p>
+                {!usage.isPatron && (
+                  <p>
+                    Wykorzystano {usage.gptUsed} z {usage.gptLimit} wiadomości z
+                    zaawansowanymi modelami
+                  </p>
+                )}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Select
-          onValueChange={handleModelChange}
+          onValueChange={setSelectedModel}
           value={selectedModel}
-          disabled={!isPatron}
+          disabled={!isPatron && usage?.gptUsed === usage?.gptLimit}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Wybierz model" />
           </SelectTrigger>
           <SelectContent>
             {models.map((model) => (
-              <SelectItem
-                key={model.name}
-                value={model.name}
-                className="flex justify-between"
-              >
+              <SelectItem key={model.name} value={model.name}>
                 <span>{model.short}</span>
                 {model.description && (
                   <Badge variant="secondary" className="ml-2">
@@ -97,6 +122,19 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
             ))}
           </SelectContent>
         </Select>
+
+        {!isPatron && (
+          <Button
+            variant="outline"
+            className="w-full mt-4"
+            onClick={() =>
+              window.open("https://patronite.pl/sejm-stats", "_blank")
+            }
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            Zostań patronem
+          </Button>
+        )}
       </div>
 
       <Popover>
@@ -139,6 +177,7 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
                 }
               />
             </div>
+
             <div>
               <LabelWithIcon
                 icon={Thermometer}
@@ -155,6 +194,7 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
                 }
               />
             </div>
+
             <div className="flex items-center justify-between">
               <LabelWithIcon icon={Zap} text="Odpowiadaj na bieżąco" />
               <Switch
@@ -210,16 +250,6 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
                 placeholder="Default: 4096"
               />
             </div>
-
-            {/* <div>
-              <LabelWithIcon icon={Zap} text="Prompt systemowy" />
-              <Textarea
-                placeholder="You are experienced software engineer..."
-                value={systemPrompt}
-                onChange={(e) => setSystemPrompt(e.target.value)}
-                className="w-full p-2 rounded border h-20 resize-none text-sm"
-              />
-            </div> */}
           </div>
         </PopoverContent>
       </Popover>
