@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import pdf from "pdf-parse";
 
 const MAX_LENGTH = 10000 * 4; // 1 token = 4 chars.  10k tokens = 0.0015$ = 0.0060PLN
-// 10 requests = 0.06PLN 
+// 10 requests = 0.06PLN
 function trimText(text: string, maxLength: number = MAX_LENGTH): string {
   if (text.length <= maxLength) return text;
 
@@ -83,25 +83,46 @@ function formatToMarkdown(text: string): string {
     .replace(/\.{4,}/g, ".")
     .trim();
 }
+
+async function getPDFContent(source: File | string): Promise<Uint8Array> {
+  if (source instanceof File) {
+    return new Uint8Array(await source.arrayBuffer());
+  } else {
+    // It's a URL
+    const response = await fetch(source);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch PDF from URL: ${response.status}`);
+    }
+    return new Uint8Array(await response.arrayBuffer());
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("pdf") as File | null;
+    const pdfUrl = formData.get("url") as string | null;
 
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    if (!file && !pdfUrl) {
+      return NextResponse.json(
+        { error: "Neither file nor URL provided" },
+        { status: 400 }
+      );
     }
 
-    console.log("File received:", file.name, "Size:", file.size, "bytes");
-
-    const arrayBuffer = await file.arrayBuffer();
-    console.log("ArrayBuffer size:", arrayBuffer.byteLength, "bytes");
-
-    const uint8Array = new Uint8Array(arrayBuffer);
-    console.log("Uint8Array length:", uint8Array.length);
+    let pdfContent: Uint8Array;
+    try {
+      pdfContent = await getPDFContent(file || pdfUrl!);
+      console.log("PDF content size:", pdfContent.length, "bytes");
+    } catch (fetchError) {
+      return NextResponse.json(
+        { error: "Failed to get PDF content" },
+        { status: 422 }
+      );
+    }
 
     try {
-      const data = await pdf(uint8Array as Buffer);
+      const data = await pdf(pdfContent as Buffer);
       console.log("PDF parsed successfully. Text length:", data.text.length);
 
       const markdown = formatToMarkdown(data.text);

@@ -36,6 +36,7 @@ export const useChatLogic = () => {
   const [status, setStatus] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const checkRateLimit = async (): Promise<boolean> => {
+    if (process.env.NODE_ENV === "development") return true;
     try {
       const {
         data: { user },
@@ -279,19 +280,8 @@ export const useChatLogic = () => {
     setStatus(null);
 
     try {
-      const pdfResponse = await fetch(pdfUrl);
-      if (!pdfResponse.ok) {
-        throw new Error(
-          `Failed to download PDF. HTTP status: ${pdfResponse.status}`
-        );
-      }
-
-      const arrayBuffer = await pdfResponse.arrayBuffer();
       const formData = new FormData();
-      formData.append(
-        "pdf",
-        new Blob([arrayBuffer], { type: "application/pdf" })
-      );
+      formData.append("url", pdfUrl);
 
       const response = await fetch("/api/parse-pdf", {
         method: "POST",
@@ -299,7 +289,10 @@ export const useChatLogic = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text().catch(() => "Unknown error");
+        throw new Error(
+          `Failed to process PDF. Status: ${response.status}. ${errorText}`
+        );
       }
 
       const data = await response.json();
@@ -321,8 +314,9 @@ export const useChatLogic = () => {
           },
         ],
       };
-      console.log(userMessage);
+
       addMessage(userMessage);
+
       if (summary) {
         const userMessage: Message = {
           id: generateUniqueId(),
@@ -335,7 +329,11 @@ export const useChatLogic = () => {
         await getResponse([...messages, userMessage], true);
       }
     } catch (error) {
-      handleError(error);
+      const errorMessage =
+        error instanceof Error
+          ? `PDF processing failed: ${error.message}`
+          : "Failed to process PDF";
+      handleError(new Error(errorMessage));
     } finally {
       setIsLoading(false);
       setStatus(null);
