@@ -152,7 +152,7 @@ export function ChatCard() {
             <div className="space-y-1">
               <p>
                 Asystent może popełniać błędy. Aby je zminimalizować, wybierz
-                lepszy modeli.
+                lepszy model.
               </p>
             </div>
           </div>
