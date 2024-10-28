@@ -76,9 +76,7 @@ const ChatSettings = ({ isPatron }: { isPatron: boolean }) => {
       <div>
         <div className="flex items-center justify-between mb-2">
           <LabelWithIcon icon={Zap} text="Model" />
-          <Badge variant="default">
-            {isPatron ? "Patron" : "Darmowe konto"}
-          </Badge>
+          <Badge variant="default">Funkcja tylko dla patronów</Badge>
         </div>
 
         {usage && (
