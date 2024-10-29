@@ -28,11 +28,6 @@ Utwórz plik `.env.local` w głównym katalogu projektu:
 
 ```env
 TOGETHER_API_KEY=           # Klucz API do Together.ai
-AUTH0_SECRET=              # Secret dla Auth0
-AUTH0_BASE_URL=            # URL Twojej aplikacji
-AUTH0_ISSUER_BASE_URL=     # URL wydawcy Auth0
-AUTH0_CLIENT_ID=           # ID klienta Auth0
-AUTH0_CLIENT_SECRET=       # Secret klienta Auth0
 PATRONITE_API_KEY=         # Klucz API Patronite (opcjonalnie)
 PATRONITE_API_URL=         # URL API Patronite (opcjonalnie)
 ```
