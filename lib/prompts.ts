@@ -19,7 +19,6 @@ export const PROMPTS = {
     Keyword or short phrase (in Polish):`),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
-      System: {systemPrompt}
       Given:
       - User Question: {query}
       - Last Assistant Response: {previousResponse}
@@ -33,7 +32,6 @@ export const PROMPTS = {
       RELEVANT: [YES or NO]
       REASON: [single clear explanation why]`),
   initialToolRelevance: PromptTemplate.fromTemplate(`
-      System: {systemPrompt}
       Given:
       - User Question: {query}
       - Tool Purpose: {toolDescription}
@@ -71,7 +69,7 @@ export const SummarizePromptPlaceholder = `Streść mi to`;
 export const ContinuePromptPlaceholder = `Kontynuuj`;
 
 export const FirstIrrelevantUserQuestion = `
-Przepraszam Aktualnie potrafię odpowiadać tylko na pytania dotyczące **obowiązujących aktów prawnych** znajdujących się w [Monitorze Polskim](https://monitorpolski.gov.pl/MP)
+Przepraszam Aktualnie potrafię odpowiadać tylko na pytania dotyczące **obowiązujących aktów prawnych** znajdujących się w [Monitorze Polskim](https://monitorpolski.gov.pl/MP) oraz [Dzienniku ustaw](https://monitorpolski.gov.pl/MP)
 
 ---
 

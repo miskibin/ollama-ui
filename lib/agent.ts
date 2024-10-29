@@ -47,14 +47,12 @@ export class AgentRP {
       prompt = await PROMPTS.initialToolRelevance.format({
         query,
         toolDescription: tool.description,
-        systemPrompt: messages[0].content,
       });
     } else {
       prompt = await PROMPTS.analyzeToolRelevance.format({
         query,
         toolDescription: tool.description,
         previousResponse: previousResponse.slice(0, 900), // Limit context size
-        systemPrompt: messages[0].content,
       });
     }
     this.logger.debug(prompt);
