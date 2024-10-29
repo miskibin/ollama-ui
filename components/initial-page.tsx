@@ -21,6 +21,7 @@ import {
   Angry,
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { FaWater } from "react-icons/fa";
 
 const conversationStarters = [
   {
@@ -93,10 +94,10 @@ const conversationStarters = [
       "Jakie prawa mają osoby w nieformalnych związkach? Co ze spadkiem i majątkiem?",
   },
   {
-    icon: <Volume2 className="text-orange-500" size={24} />,
-    text: "Imprezy w ogrodzie",
+    icon: <FaWater className="text-orange-500" size={24} />,
+    text: "Pomoc powodzianom",
     action:
-      "Do której godziny można organizować imprezy w ogrodzie? Jakie są przepisy o głośnej muzyce?",
+      "Jak polski rząd pomaga ofiarom powodzi w 2024? Jakie są dostępne programy wsparcia?",
   },
 ];
 

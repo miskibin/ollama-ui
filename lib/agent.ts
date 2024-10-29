@@ -42,13 +42,19 @@ export class AgentRP {
     const previousResponse = lastAIResponse
       ? this.messageToString(lastAIResponse, true)
       : "";
-
-    const prompt = await PROMPTS.analyzeToolRelevance.format({
-      query,
-      toolDescription: tool.description,
-      previousResponse: previousResponse.slice(0, 900), // Limit context size
-    });
-
+    let prompt;
+    if (!previousResponse) {
+      prompt = await PROMPTS.initialToolRelevance.format({
+        query,
+        toolDescription: tool.description,
+      });
+    } else {
+      prompt = await PROMPTS.analyzeToolRelevance.format({
+        query,
+        toolDescription: tool.description,
+        previousResponse: previousResponse.slice(0, 900), // Limit context size
+      });
+    }
     this.logger.debug(prompt);
     const response = await this.llm.invoke(prompt);
     this.logger.debug(response);

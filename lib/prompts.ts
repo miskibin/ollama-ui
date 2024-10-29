@@ -31,31 +31,37 @@ export const PROMPTS = {
       Answer format:
       RELEVANT: [YES or NO]
       REASON: [single clear explanation why]`),
+  initialToolRelevance: PromptTemplate.fromTemplate(`
+      Given:
+      - User Question: {query}
+      - Tool Purpose: {toolDescription}
+      
+      Does the question specifically ask about what this tool provides?
+      
+      Answer format:
+      RELEVANT: [YES or NO]
+      REASON: [single clear explanation why]`),
   // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
-    Context: You are an AI that can ONLY see and use the data provided in the "Data:" field below. You have NO access to any other information.
-    Task: Answer concisely and precisely to the question:
+    Context: You are an AI with access ONLY to the "Data:" field below. Answer based strictly on it.
+    Task: Give a short, precise answer:
     Question: {question}
     Data: {dataString}
     Current date: ${new Date().toLocaleDateString("pl-PL")}
     Instructions:
-    1. Answer the question directly in maximum 6 sentences.
-    5. Quote document title only if directly related to the question.
-    6. Don't describe the provided data or its scope.
-    7. ALWAYS Wrap act name with markdown link like this: [ELI value](url value). Wrap only 1 most relevant document with **bold**.
-    IMPORTANT: Base your answer ONLY on the provided Data. Do not use any external knowledge.
-    Answer in Polish:`),
+    1. Limit answer to 3 sentences.
+    2. Wrap act name with markdown, like [ELI value](url value). Wrap only 1 most relevant document with **bold**.
+    3. Answer in Polish. Avoid extra details.
+    IMPORTANT: Base answer ONLY on the provided Data. No external info.
+    Answer in polish:
+  `),
 
+  answerQuestion: PromptTemplate.fromTemplate(
+    "Bazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go."
+  ),
   generateResponse: PromptTemplate.fromTemplate(`
-    Question: {question}
-    Tool Results: {tool_results}`),
-
-  answerQuestion:
-    PromptTemplate.fromTemplate(`Bazując na dokumencie, odpowiedz konkretnie na pytanie:
-      {question}
-
-      1. Korzystaj z formatowania markdown.
-      2. Jeśli znajdziesz pasujący cytat, użyj go.`),
+        Question: {question}
+        Tool Results: {tool_results}`),
 };
 
 export const SummarizePrompt = `Streść mi to`;
@@ -72,4 +78,4 @@ W przyszłości będę umiał rozmawiać również o:
 - 📊 i innych danych
 
 
-> **Wskazówka**: Jeśli uważasz, że twoje pytanie dotyczy prawa, kliknij 🔁, lub użyj lepszego modelu.`
+> **Wskazówka**: Jeśli uważasz, że twoje pytanie dotyczy prawa, kliknij 🔁, lub użyj lepszego modelu.`;
