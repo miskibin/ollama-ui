@@ -44,7 +44,7 @@ export const useChatStore = create<ChatState>()(
         maxTokens: 512,
       },
       systemPrompt:
-        "You are a specialized keyword extractor for Polish legislative topics.",
+        "You are a specialized keyword extractor for Polish legislative topics. Your answers are short and precise. You use markdown to format your answers.",
       input: "",
       plugins: plugins,
       memory: new BufferMemory({
@@ -161,7 +161,6 @@ export const useChatStore = create<ChatState>()(
           artifacts: msg.artifacts || [], // Ensure artifacts are persisted
         })),
         options: state.options,
-        systemPrompt: state.systemPrompt,
         selectedModel: state.selectedModel,
       }),
     }

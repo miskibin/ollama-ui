@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut, Star, Heart, User2 } from "lucide-react";
+import { LogOut, Star, Heart, User2, Paperclip } from "lucide-react";
 
 import Link from "next/link";
 import {
@@ -132,6 +132,15 @@ const Navbar: React.FC = () => {
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Wyloguj</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center cursor-pointer">
+                <Link
+                  href="/terms-of-service"
+                  className="flex items-center w-full"
+                >
+                  <Paperclip className="mr-2 h-4 w-4" />
+                  Regulamin
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

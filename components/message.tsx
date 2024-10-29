@@ -21,6 +21,7 @@ import PluginDataDialog from "./plugin-data-dialog";
 import SummarableTextDialog from "./SummarableTextDialog";
 import { cn } from "@/lib/utils";
 import { useFeedbackLogic } from "@/hooks/feedback";
+import { ContinuePromptPlaceholder, PROMPTS } from "@/lib/prompts";
 
 interface ChatMessageProps {
   message: Message;
@@ -243,7 +244,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </div>
           ) : (
             <div className="text-left">
-              <MarkdownResponse content={message.content} />
+              {message.content.startsWith("System:") &&
+              message.role === "user" ? (
+                ContinuePromptPlaceholder
+              ) : (
+                <MarkdownResponse content={message.content} />
+              )}
               {renderArtifacts()}
               {renderActSummaryPrompt()}
               {!isGenerating && renderMessageButtons()}

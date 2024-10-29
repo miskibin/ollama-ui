@@ -6,7 +6,7 @@ const AboutSection = () => {
   const features = [
     {
       icon: FileText,
-      title: "100 000+",
+      title: "150 000+",
       description: "przeanalizowanych stron",
     },
     {
@@ -16,7 +16,7 @@ const AboutSection = () => {
     },
     {
       icon: Database,
-      title: "7 000+",
+      title: "11 000+",
       description: "aktów prawnych",
     },
   ];

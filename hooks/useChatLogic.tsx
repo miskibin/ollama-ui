@@ -3,7 +3,7 @@ import { Artifact, Message } from "@/lib/types";
 import { generateUniqueId } from "@/utils/common";
 import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
-import { PROMPTS, SummarizePrompt } from "@/lib/prompts";
+import { PROMPTS, SummarizePromptPlaceholder } from "@/lib/prompts";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useToast } from "./use-toast";
 import { useMessageLimits } from "@/lib/prompt-tracking";
@@ -121,7 +121,7 @@ export const useChatLogic = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: messageHistory,
-          systemPrompt,
+          systemPrompt: systemPrompt,
           enabledPluginIds:
             disableAllPlugins ||
             (messages[messages.length - 1]?.role === "user" &&
@@ -287,8 +287,9 @@ export const useChatLogic = () => {
         content: context
           ? await PROMPTS.answerQuestion.format({
               question: context,
+              systemPrompt: systemPrompt,
             })
-          : SummarizePrompt,
+          : SummarizePromptPlaceholder,
         artifacts: [
           {
             type: "Dokument PDF",

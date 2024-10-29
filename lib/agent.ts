@@ -47,12 +47,14 @@ export class AgentRP {
       prompt = await PROMPTS.initialToolRelevance.format({
         query,
         toolDescription: tool.description,
+        systemPrompt: messages[0].content,
       });
     } else {
       prompt = await PROMPTS.analyzeToolRelevance.format({
         query,
         toolDescription: tool.description,
         previousResponse: previousResponse.slice(0, 900), // Limit context size
+        systemPrompt: messages[0].content,
       });
     }
     this.logger.debug(prompt);
@@ -196,6 +198,7 @@ export class AgentRP {
   }
 
   async *invoke(input: string | ChatMessage[]): AsyncGenerator<AgentProgress> {
+    console.log(input[0]);
     const messages = Array.isArray(input)
       ? input
       : [new ChatMessage({ content: input, role: "user" })];
@@ -277,6 +280,7 @@ export class AgentRP {
       finalPrompt = await PROMPTS.processDataPrompt.format({
         question: query,
         dataString: formattedResults,
+        systemPrompt: messages[0].content,
       });
     } else {
       finalPrompt = query;

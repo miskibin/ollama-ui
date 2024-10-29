@@ -29,7 +29,6 @@ function createLLM(modelName: string, options: any) {
     ...options,
   });
 }
-
 export async function POST(req: NextRequest) {
   try {
     const referer = req.headers.get("referer");
@@ -44,18 +43,16 @@ export async function POST(req: NextRequest) {
 
     const { messages, systemPrompt, enabledPluginIds, modelName, options } =
       await req.json();
-
+    console.log(new SystemMessage(systemPrompt).content);
     const langChainMessages: ChatMessage[] = [
       new SystemMessage(systemPrompt),
-      ...messages,
-    ].map(convertRPMessageToLangChainMessage);
+      ...messages.map(convertRPMessageToLangChainMessage),
+    ];
 
     const llm = createLLM(modelName, options);
-
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm as TogetherLLM)
     );
-
     const agent = new AgentRP({
       llm: llm as TogetherLLM,
       tools: plugins,

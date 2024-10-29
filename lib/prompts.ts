@@ -19,6 +19,7 @@ export const PROMPTS = {
     Keyword or short phrase (in Polish):`),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
+      System: {systemPrompt}
       Given:
       - User Question: {query}
       - Last Assistant Response: {previousResponse}
@@ -32,6 +33,7 @@ export const PROMPTS = {
       RELEVANT: [YES or NO]
       REASON: [single clear explanation why]`),
   initialToolRelevance: PromptTemplate.fromTemplate(`
+      System: {systemPrompt}
       Given:
       - User Question: {query}
       - Tool Purpose: {toolDescription}
@@ -43,7 +45,7 @@ export const PROMPTS = {
       REASON: [single clear explanation why]`),
   // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
-    Context: You are an AI with access ONLY to the "Data:" field below. Answer based strictly on it.
+    System: {systemPrompt}
     Task: Give a short, precise answer:
     Question: {question}
     Data: {dataString}
@@ -57,14 +59,16 @@ export const PROMPTS = {
   `),
 
   answerQuestion: PromptTemplate.fromTemplate(
-    "Bazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go."
+    "System: {systemPrompt}\n\nBazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go."
   ),
   generateResponse: PromptTemplate.fromTemplate(`
-        Question: {question}
-        Tool Results: {tool_results}`),
+    System: {systemPrompt}
+    Question: {question}
+    Tool Results: {tool_results}`),
 };
 
-export const SummarizePrompt = `Streść mi to`;
+export const SummarizePromptPlaceholder = `Streść mi to`;
+export const ContinuePromptPlaceholder = `Kontynuuj`;
 
 export const FirstIrrelevantUserQuestion = `
 Przepraszam Aktualnie potrafię odpowiadać tylko na pytania dotyczące **obowiązujących aktów prawnych** znajdujących się w [Monitorze Polskim](https://monitorpolski.gov.pl/MP)

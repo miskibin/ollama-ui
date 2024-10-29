@@ -92,8 +92,6 @@ export default function ProfileClient() {
     );
   }
 
-  const joinDate = user?.created_at ? new Date(user.created_at) : null;
-
   return (
     user && (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-8">
