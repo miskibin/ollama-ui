@@ -72,6 +72,9 @@ const PrivacyPage = () => {
                   Unikalny identyfikator użytkownika (userID) pozyskiwany
                   podczas logowania
                 </li>
+                <li>Nazwę użytkownika (username)</li>
+                <li>Imię i nazwisko użytkownika</li>
+                <li>Zdjęcie profilowe użytkownika</li>
                 <li>
                   Informacje techniczne związane ze zgłaszanymi błędami (jeśli
                   użytkownik zdecyduje się je zgłosić)

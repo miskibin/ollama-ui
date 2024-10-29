@@ -134,12 +134,9 @@ const Navbar: React.FC = () => {
                 <span>Wyloguj</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center cursor-pointer">
-                <Link
-                  href="/terms-of-service"
-                  className="flex items-center w-full"
-                >
+                <Link href="/privacy" className="flex items-center w-full">
                   <Paperclip className="mr-2 h-4 w-4" />
-                  Regulamin
+                  Polityka prywatności
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
