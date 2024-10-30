@@ -19,21 +19,26 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
   return new DynamicStructuredTool({
     name: "sejm_stats_analyzer",
     description:
-      "Searches and analyzes laws, legal regulations based on user questions. Can provide information about various laws.",
+      "Searches and analyzes laws, legal regulations based on user questions. Can provide information, and answer questions about various laws. ",
     schema: sejmStatsSchema,
     func: async ({ question }: z.infer<typeof sejmStatsSchema>) => {
       try {
         const sequence = RunnableSequence.from([
           new RunnablePassthrough(),
           async ({ question }) => {
-            // const query = await PROMPTS.generateSearchQuery.format({
-            //   question: question,
-            // });
-            // const searchQuery = await model.invoke(query);
-            // const cleanedQuery = searchQuery
-            //   .replace(/^(Query:|Search query:|Generated query:)/i, "")
-            //   .trim();
-            const cleanedQuery = question;
+            let cleanedQuery = question;
+
+            // Generate search query if question is longer than 200 characters
+            if (question.length > 100) {
+              const query = await PROMPTS.generateSearchQuery.format({
+                question: question,
+              });
+              const searchQuery = await model.invoke(query);
+              cleanedQuery = searchQuery
+                .replace(/^(Query:|Search query:|Generated query:)/i, "")
+                .trim();
+            }
+
             console.info("SEJM-STATS", {
               question,
               searchQuery: cleanedQuery,

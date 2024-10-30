@@ -8,15 +8,10 @@ export const PROMPTS = {
 
     Instructions:
     1. Identify the core issue or event, ignoring procedural aspects.
-    2. Choose ONE keyword or short phrase (max 4-5 words) in Polish.
-    3. Use a noun or noun phrase in its basic form.
-    4. Focus on the primary subject, not actions related to it.
-    6. Omit words like "projekt", "ustawa", "sejm", "głosowanie", "pomoc".
-    7. Use lowercase letters, correct Polish spelling, no special characters.
-    Example: For "Jakie ustawy uchwalono w sprawie ochrony środowiska?" use "ochrona środowiska"
-    Example: For "prawo dotyczące aborcji ?" use "przerywanie ciąży"
-
-    Keyword or short phrase (in Polish):`),
+    2. Choose short phrase (max 10 words) in Polish.
+    3. Omit words like "projekt", "ustawa", "sejm", "głosowanie", "pomoc".
+    4. Use keywords that could be helpful for embeding model to search.
+    phrase (in Polish):`),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
       Given:
@@ -76,4 +71,7 @@ W przyszłości będę umiał rozmawiać również o:
 - 📊 i innych danych
 
 
-> **Wskazówka**: Jeśli uważasz, że twoje pytanie dotyczy prawa, kliknij 🔁, lub użyj lepszego modelu.`;
+> **Wskazówka**: Jeśli uważasz, że twoje pytanie dotyczy prawa
+1. Użyj lepszego modelu.
+2. Użyj słów kluczowych abym zrozumiał, że pytasz o obowiązujące prawo w polsce
+3. kliknij przycisk 🔁 poniżej`;

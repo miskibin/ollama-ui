@@ -215,7 +215,7 @@ export class AgentRP {
             },
           }),
         ],
-        "tool_processing"
+        "conversation"
       )) {
         yield {
           type: "response",
