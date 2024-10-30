@@ -49,7 +49,6 @@ export async function POST(req: NextRequest) {
       new ChatMessage({ role: "system", content: systemPrompt }),
       ...messages.map(convertRPMessageToLangChainMessage),
     ];
-    console.log(messages);
     const llm = createLLM(modelName, options);
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm as TogetherLLM)

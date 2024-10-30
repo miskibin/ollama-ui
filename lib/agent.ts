@@ -1,5 +1,4 @@
 import {
-  BaseMessage,
   AIMessage,
   ChatMessage,
   SystemMessage,
@@ -9,23 +8,15 @@ import { FirstIrrelevantUserQuestion, PROMPTS } from "./prompts";
 import { LoggerService } from "./logger";
 import { Artifact } from "@/lib/types";
 import { AbstractLLM } from "./llms/LLM";
-import { ar } from "date-fns/locale";
+import { Chat } from "together-ai/resources/index.mjs";
+
+type AgentProgressType = "status" | "tool_execution" | "response" | "error";
 
 interface AgentProgress {
-  type: "status" | "tool_execution" | "response" | "error";
+  type: AgentProgressType;
   content: string;
   artifacts?: Artifact[];
   error?: string;
-}
-
-interface ToolExecutionResult {
-  result: string;
-  artifact?: Artifact;
-}
-
-interface ToolResult {
-  tool: string;
-  result: string;
 }
 
 export class AgentRP {
@@ -50,13 +41,14 @@ export class AgentRP {
         toolDescription: tool.description,
         previousResponse: previousResponse?.slice(0, 100) || "",
       });
-
-      const response = await this.getCompletion(
-        [new ChatMessage({ role: "user", content: prompt })],
-        "tool_relevance"
-      );
-
-      return response.toLocaleLowerCase().includes("yes");
+      return (
+        await this.getCompletion(
+          [new ChatMessage({ role: "user", content: prompt })],
+          "tool_relevance"
+        )
+      )
+        .toLowerCase()
+        .includes("yes");
     } catch (error) {
       this.logger.debug(`Error checking tool relevance: ${error}`);
       return false;
@@ -67,7 +59,7 @@ export class AgentRP {
     messages: ChatMessage[]
   ): ChatMessage[] {
     const recentMessages = messages.slice(-5);
-    const lastArtifactMessageIndex = recentMessages
+    const lastArtifactIndex = recentMessages
       .slice()
       .reverse()
       .findIndex(
@@ -75,54 +67,41 @@ export class AgentRP {
           Array.isArray(msg.additional_kwargs?.artifacts) &&
           msg.additional_kwargs.artifacts.length > 0
       );
-    if (lastArtifactMessageIndex !== -1) {
-      const originalIndex =
-        recentMessages.length - 1 - lastArtifactMessageIndex;
-      return recentMessages.slice(originalIndex);
-    }
-    return recentMessages;
+    return lastArtifactIndex !== -1
+      ? recentMessages.slice(recentMessages.length - 1 - lastArtifactIndex)
+      : recentMessages;
   }
-  private async executeTool(
-    tool: StructuredToolInterface,
-    question: string
-  ): Promise<ToolExecutionResult> {
+
+  private async executeTool(tool: StructuredToolInterface, question: string) {
     try {
       const result = await tool.invoke({ question });
       const resultString = result?.toString() || "";
-
       try {
         const parsed = JSON.parse(resultString);
-        if (parsed?.artifact) {
-          return {
-            result: parsed.result || resultString,
-            artifact: parsed.artifact,
-          };
-        }
+        return parsed?.artifact
+          ? { result: parsed.result || resultString, artifact: parsed.artifact }
+          : { result: resultString };
       } catch {
-        // Not JSON or no artifact
+        return { result: resultString };
       }
-
-      return { result: resultString };
     } catch (error) {
       this.logger.debug(`Error executing tool ${tool.name}: ${error}`);
       return { result: `Error: Failed to execute tool ${tool.name}` };
     }
   }
+
   private async *streamCompletion(
     messages: ChatMessage[],
-    type: "tool_relevance" | "conversation" | "tool_processing" = "conversation"
-  ): AsyncGenerator<string> {
+    type:
+      | "tool_relevance"
+      | "conversation"
+      | "contextual"
+      | "tool_processing" = "conversation"
+  ) {
     try {
-      const metadata = {
+      for await (const chunk of this.llm.run(messages, {}, undefined, {
         message_type: type,
-      };
-
-      for await (const chunk of this.llm.run(
-        messages,
-        {},
-        undefined,
-        metadata
-      )) {
+      })) {
         yield chunk.text;
       }
     } catch (error) {
@@ -144,21 +123,15 @@ export class AgentRP {
 
   async *invoke(messages: ChatMessage[]): AsyncGenerator<AgentProgress> {
     try {
-      if (!messages || messages.length === 0) {
-        throw new Error("No messages provided");
-      }
+      if (!messages?.length) throw new Error("No messages provided");
 
       const userMessage = messages[messages.length - 1];
-      const systemMessage = messages[0] as SystemMessage;
-      const query = userMessage?.content as string;
-
-      if (!query) {
-        throw new Error("Invalid user message");
-      }
+      const systemMessage = messages[0] as ChatMessage;
+      const query = userMessage?.content;
+      if (!query) throw new Error("Invalid user message");
 
       yield { type: "status", content: "Analizuję" };
 
-      // Get previous AI response if exists
       const previousResponse = messages
         .slice()
         .reverse()
@@ -166,63 +139,54 @@ export class AgentRP {
           (msg) => msg instanceof AIMessage || msg.role === "assistant"
         )?.content;
 
-      // Check which tools are relevant
-      const toolResults = await Promise.all(
-        this.tools.map(async (tool) => ({
-          tool,
-          isRelevant: await this.checkToolRelevance(
-            query,
+      const relevantTools = (
+        await Promise.all(
+          this.tools.map(async (tool) => ({
             tool,
-            previousResponse as string
-          ),
-        }))
-      );
-
-      const toolsToUse = toolResults
+            isRelevant: await this.checkToolRelevance(
+              query as string,
+              tool,
+              previousResponse as string
+            ),
+          }))
+        )
+      )
         .filter((t) => t.isRelevant)
         .map((t) => t.tool);
 
-      // No relevant tools - process without tools
-      if (!toolsToUse.length) {
+      if (!relevantTools.length) {
         yield {
           type: "status",
           content: "Generuję odpowiedź na podstawie kontekstu...",
         };
-
         if (messages.length < 3) {
-          yield { type: "response", content: FirstIrrelevantUserQuestion }; // Message that your request is invalid
+          yield { type: "response", content: FirstIrrelevantUserQuestion };
           return;
         }
-
-        const messagesWithLatestArtifacts =
-          this.getMessagesWithLatestArtifacts(messages);
         for await (const chunk of this.streamCompletion(
-          messagesWithLatestArtifacts,
-          "conversation"
+          [systemMessage, ...this.getMessagesWithLatestArtifacts(messages)],
+          "contextual"
         )) {
           yield { type: "response", content: chunk };
         }
         return;
       }
 
-      // Execute relevant tools
       yield {
         type: "status",
-        content: `Korzystam z: ${toolsToUse.map((t) => t.name).join(", ")}`,
+        content: `Korzystam z: ${relevantTools.map((t) => t.name).join(", ")}`,
       };
 
-      const results: ToolResult[] = [];
+      const toolResults = [];
       const artifacts: Artifact[] = [];
 
-      for (const tool of toolsToUse) {
+      for (const tool of relevantTools) {
         yield { type: "status", content: `Korzystam z ${tool.name}...` };
-
-        const { result, artifact } = await this.executeTool(tool, query);
-
-        if (result) {
-          results.push({ tool: tool.name, result });
-        }
-
+        const { result, artifact } = await this.executeTool(
+          tool,
+          query as string
+        );
+        if (result) toolResults.push({ tool: tool.name, result });
         if (artifact) {
           artifacts.push(artifact);
           yield {
@@ -233,37 +197,30 @@ export class AgentRP {
         }
       }
 
-      // Generate final response
       yield { type: "status", content: "Generuję ostateczną odpowiedź..." };
 
       const finalPrompt = await PROMPTS.processDataPrompt.format({
         question: query,
-        dataString: results.map((r) => `${r.tool}: ${r.result}`).join("\n"),
+        dataString: toolResults.map((r) => `${r.tool}: ${r.result}`).join("\n"),
       });
 
-      const finalMessages = [
-        new ChatMessage({
-          role: "system",
-          content: systemMessage.content,
-        }),
-        new ChatMessage({
-          role: "user",
-          content: finalPrompt,
-          additional_kwargs: {
-            artifacts: artifacts.length > 0 ? artifacts : undefined,
-          },
-        }),
-      ];
-
-      // Stream the final response
       for await (const chunk of this.streamCompletion(
-        finalMessages,
+        [
+          new ChatMessage({ role: "system", content: systemMessage.content }),
+          new ChatMessage({
+            role: "user",
+            content: finalPrompt,
+            additional_kwargs: {
+              artifacts: artifacts.length ? artifacts : undefined,
+            },
+          }),
+        ],
         "tool_processing"
       )) {
         yield {
           type: "response",
           content: chunk,
-          artifacts: artifacts.length > 0 ? artifacts : undefined,
+          artifacts: artifacts.length ? artifacts : undefined,
         };
       }
     } catch (error) {
@@ -275,6 +232,7 @@ export class AgentRP {
       };
     }
   }
+
   async call(
     input: string | ChatMessage[]
   ): Promise<{ content: string; artifacts: Artifact[] }> {
@@ -282,26 +240,19 @@ export class AgentRP {
       const messages = Array.isArray(input)
         ? input
         : [new ChatMessage({ role: "user", content: input })];
-
-      let content = "";
-      let artifacts: Artifact[] = [];
+      let content = "",
+        artifacts: Artifact[] = [];
 
       for await (const progress of this.invoke(messages)) {
-        if (progress.type === "error") {
+        if (progress.type === "error")
           throw new Error(progress.error || progress.content);
-        }
         if (progress.type === "response") {
           content += progress.content;
-          if (progress.artifacts) {
-            artifacts = progress.artifacts;
-          }
+          if (progress.artifacts) artifacts = progress.artifacts;
         }
       }
 
-      if (!content) {
-        throw new Error("No response generated");
-      }
-
+      if (!content) throw new Error("No response generated");
       return { content, artifacts };
     } catch (error) {
       this.logger.debug(`Error in call: ${error}`);

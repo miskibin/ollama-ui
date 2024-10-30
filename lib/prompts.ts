@@ -46,10 +46,10 @@ export const PROMPTS = {
     Question: {question}
     Current date: ${new Date().toLocaleDateString("pl-PL")}
     Instructions:
-    1. Limit answer to 3 sentences.
-    2. Provide url with label to most relevant document.
+    1. LIMIT answer to 3 sentences.
+    2. Provide url with label to MOST relevant document.
     3. Answer in Polish. Avoid extra details.
-    IMPORTANT: Base answer ONLY on the provided Data. No external info.
+    Base answer ONLY on the provided Data. No external info.
     Answer in polish:
   `),
 
