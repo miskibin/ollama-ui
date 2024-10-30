@@ -41,26 +41,22 @@ export const PROMPTS = {
       Answer format:
       RELEVANT: [YES or NO]
       REASON: [single clear explanation why]`),
-  // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
-    System: {systemPrompt}
-    Task: Give a short, precise answer:
+    Task: Give a short, precise answer basing on artifact:
     Question: {question}
-    Data: {dataString}
     Current date: ${new Date().toLocaleDateString("pl-PL")}
     Instructions:
-    1. Limit answer to 3 sentences.
-    2. Wrap act name with markdown, like [ELI value](url value). Wrap only 1 most relevant document with **bold**.
+    1. LIMIT answer to 3 sentences.
+    2. Provide url with label to MOST relevant document.
     3. Answer in Polish. Avoid extra details.
-    IMPORTANT: Base answer ONLY on the provided Data. No external info.
+    Base answer ONLY on the provided Data. No external info.
     Answer in polish:
   `),
 
   answerQuestion: PromptTemplate.fromTemplate(
-    "System: {systemPrompt}\n\nBazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go."
+    "Bazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go."
   ),
   generateResponse: PromptTemplate.fromTemplate(`
-    System: {systemPrompt}
     Question: {question}
     Tool Results: {tool_results}`),
 };

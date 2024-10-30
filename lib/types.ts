@@ -1,6 +1,6 @@
 export type Message = {
   id: string;
-  role: "user" | "assistant" | "tool";
+  role: "user" | "assistant" | "system";
   content: string;
   artifacts: Artifact[];
 };

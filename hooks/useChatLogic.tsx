@@ -287,7 +287,6 @@ export const useChatLogic = () => {
         content: context
           ? await PROMPTS.answerQuestion.format({
               question: context,
-              systemPrompt: systemPrompt,
             })
           : SummarizePromptPlaceholder,
         artifacts: [

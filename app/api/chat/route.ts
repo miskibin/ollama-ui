@@ -3,11 +3,13 @@ import { SystemMessage, ChatMessage } from "@langchain/core/messages";
 import { OpenAI } from "@langchain/openai";
 import { createSejmStatsTool } from "@/tools/sejmstats";
 import { convertRPMessageToLangChainMessage } from "@/lib/utils";
-import { TogetherAPIError, TogetherLLM } from "@/lib/TogetherLLm";
+import { TogetherAPIError, TogetherLLM } from "@/lib/llms/TogetherLLm";
 import { AgentRP } from "@/lib/agent";
 import { generateUniqueId } from "@/utils/common";
 import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
+import { OpenAILLM } from "@/lib/llms/OpenAILLm";
+import { AbstractLLM } from "@/lib/llms/LLM";
 
 const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
@@ -16,7 +18,7 @@ const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
 
 function createLLM(modelName: string, options: any) {
   if (modelName.startsWith("gpt")) {
-    return new OpenAI({
+    return new OpenAILLM({
       apiKey: process.env.OPENAI_API_KEY!,
       model: modelName,
       ...options,
@@ -43,20 +45,19 @@ export async function POST(req: NextRequest) {
 
     const { messages, systemPrompt, enabledPluginIds, modelName, options } =
       await req.json();
-    console.log(new SystemMessage(systemPrompt).content);
     const langChainMessages: ChatMessage[] = [
-      new SystemMessage(systemPrompt),
+      new ChatMessage({ role: "system", content: systemPrompt }),
       ...messages.map(convertRPMessageToLangChainMessage),
     ];
-
     const llm = createLLM(modelName, options);
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm as TogetherLLM)
     );
-    const agent = new AgentRP({
-      llm: llm as TogetherLLM,
-      tools: plugins,
-    });
+    const agent = new AgentRP(
+      llm as AbstractLLM,
+      plugins,
+      true // or true if you want verbose logging
+    );
 
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();

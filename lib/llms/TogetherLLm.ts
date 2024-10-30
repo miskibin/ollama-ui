@@ -1,9 +1,10 @@
-import { LLM, BaseLLMParams } from "@langchain/core/language_models/llms";
 import { CallbackManagerForLLMRun } from "@langchain/core/callbacks/manager";
 import { GenerationChunk } from "@langchain/core/outputs";
 import Together from "together-ai";
+import { ChatMessage } from "@langchain/core/messages";
+import { AbstractLLM, AbstractLLMInput } from "./LLM";
 
-// Custom error class for network-related issues
+// Custom error class for Together-related issues
 export class TogetherAPIError extends Error {
   constructor(
     message: string,
@@ -15,33 +16,27 @@ export class TogetherAPIError extends Error {
   }
 }
 
-interface TogetherLLMInput extends BaseLLMParams {
-  apiKey?: string;
-  model: string;
-  temperature?: number;
-  maxTokens?: number;
+interface TogetherLLMInput extends AbstractLLMInput {
   topP?: number;
   topK?: number;
   repetitionPenalty?: number;
-  streaming?: boolean;
 }
 
-export class TogetherLLM extends LLM {
+export class TogetherLLM extends AbstractLLM {
   private client: Together;
-  model: string;
-  temperature: number;
-  maxTokens: number;
-  streaming: boolean;
+  private topP?: number;
+  private topK?: number;
+  private repetitionPenalty?: number;
+  private readonly stopTokens: string[] = ["<|eot_id|>", "<|eom_id|>"];
 
   constructor(fields: TogetherLLMInput) {
     super(fields);
     this.client = new Together({
       apiKey: fields.apiKey || process.env.TOGETHER_API_KEY,
     });
-    this.model = fields.model;
-    this.streaming = fields.streaming ?? false;
-    this.temperature = fields.temperature ?? 0.7;
-    this.maxTokens = fields.maxTokens ?? 512;
+    this.topP = fields.topP;
+    this.topK = fields.topK;
+    this.repetitionPenalty = fields.repetitionPenalty;
   }
 
   _llmType() {
@@ -59,7 +54,10 @@ export class TogetherLLM extends LLM {
         messages: [{ role: "user", content: prompt }],
         max_tokens: this.maxTokens,
         temperature: this.temperature,
-        stop: ["<|eot_id|>", "<|eom_id|>"],
+        top_p: this.topP,
+        top_k: this.topK,
+        repetition_penalty: this.repetitionPenalty,
+        stop: this.stopTokens,
         stream: false,
       });
 
@@ -68,22 +66,31 @@ export class TogetherLLM extends LLM {
       }
       throw new TogetherAPIError("Response content is undefined");
     } catch (error: any) {
-      return error;
+      if (error instanceof Error) {
+        throw new TogetherAPIError(error.message);
+      }
+      throw error;
     }
   }
 
-  async *_streamResponseChunks(
-    prompt: string,
+  async *run(
+    messages: Array<ChatMessage>,
     options: this["ParsedCallOptions"],
     runManager?: CallbackManagerForLLMRun
   ): AsyncGenerator<GenerationChunk> {
     try {
+      const togetherMessages = this.convertMessagesToJSON(messages);
+      console.log("Debug messages", togetherMessages);
+
       const stream = await this.client.chat.completions.create({
         model: this.model,
-        messages: [{ role: "user", content: prompt }],
+        messages: togetherMessages,
         max_tokens: this.maxTokens,
         temperature: this.temperature,
-        stop: ["<|eot_id|>", "<|eom_id|>"],
+        top_p: this.topP,
+        top_k: this.topK,
+        repetition_penalty: this.repetitionPenalty,
+        stop: this.stopTokens,
         stream: true,
       });
 
@@ -96,7 +103,6 @@ export class TogetherLLM extends LLM {
           }
         }
       } catch (streamError: any) {
-        // Handle errors during stream processing
         if (streamError.name === "AbortError") {
           throw new TogetherAPIError("Stream was aborted");
         }
@@ -105,7 +111,10 @@ export class TogetherLLM extends LLM {
         );
       }
     } catch (error: any) {
-      console.error(error);
+      if (error instanceof Error) {
+        throw new TogetherAPIError(error.message);
+      }
+      throw error;
     }
   }
 }

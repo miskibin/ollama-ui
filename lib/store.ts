@@ -44,7 +44,7 @@ export const useChatStore = create<ChatState>()(
         maxTokens: 512,
       },
       systemPrompt:
-        "You are a specialized keyword extractor for Polish legislative topics. Your answers are short and precise. You use markdown to format your answers.",
+        "You are a specialized keyword extractor for Polish legislative topics. Your answers are short and precise. You use rich markdown syntax to format your answers.",
       input: "",
       plugins: plugins,
       memory: new BufferMemory({
@@ -68,11 +68,6 @@ export const useChatStore = create<ChatState>()(
         {
           short: "Llama-3.2-11B",
           name: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
-          description: "",
-        },
-        {
-          short: "Qwen2.5-7B",
-          name: "Qwen/Qwen2.5-7B-Instruct-Turbo",
           description: "",
         },
       ],

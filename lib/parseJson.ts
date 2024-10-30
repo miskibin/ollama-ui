@@ -15,7 +15,6 @@ export function extractSummarableTexts(
             ? JSON.parse(artifact.data)
             : artifact.data;
       } catch (error) {
-        console.debug("Failed to parse JSON:", error);
         continue;
       }
 

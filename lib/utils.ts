@@ -6,6 +6,7 @@ import {
   HumanMessage,
   ToolMessage,
   ChatMessage,
+  SystemMessage,
 } from "@langchain/core/messages";
 import { Message } from "./types";
 export function cn(...inputs: ClassValue[]) {
@@ -25,12 +26,15 @@ export function convertRPMessageToLangChainMessage(message: Message) {
   if (message.role === "user") {
     return new HumanMessage(message.content, {
       artifacts: message.artifacts,
-    }) as ChatMessage;
+    });
   } else if (message.role === "assistant") {
     return new AIMessage(message.content, {
       artifacts: message.artifacts,
-    }) as ChatMessage;
+    });
+  } else if (message.role === "system") {
+    return new SystemMessage(message.content);
   }
+
   return new ChatMessage(message.content, message.role) as ChatMessage;
 }
 export function convertLangChainMessageToRPMessage(message: ChatMessage) {
