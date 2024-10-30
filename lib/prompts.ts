@@ -43,7 +43,6 @@ export const PROMPTS = {
       REASON: [single clear explanation why]`),
   // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
-    System: {systemPrompt}
     Task: Give a short, precise answer:
     Question: {question}
     Data: {dataString}
@@ -57,10 +56,9 @@ export const PROMPTS = {
   `),
 
   answerQuestion: PromptTemplate.fromTemplate(
-    "System: {systemPrompt}\n\nBazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go."
+    "Bazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go."
   ),
   generateResponse: PromptTemplate.fromTemplate(`
-    System: {systemPrompt}
     Question: {question}
     Tool Results: {tool_results}`),
 };

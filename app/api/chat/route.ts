@@ -8,6 +8,7 @@ import { AgentRP } from "@/lib/agent";
 import { generateUniqueId } from "@/utils/common";
 import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
+import { OpenAILLM } from "@/lib/OpenAILLm";
 
 const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
@@ -16,7 +17,7 @@ const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
 
 function createLLM(modelName: string, options: any) {
   if (modelName.startsWith("gpt")) {
-    return new OpenAI({
+    return new OpenAILLM({
       apiKey: process.env.OPENAI_API_KEY!,
       model: modelName,
       ...options,
@@ -43,18 +44,17 @@ export async function POST(req: NextRequest) {
 
     const { messages, systemPrompt, enabledPluginIds, modelName, options } =
       await req.json();
-    console.log(new SystemMessage(systemPrompt).content);
     const langChainMessages: ChatMessage[] = [
-      new SystemMessage(systemPrompt),
+      new ChatMessage({ role: "system", content: systemPrompt }),
       ...messages.map(convertRPMessageToLangChainMessage),
     ];
-
+    console.log(messages)
     const llm = createLLM(modelName, options);
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm as TogetherLLM)
     );
     const agent = new AgentRP({
-      llm: llm as TogetherLLM,
+      llm: llm as OpenAILLM,
       tools: plugins,
     });
 
