@@ -7,9 +7,9 @@ export const useMessageLimits = (selectedModel: string) => {
   const supabase = createClientComponentClient();
 
   const LIMITS = {
-    PATRON_TOTAL_LIMIT: 50,
+    PATRON_TOTAL_LIMIT: 40,
     FREE_GPT_LIMIT: 4,
-    FREE_TOTAL_LIMIT: 50,
+    FREE_TOTAL_LIMIT: 40,
   };
 
   const LIMIT_TYPES: { [key: string]: LimitType } = {
