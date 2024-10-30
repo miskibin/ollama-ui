@@ -43,9 +43,8 @@ export const PROMPTS = {
       REASON: [single clear explanation why]`),
   // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
-    Task: Give a short, precise answer:
+    Task: Give a short, precise answer basing on artifact:
     Question: {question}
-    Data: {dataString}
     Current date: ${new Date().toLocaleDateString("pl-PL")}
     Instructions:
     1. Limit answer to 3 sentences.

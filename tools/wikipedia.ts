@@ -4,7 +4,7 @@ import {
   RunnablePassthrough,
   RunnableSequence,
 } from "@langchain/core/runnables";
-import { TogetherLLM } from "@/lib/TogetherLLm";
+import { TogetherLLM } from "@/lib/llms/TogetherLLm";
 import { PROMPTS } from "@/lib/prompts";
 import { Artifact } from "@/lib/types";
 

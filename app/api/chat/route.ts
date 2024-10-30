@@ -3,12 +3,13 @@ import { SystemMessage, ChatMessage } from "@langchain/core/messages";
 import { OpenAI } from "@langchain/openai";
 import { createSejmStatsTool } from "@/tools/sejmstats";
 import { convertRPMessageToLangChainMessage } from "@/lib/utils";
-import { TogetherAPIError, TogetherLLM } from "@/lib/TogetherLLm";
+import { TogetherAPIError, TogetherLLM } from "@/lib/llms/TogetherLLm";
 import { AgentRP } from "@/lib/agent";
 import { generateUniqueId } from "@/utils/common";
 import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
-import { OpenAILLM } from "@/lib/OpenAILLm";
+import { OpenAILLM } from "@/lib/llms/OpenAILLm";
+import { AbstractLLM } from "@/lib/llms/LLM";
 
 const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
@@ -48,13 +49,13 @@ export async function POST(req: NextRequest) {
       new ChatMessage({ role: "system", content: systemPrompt }),
       ...messages.map(convertRPMessageToLangChainMessage),
     ];
-    console.log(messages)
+    console.log(messages);
     const llm = createLLM(modelName, options);
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm as TogetherLLM)
     );
     const agent = new AgentRP({
-      llm: llm as OpenAILLM,
+      llm: llm as AbstractLLM,
       tools: plugins,
     });
 

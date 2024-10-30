@@ -8,7 +8,7 @@ import { StructuredToolInterface } from "@langchain/core/tools";
 import { FirstIrrelevantUserQuestion, PROMPTS } from "./prompts";
 import { LoggerService } from "./logger";
 import { Artifact } from "@/lib/types";
-import { OpenAILLM } from "./OpenAILLm";
+import { AbstractLLM } from "./llms/LLM";
 
 interface AgentProgress {
   type: "status" | "tool_execution" | "response";
@@ -17,13 +17,13 @@ interface AgentProgress {
 }
 
 interface AgentOptions {
-  llm: OpenAILLM;
+  llm: AbstractLLM;
   tools: StructuredToolInterface[];
   verbose?: boolean;
 }
 
 export class AgentRP {
-  private llm: OpenAILLM;
+  private llm: AbstractLLM;
   private tools: StructuredToolInterface[];
   private logger: LoggerService;
 
@@ -55,10 +55,15 @@ export class AgentRP {
       previousResponse: lastAIResponse ? lastAIResponse.content : "",
     });
 
-    messages = [{ role: "user", content: prompt }] as ChatMessage[];
+    // Create a new message with the formatted prompt
+    const promptMessage = new ChatMessage({
+      role: "user",
+      content: prompt,
+    });
+
     let response = "";
 
-    for await (const chunk of this.llm.run(messages, {})) {
+    for await (const chunk of this.llm.run([promptMessage], {})) {
       response += chunk.text;
     }
 
@@ -120,7 +125,6 @@ export class AgentRP {
 
     // Get last 3 messages including artifacts
     const lastThreeMessages = messages.slice(-3);
-    console.log(lastThreeMessages);
     // Stream the response using the run method
     for await (const chunk of this.llm.run(lastThreeMessages, {})) {
       yield chunk.text;
@@ -128,6 +132,10 @@ export class AgentRP {
   }
 
   async *invoke(messages: ChatMessage[]): AsyncGenerator<AgentProgress> {
+    // Dataflow
+    // If tool is enabled, check if it is relevant to the query
+    // If tool is relevant, execute the tool and then set the chatMessage artifact to the result, then run final prompt with user question and chatMessage
+    // If tool is not relevant, run last 3 messages through the LLM (But with only latest 1 artifact.)
     const systemMessage = messages[0] as SystemMessage;
     const userMessage = messages[messages.length - 1];
 
@@ -206,12 +214,21 @@ export class AgentRP {
 
     const finalPrompt = await PROMPTS.processDataPrompt.format({
       question: userMessage.content,
-      dataString: formattedResults,
     });
 
+    // Create final messages with proper artifact handling
     const finalMessages = [
-      systemMessage,
-      new ChatMessage({ role: "user", content: finalPrompt }),
+      new ChatMessage({
+        role: "system",
+        content: systemMessage.content,
+      }),
+      new ChatMessage({
+        role: "user",
+        content: finalPrompt,
+        additional_kwargs: {
+          artifacts: formattedResults,
+        },
+      }),
     ];
 
     for await (const chunk of this.llm.run(finalMessages, {})) {
@@ -226,10 +243,17 @@ export class AgentRP {
   async call(
     input: string | ChatMessage[]
   ): Promise<{ content: string; artifacts: Artifact[] }> {
+    let messages: ChatMessage[];
+    if (typeof input === "string") {
+      messages = [new ChatMessage({ role: "user", content: input })];
+    } else {
+      messages = input;
+    }
+
     let lastContent = "";
     let allArtifacts: Artifact[] = [];
 
-    for await (const progress of this.invoke(input)) {
+    for await (const progress of this.invoke(messages)) {
       if (progress.type === "response") {
         lastContent += progress.content;
         if (progress.artifacts) {
