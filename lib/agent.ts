@@ -9,266 +9,303 @@ import { FirstIrrelevantUserQuestion, PROMPTS } from "./prompts";
 import { LoggerService } from "./logger";
 import { Artifact } from "@/lib/types";
 import { AbstractLLM } from "./llms/LLM";
+import { ar } from "date-fns/locale";
 
 interface AgentProgress {
-  type: "status" | "tool_execution" | "response";
+  type: "status" | "tool_execution" | "response" | "error";
   content: string;
   artifacts?: Artifact[];
+  error?: string;
 }
 
-interface AgentOptions {
-  llm: AbstractLLM;
-  tools: StructuredToolInterface[];
-  verbose?: boolean;
+interface ToolExecutionResult {
+  result: string;
+  artifact?: Artifact;
+}
+
+interface ToolResult {
+  tool: string;
+  result: string;
 }
 
 export class AgentRP {
-  private llm: AbstractLLM;
-  private tools: StructuredToolInterface[];
   private logger: LoggerService;
 
-  constructor(options: AgentOptions) {
-    this.llm = options.llm;
-    this.tools = options.tools;
-    this.logger = new LoggerService(process.env.NODE_ENV === "development");
+  constructor(
+    private llm: AbstractLLM,
+    private tools: StructuredToolInterface[],
+    verbose = false
+  ) {
+    this.logger = new LoggerService(verbose);
   }
 
-  private async analyzeToolRelevance(
+  private async checkToolRelevance(
     query: string,
     tool: StructuredToolInterface,
-    messages: ChatMessage[]
+    previousResponse?: string
   ): Promise<boolean> {
-    this.logger.debug(`Analyzing relevance for tool: ${tool.name}`);
+    try {
+      const prompt = await PROMPTS.analyzeToolRelevance.format({
+        query,
+        toolDescription: tool.description,
+        previousResponse: previousResponse?.slice(0, 100) || "",
+      });
 
-    // Skip system message and only use user messages for relevance check
-    const userMessages = messages.filter(
-      (msg) => msg instanceof SystemMessage === false
-    );
-    const lastAIResponse = userMessages
+      const response = await this.getCompletion(
+        [new ChatMessage({ role: "user", content: prompt })],
+        "tool_relevance"
+      );
+
+      return response.toLocaleLowerCase().includes("yes");
+    } catch (error) {
+      this.logger.debug(`Error checking tool relevance: ${error}`);
+      return false;
+    }
+  }
+
+  private getMessagesWithLatestArtifacts(
+    messages: ChatMessage[]
+  ): ChatMessage[] {
+    const recentMessages = messages.slice(-5);
+    const lastArtifactMessageIndex = recentMessages
       .slice()
       .reverse()
-      .find((msg) => msg instanceof AIMessage || msg.role === "assistant");
-
-    const prompt = await PROMPTS.analyzeToolRelevance.format({
-      query,
-      toolDescription: tool.description,
-      previousResponse: lastAIResponse ? lastAIResponse.content : "",
-    });
-
-    // Create a new message with the formatted prompt
-    const promptMessage = new ChatMessage({
-      role: "user",
-      content: prompt,
-    });
-
-    let response = "";
-
-    for await (const chunk of this.llm.run([promptMessage], {})) {
-      response += chunk.text;
+      .findIndex(
+        (msg) =>
+          Array.isArray(msg.additional_kwargs?.artifacts) &&
+          msg.additional_kwargs.artifacts.length > 0
+      );
+    if (lastArtifactMessageIndex !== -1) {
+      const originalIndex =
+        recentMessages.length - 1 - lastArtifactMessageIndex;
+      return recentMessages.slice(originalIndex);
     }
-
-    const lines = response.split("\n");
-    const relevantLine =
-      lines.find((line) => line.startsWith("RELEVANT:"))?.trim() || "";
-    return relevantLine.includes("YES");
+    return recentMessages;
   }
-
-  private async analyzeQuery(
-    query: string,
-    messages: ChatMessage[]
-  ): Promise<string[]> {
-    const relevantTools: string[] = [];
-
-    for (const tool of this.tools) {
-      const isRelevant = await this.analyzeToolRelevance(query, tool, messages);
-      if (isRelevant) {
-        relevantTools.push(tool.name);
-      }
-    }
-
-    return relevantTools;
-  }
-
   private async executeTool(
     tool: StructuredToolInterface,
-    userMessage: ChatMessage
-  ): Promise<{ result: string; artifact?: Artifact }> {
+    question: string
+  ): Promise<ToolExecutionResult> {
     try {
-      const rawResult = await tool.invoke({ question: userMessage.content });
-      const result = rawResult.toString();
+      const result = await tool.invoke({ question });
+      const resultString = result?.toString() || "";
 
       try {
-        const parsed = JSON.parse(result);
-        if (parsed.artifact) {
+        const parsed = JSON.parse(resultString);
+        if (parsed?.artifact) {
           return {
-            result: parsed.result || result,
+            result: parsed.result || resultString,
             artifact: parsed.artifact,
           };
         }
-      } catch (e) {
-        // Not JSON or no artifact, return raw result
+      } catch {
+        // Not JSON or no artifact
       }
 
-      return { result };
-    } catch (e) {
+      return { result: resultString };
+    } catch (error) {
+      this.logger.debug(`Error executing tool ${tool.name}: ${error}`);
       return { result: `Error: Failed to execute tool ${tool.name}` };
     }
   }
-
-  private async *processWithoutTools(
-    messages: ChatMessage[]
+  private async *streamCompletion(
+    messages: ChatMessage[],
+    type: "tool_relevance" | "conversation" | "tool_processing" = "conversation"
   ): AsyncGenerator<string> {
-    if (messages.length < 3) {
-      yield FirstIrrelevantUserQuestion;
-      return;
-    }
+    try {
+      const metadata = {
+        message_type: type,
+      };
 
-    // Get last 3 messages including artifacts
-    const lastThreeMessages = messages.slice(-3);
-    // Stream the response using the run method
-    for await (const chunk of this.llm.run(lastThreeMessages, {})) {
-      yield chunk.text;
+      for await (const chunk of this.llm.run(
+        messages,
+        {},
+        undefined,
+        metadata
+      )) {
+        yield chunk.text;
+      }
+    } catch (error) {
+      this.logger.debug(`Error in stream completion: ${error}`);
+      throw error;
     }
+  }
+
+  private async getCompletion(
+    messages: ChatMessage[],
+    type: "tool_relevance" | "conversation" | "tool_processing" = "conversation"
+  ): Promise<string> {
+    let response = "";
+    for await (const chunk of this.streamCompletion(messages, type)) {
+      response += chunk;
+    }
+    return response;
   }
 
   async *invoke(messages: ChatMessage[]): AsyncGenerator<AgentProgress> {
-    // Dataflow
-    // If tool is enabled, check if it is relevant to the query
-    // If tool is relevant, execute the tool and then set the chatMessage artifact to the result, then run final prompt with user question and chatMessage
-    // If tool is not relevant, run last 3 messages through the LLM (But with only latest 1 artifact.)
-    const systemMessage = messages[0] as SystemMessage;
-    const userMessage = messages[messages.length - 1];
+    try {
+      if (!messages || messages.length === 0) {
+        throw new Error("No messages provided");
+      }
 
-    yield {
-      type: "status",
-      content: "Analizuję zapytanie...",
-    };
+      const userMessage = messages[messages.length - 1];
+      const systemMessage = messages[0] as SystemMessage;
+      const query = userMessage?.content as string;
 
-    const relevantToolNames = await this.analyzeQuery(
-      userMessage.content as string,
-      messages
-    );
+      if (!query) {
+        throw new Error("Invalid user message");
+      }
 
-    if (relevantToolNames.length === 0) {
+      yield { type: "status", content: "Analizuję" };
+
+      // Get previous AI response if exists
+      const previousResponse = messages
+        .slice()
+        .reverse()
+        .find(
+          (msg) => msg instanceof AIMessage || msg.role === "assistant"
+        )?.content;
+
+      // Check which tools are relevant
+      const toolResults = await Promise.all(
+        this.tools.map(async (tool) => ({
+          tool,
+          isRelevant: await this.checkToolRelevance(
+            query,
+            tool,
+            previousResponse as string
+          ),
+        }))
+      );
+
+      const toolsToUse = toolResults
+        .filter((t) => t.isRelevant)
+        .map((t) => t.tool);
+
+      // No relevant tools - process without tools
+      if (!toolsToUse.length) {
+        yield {
+          type: "status",
+          content: "Generuję odpowiedź na podstawie kontekstu...",
+        };
+
+        if (messages.length < 3) {
+          yield { type: "response", content: FirstIrrelevantUserQuestion }; // Message that your request is invalid
+          return;
+        }
+
+        const messagesWithLatestArtifacts =
+          this.getMessagesWithLatestArtifacts(messages);
+        for await (const chunk of this.streamCompletion(
+          messagesWithLatestArtifacts,
+          "conversation"
+        )) {
+          yield { type: "response", content: chunk };
+        }
+        return;
+      }
+
+      // Execute relevant tools
       yield {
         type: "status",
-        content: "Generuję odpowiedź na podstawie kontekstu...",
+        content: `Korzystam z: ${toolsToUse.map((t) => t.name).join(", ")}`,
       };
 
-      for await (const chunk of this.processWithoutTools(messages)) {
+      const results: ToolResult[] = [];
+      const artifacts: Artifact[] = [];
+
+      for (const tool of toolsToUse) {
+        yield { type: "status", content: `Korzystam z ${tool.name}...` };
+
+        const { result, artifact } = await this.executeTool(tool, query);
+
+        if (result) {
+          results.push({ tool: tool.name, result });
+        }
+
+        if (artifact) {
+          artifacts.push(artifact);
+          yield {
+            type: "tool_execution",
+            content: `Narzędzie ${tool.name} zwróciło artefakt`,
+            artifacts: [artifact],
+          };
+        }
+      }
+
+      // Generate final response
+      yield { type: "status", content: "Generuję ostateczną odpowiedź..." };
+
+      const finalPrompt = await PROMPTS.processDataPrompt.format({
+        question: query,
+        dataString: results.map((r) => `${r.tool}: ${r.result}`).join("\n"),
+      });
+
+      const finalMessages = [
+        new ChatMessage({
+          role: "system",
+          content: systemMessage.content,
+        }),
+        new ChatMessage({
+          role: "user",
+          content: finalPrompt,
+          additional_kwargs: {
+            artifacts: artifacts.length > 0 ? artifacts : undefined,
+          },
+        }),
+      ];
+
+      // Stream the final response
+      for await (const chunk of this.streamCompletion(
+        finalMessages,
+        "tool_processing"
+      )) {
         yield {
           type: "response",
           content: chunk,
+          artifacts: artifacts.length > 0 ? artifacts : undefined,
         };
       }
-      return;
-    }
-
-    if (relevantToolNames.length > 0) {
+    } catch (error) {
+      this.logger.debug(`Error in invoke: ${error}`);
       yield {
-        type: "status",
-        content: `Postanowiłem użyć ${
-          relevantToolNames.length
-        } narzędzi: ${relevantToolNames.join(", ")}`,
-      };
-    }
-
-    const toolResults = [];
-    const artifacts: Artifact[] = [];
-
-    for (const toolName of relevantToolNames) {
-      const tool = this.tools.find((t) => t.name === toolName);
-      if (!tool) continue;
-
-      yield {
-        type: "status",
-        content: `Czekam na odpowiedź od ${toolName}...`,
-      };
-
-      const { result, artifact } = await this.executeTool(tool, userMessage);
-
-      if (artifact) {
-        artifacts.push(artifact);
-      }
-
-      toolResults.push({
-        tool: toolName,
-        result,
-      });
-
-      yield {
-        type: "tool_execution",
-        content: `Wykonanie narzędzia ${toolName} zakończone`,
-        artifacts: artifact ? [artifact] : undefined,
-      };
-    }
-
-    const formattedResults = toolResults
-      .map((r) => `${r.tool}: ${r.result}`)
-      .join("\n");
-
-    yield {
-      type: "status",
-      content: "Generuję ostateczną odpowiedź...",
-    };
-
-    const finalPrompt = await PROMPTS.processDataPrompt.format({
-      question: userMessage.content,
-    });
-
-    // Create final messages with proper artifact handling
-    const finalMessages = [
-      new ChatMessage({
-        role: "system",
-        content: systemMessage.content,
-      }),
-      new ChatMessage({
-        role: "user",
-        content: finalPrompt,
-        additional_kwargs: {
-          artifacts: formattedResults,
-        },
-      }),
-    ];
-
-    for await (const chunk of this.llm.run(finalMessages, {})) {
-      yield {
-        type: "response",
-        content: chunk.text,
-        artifacts: artifacts,
+        type: "error",
+        content: "An error occurred while processing your request",
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
-
   async call(
     input: string | ChatMessage[]
   ): Promise<{ content: string; artifacts: Artifact[] }> {
-    let messages: ChatMessage[];
-    if (typeof input === "string") {
-      messages = [new ChatMessage({ role: "user", content: input })];
-    } else {
-      messages = input;
-    }
+    try {
+      const messages = Array.isArray(input)
+        ? input
+        : [new ChatMessage({ role: "user", content: input })];
 
-    let lastContent = "";
-    let allArtifacts: Artifact[] = [];
+      let content = "";
+      let artifacts: Artifact[] = [];
 
-    for await (const progress of this.invoke(messages)) {
-      if (progress.type === "response") {
-        lastContent += progress.content;
-        if (progress.artifacts) {
-          allArtifacts = progress.artifacts;
+      for await (const progress of this.invoke(messages)) {
+        if (progress.type === "error") {
+          throw new Error(progress.error || progress.content);
+        }
+        if (progress.type === "response") {
+          content += progress.content;
+          if (progress.artifacts) {
+            artifacts = progress.artifacts;
+          }
         }
       }
-    }
 
-    if (!lastContent) {
-      throw new Error("Nie wygenerowano odpowiedzi");
-    }
+      if (!content) {
+        throw new Error("No response generated");
+      }
 
-    return {
-      content: lastContent,
-      artifacts: allArtifacts,
-    };
+      return { content, artifacts };
+    } catch (error) {
+      this.logger.debug(`Error in call: ${error}`);
+      throw error;
+    }
   }
 }

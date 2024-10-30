@@ -54,10 +54,11 @@ export async function POST(req: NextRequest) {
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm as TogetherLLM)
     );
-    const agent = new AgentRP({
-      llm: llm as AbstractLLM,
-      tools: plugins,
-    });
+    const agent = new AgentRP(
+      llm as AbstractLLM,
+      plugins,
+      true // or true if you want verbose logging
+    );
 
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();

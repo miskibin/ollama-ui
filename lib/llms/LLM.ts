@@ -71,9 +71,8 @@ export abstract class AbstractLLM extends LLM {
       const artifactContent = artifacts
         .map(
           (artifact) =>
-            `<artifact type="${artifact.type}">${JSON.stringify(
-              artifact.data
-            )}</artifact>`
+            `<artifact type="${artifact.type}">
+          ${JSON.stringify(artifact.data)}</artifact>`
         )
         .join("\n");
 
@@ -104,8 +103,8 @@ export abstract class AbstractLLM extends LLM {
   abstract run(
     messages: Array<ChatMessage>,
     options: this["ParsedCallOptions"],
-    metadata?: any,
-    runManager?: CallbackManagerForLLMRun
+    runManager?: CallbackManagerForLLMRun,
+    metadata?: any
   ): AsyncGenerator<any>;
 
   _llmType(): string {

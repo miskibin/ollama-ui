@@ -41,14 +41,13 @@ export const PROMPTS = {
       Answer format:
       RELEVANT: [YES or NO]
       REASON: [single clear explanation why]`),
-  // context could be moved
   processDataPrompt: PromptTemplate.fromTemplate(` 
     Task: Give a short, precise answer basing on artifact:
     Question: {question}
     Current date: ${new Date().toLocaleDateString("pl-PL")}
     Instructions:
     1. Limit answer to 3 sentences.
-    2. Wrap act name with markdown, like [ELI value](url value). Wrap only 1 most relevant document with **bold**.
+    2. Provide url with label to most relevant document.
     3. Answer in Polish. Avoid extra details.
     IMPORTANT: Base answer ONLY on the provided Data. No external info.
     Answer in polish:
