@@ -11,7 +11,8 @@ export const PROMPTS = {
     2. Choose short phrase (max 10 words) in Polish.
     3. Omit words like "projekt", "ustawa", "sejm", "głosowanie", "pomoc".
     4. Use keywords that could be helpful for embeding model to search.
-    phrase (in Polish):`),
+    Example: "Cześć, co grozi za znęcanie się nad zwierzętami?" -> "kary za znęcanie nad zwierzętami"
+    Odpowiedź (in Polish):`),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
       Given:
