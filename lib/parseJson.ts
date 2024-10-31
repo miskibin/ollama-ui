@@ -27,7 +27,6 @@ export function extractSummarableTexts(
           item.title &&
           item.url &&
           item.summary &&
-          item.similarity &&
           typeof item.text_length === "number"
         ) {
           result.push({
@@ -35,7 +34,7 @@ export function extractSummarableTexts(
             summary: item.summary,
             text_length: item.text_length,
             url: item.url,
-            similarity: item.similarity,
+            similarity: item.similarity ?? -1.0,
           });
         }
       });
