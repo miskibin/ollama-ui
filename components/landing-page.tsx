@@ -1,8 +1,6 @@
-"use client";
-
 import React, { Suspense, lazy } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, Search, Database } from "lucide-react";
+import { MessageSquare, Search, Database, CalendarClock } from "lucide-react";
 import FeatureCard from "./landing-page/featureCard";
 import LoginCard from "./landing-page/login";
 import Footer from "./landing-page/footer";
@@ -39,6 +37,18 @@ const fadeIn = {
   visible: { opacity: 1 },
 };
 
+const bannerAnimation = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
+
 export const LoginPage: React.FC<LoginPageProps> = ({
   onOAuthSignIn,
   windowHeight,
@@ -48,6 +58,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       className="flex flex-col bg-gradient-to-b from-background to-secondary/20"
       style={{ minHeight: windowHeight }}
     >
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={bannerAnimation}
+        className="w-full bg-gradient-to-r from-primary/10 to-primary/20 border-b border-primary/20"
+      >
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center gap-2">
+          <CalendarClock className="w-5 h-5 text-primary" />
+          <p className="text-sm md:text-base font-medium text-primary">
+            04.11.2024 asystent stanie się znacznie mądrzejszy!
+          </p>
+        </div>
+      </motion.div>
+
       <div className="w-full mx-auto px-4 mb-12">
         <div className="grid md:grid-cols-2 py-8 md:py-12 gap-12 items-center min-h-screen max-w-6xl mx-auto">
           <motion.div

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import pdf from "pdf-parse";
 
-const MAX_LENGTH = 10000 * 4; // 1 token = 4 chars.  10k tokens = 0.0015$ = 0.0060PLN
+const MAX_LENGTH = 10000 * 5; // 1 token = 4 chars.  10k tokens = 0.0015$ = 0.0060PLN
 // 10 requests = 0.06PLN
 function trimText(text: string, maxLength: number = MAX_LENGTH): string {
   if (text.length <= maxLength) return text;

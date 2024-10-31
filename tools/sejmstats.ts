@@ -29,7 +29,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
             let cleanedQuery = question;
 
             // Generate search query if question is longer than 200 characters
-            if (question.length > 100) {
+            if (question.length > 10) {
               const query = await PROMPTS.generateSearchQuery.format({
                 question: question,
               });

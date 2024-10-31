@@ -2,17 +2,23 @@ import { PromptTemplate } from "@langchain/core/prompts";
 
 export const PROMPTS = {
   generateSearchQuery: PromptTemplate.fromTemplate(`
-    Task: Select the most relevant keyword or short phrase for searching.
+  Task: Select the most relevant keywords for searching, focusing on official categorical terms from the provided list.
 
-    Question: {question}
+  Question: {question}
 
-    Instructions:
-    1. Identify the core issue or event, ignoring procedural aspects.
-    2. Choose short phrase (max 10 words) in Polish.
-    3. Omit words like "projekt", "ustawa", "sejm", "głosowanie", "pomoc".
-    4. Use keywords that could be helpful for embeding model to search.
-    Example: "Cześć, co grozi za znęcanie się nad zwierzętami?" -> "kary za znęcanie nad zwierzętami"
-    Odpowiedź (in Polish):`),
+  Instructions:
+  1. First identify the official category/domain from the list (e.g., oświata, szkolnictwo, edukacja)
+  2. Add only essential specific context if needed (max 2-3 words)
+  3. Create a short phrase (max 5 words) in Polish
+  4. Prioritize formal categories over descriptive terms
+
+  Examples:
+  "Nauczycielka w technikum każe uczniom odkładać telefony na czas sprawdzianu" -> "oświata szkolnictwo nauczyciele"
+  "Co grozi za znęcanie się nad zwierzętami?" -> "ochrona zwierząt"
+  "Czy mogę zwolnić się z pracy bez okresu wypowiedzenia?" -> "zatrudnianie umowa o pracę"
+
+  Odpowiedź (in Polish):
+    `),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
       Given:
@@ -25,8 +31,7 @@ export const PROMPTS = {
       2. Is this a new topic (not following up on previous response)?
       
       Answer format:
-      RELEVANT: [YES or NO]
-      REASON: [single clear explanation why]`),
+      RELEVANT: [YES or NO]`),
   initialToolRelevance: PromptTemplate.fromTemplate(`
       Given:
       - User Question: {query}
