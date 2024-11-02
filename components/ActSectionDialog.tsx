@@ -12,25 +12,22 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, FileSearch, Info, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Artifact } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { extractSummarableTexts } from "@/lib/parseJson";
 import { useChatLogic } from "@/hooks/useChatLogic";
 import { formatNumber } from "@/lib/utils";
+import { ActResponse, isActResponse } from "@/lib/types";
 
-interface SummarableTextDialogProps {
-  artifacts: Artifact[];
+interface ActSectionsDialogProps {
+  actSections: ActResponse[];
 }
 
-export default function Component({ artifacts }: SummarableTextDialogProps) {
-  const summarableTexts = useMemo(
-    () => extractSummarableTexts(artifacts),
-    [artifacts]
-  );
+export default function ActSectionsDialog({
+  actSections,
+}: ActSectionsDialogProps) {
   const { handleSummarize } = useChatLogic();
   const [isOpen, setIsOpen] = useState(false);
-
-  if (summarableTexts.length === 0) {
+  console.log(actSections);
+  if (actSections.length === 0 || !actSections.every(isActResponse)) {
     return null;
   }
 
@@ -62,10 +59,10 @@ export default function Component({ artifacts }: SummarableTextDialogProps) {
         <ScrollArea className="flex-grow overflow-auto">
           <div className="p-6">
             <ul className="space-y-6">
-              {summarableTexts.map((item, index) => (
+              {actSections.map((item, index) => (
                 <li key={index} className="bg-card p-4 rounded-lg shadow-sm">
                   <h3 className="mb-3 text-base font-medium">
-                    {truncateText(item.title, 1050)
+                    {truncateText(item.act_title, 1050)
                       .split("\n")
                       .map((line, i) => (
                         <span key={i}>
@@ -78,7 +75,7 @@ export default function Component({ artifacts }: SummarableTextDialogProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => window.open(item.url, "_blank")}
+                      onClick={() => window.open(item.act_url, "_blank")}
                       className="bg-background hover:bg-accent"
                     >
                       <ExternalLink className="mr-2 h-4 w-4" />
@@ -90,9 +87,9 @@ export default function Component({ artifacts }: SummarableTextDialogProps) {
                       onClick={() => {
                         setIsOpen(false);
                         handleSummarize(
-                          item.url,
+                          item.act_url,
                           "",
-                          `Podsumowanie dokumentu: [${item.title}](${item.url})\n\n${item.summary}`
+                          `Podsumowanie dokumentu: [${item.act_title}](${item.act_url})\n\n${item.summary}`
                         );
                       }}
                     >
@@ -104,13 +101,13 @@ export default function Component({ artifacts }: SummarableTextDialogProps) {
                         variant="secondary"
                         className="text-xs text-muted-foreground"
                       >
-                        Ilość znaków: {formatNumber(item.text_length)}
+                        Ilość znaków: {formatNumber(item.content.length)}
                       </Badge>
                       <Badge
                         variant="secondary"
                         className="text-xs text-muted-foreground"
                       >
-                        zgodność: {item.similarity.toFixed(2)}
+                        zgodność: {item.similarity_score.toFixed(2)}
                       </Badge>
                     </div>
                   </div>

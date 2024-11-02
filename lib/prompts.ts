@@ -2,22 +2,11 @@ import { PromptTemplate } from "@langchain/core/prompts";
 
 export const PROMPTS = {
   generateSearchQuery: PromptTemplate.fromTemplate(`
-  Task: Select the most relevant keywords for searching, focusing on official categorical terms from the provided list.
+  Task: Rewrite question using formal language. Question must be understandable for embeding model. Be specific and concise. Add context that might be useful for the model to understand the question.
+  Don't include words like "please" or "can you" in the question.
 
   Question: {question}
-
-  Instructions:
-  1. First identify the official category/domain from the list (e.g., oświata, szkolnictwo, edukacja)
-  2. Add only essential specific context if needed (max 2-3 words)
-  3. Create a short phrase (max 5 words) in Polish
-  4. Prioritize formal categories over descriptive terms
-
-  Examples:
-  "Nauczycielka w technikum każe uczniom odkładać telefony na czas sprawdzianu" -> "oświata szkolnictwo nauczyciele"
-  "Co grozi za znęcanie się nad zwierzętami?" -> "ochrona zwierząt"
-  "Czy mogę zwolnić się z pracy bez okresu wypowiedzenia?" -> "zatrudnianie umowa o pracę"
-
-  Odpowiedź (in Polish):
+    Answer in Polish language:
     `),
 
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
@@ -43,15 +32,8 @@ export const PROMPTS = {
       RELEVANT: [YES or NO]
       REASON: [single clear explanation why]`),
   processDataPrompt: PromptTemplate.fromTemplate(` 
-    Task: Give a short, precise answer basing on artifact:
-    Question: {question}
-    Current date: ${new Date().toLocaleDateString("pl-PL")}
-    Instructions:
-    1. LIMIT answer to 3 sentences.
-    2. Provide url with label to MOST relevant document.
-    3. Answer in Polish. Avoid extra details.
-    Base answer ONLY on the provided Data. No external info.
-    Answer in polish:
+    "Bazując na dokumencie, odpowiedz konkretnie i krótko na pytanie:\n{question}\n\n1. Używaj formatowania markdown.\n2. Jeśli znajdziesz pasujący cytat, wprowadź go wraz z nazwą dokumentu i artykułem."y do odpowiedzialności karnej za czyny zabronione, a sąd oceniając szkodliwość czynu uwzględnia okoliczności popełnienia, motywację i rodzaj naruszonego dobra. Mienie o wartości powyżej 200 000 zł uznaje się za mienie znacznej wartości, a powyżej 1 000 000 zł – za mienie wielkiej wartości. Kradzież charakteryzująca się lekceważącym zachowaniem wobec właściciela lub użyciem przemocy to kradzież szczególnie zuchwała. Osoba niepełnoletnia w chwili popełnienia czynu, ale poniżej 24 lat w czasie wyroku, jest uważana za młodocianego.",
+            "content": "Rozdział XIV\nObjaśnienie wyrażeń ustawowych\nArt. 115. § 1. Czynem zabronionym jest zachowanie o znamionach określonych w ustawie karnej.\n§ 2.78) Przy ocenie stopnia społecznej szkodliwości czynu sąd bierze pod uwagę rodzaj i charakter naruszonego lub\nzagrożonego dobra, rozmiary wyrządzonej lub grożącej szkody, sposób i okoliczności popełnienia czynu, wagę naruszonych\nprzez sprawcę obowiązkó
   `),
 
   answerQuestion: PromptTemplate.fromTemplate(

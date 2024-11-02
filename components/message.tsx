@@ -18,7 +18,7 @@ import { useChatContext } from "@/app/ChatContext";
 import { Message } from "@/lib/types";
 import { FeedbackDialog } from "@/components/feedback-dialog";
 import PluginDataDialog from "./plugin-data-dialog";
-import SummarableTextDialog from "./SummarableTextDialog";
+import SummarableTextDialog from "./ActSectionDialog";
 import { cn } from "@/lib/utils";
 import { useFeedbackLogic } from "@/hooks/feedback";
 import { ContinuePromptPlaceholder, PROMPTS } from "@/lib/prompts";
@@ -196,7 +196,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     return (
       <div className="flex flex-wrap gap-2 mt-2">
         <PluginDataDialog artifacts={message.artifacts} />
-        <SummarableTextDialog artifacts={message.artifacts} />
+        <SummarableTextDialog actSections={message.totalData || []} />
       </div>
     );
   };

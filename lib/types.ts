@@ -3,8 +3,30 @@ export type Message = {
   role: "user" | "assistant" | "system";
   content: string;
   artifacts: Artifact[];
+  totalData?: any[];
 };
-
+export interface ActResponse {
+  act_url: string;
+  act_title: string;
+  summary: string;
+  content: string;
+  chapters: string;
+  act_announcement_date: string;
+  similarity_score: number;
+}
+export function isActResponse(obj: any): obj is ActResponse {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    typeof obj.act_url === "string" &&
+    typeof obj.act_title === "string" &&
+    typeof obj.summary === "string" &&
+    typeof obj.content === "string" &&
+    typeof obj.chapters === "string" &&
+    typeof obj.act_announcement_date === "string" &&
+    typeof obj.similarity_score === "number"
+  );
+}
 export interface Artifact {
   type: string;
   question: string;
