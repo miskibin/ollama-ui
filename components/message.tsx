@@ -196,7 +196,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     return (
       <div className="flex flex-wrap gap-2 mt-2">
         <PluginDataDialog artifacts={message.artifacts} />
-        <SummarableTextDialog actSections={message.totalData || []} />
+        <SummarableTextDialog actSections={message.data || []} />
       </div>
     );
   };

@@ -2,8 +2,8 @@ export type Message = {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  artifacts: Artifact[];
-  totalData?: any[];
+  artifacts: Artifact[]; // Artifacts are addotonal data that models can use to generate responses
+  data?: any[]; // Data is data from the tool. This is not visivle for the model
 };
 export interface ActResponse {
   act_url: string;

@@ -19,7 +19,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
   return new DynamicStructuredTool({
     name: "sejm_stats_analyzer",
     description:
-      "Searches and analyzes laws, legal regulations based on user questions. Can provide information, and answer questions about various laws. ",
+      "Searches and analyzes laws, legal regulations based on user questions. Can provide information, and answer questions about various laws.",
     schema: sejmStatsSchema,
     func: async ({ question }: z.infer<typeof sejmStatsSchema>) => {
       try {
@@ -27,8 +27,6 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
           new RunnablePassthrough(),
           async ({ question }) => {
             let cleanedQuery = question;
-
-            // Generate search query if question is longer than 200 characters
             if (question.length > 10) {
               const query = await PROMPTS.generateSearchQuery.format({
                 question: question,
@@ -44,17 +42,24 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
               searchQuery: cleanedQuery,
             });
 
-            const data = await searchOptimized(cleanedQuery);
+            const searchResults = await searchOptimized(cleanedQuery);
             const artifact: Artifact = {
               type: "sejm_stats",
               question,
               searchQuery: cleanedQuery,
-              data,
+              data: searchResults.map((act) => ({
+                act_url: act.act_url,
+                act_title: act.act_title,
+                content: act.content,
+              })),
             };
 
+            const data = searchResults;
+
             return {
-              result: JSON.stringify(data),
+              result: JSON.stringify(searchResults),
               artifact,
+              data,
             };
           },
         ]);
@@ -69,6 +74,7 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
               ? `Error analyzing Sejm statistics: ${error.message}`
               : "Error analyzing Sejm statistics: Unknown error",
           artifact: null,
+          data: null,
         });
       }
     },
