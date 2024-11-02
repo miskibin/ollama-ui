@@ -58,20 +58,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       className="flex flex-col bg-gradient-to-b from-background to-secondary/20"
       style={{ minHeight: windowHeight }}
     >
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={bannerAnimation}
-        className="w-full bg-gradient-to-r from-primary/10 to-primary/20 border-b border-primary/20"
-      >
+      <div className="w-full bg-gradient-to-r from-destructive/10 to-destructive/20 border-b border-destructive/20">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center gap-2">
-          <CalendarClock className="w-5 h-5 text-primary" />
-          <p className="text-sm md:text-base font-medium text-primary">
-            04.11.2024 asystent stanie się znacznie mądrzejszy!
+          <CalendarClock className="w-5 h-5 text-destructive" />
+          <p className="text-sm md:text-base font-medium text-destructive">
+            Trwa aktualizacja.
           </p>
         </div>
-      </motion.div>
-
+      </div>
       <div className="w-full mx-auto px-4 mb-12">
         <div className="grid md:grid-cols-2 py-8 md:py-12 gap-12 items-center min-h-screen max-w-6xl mx-auto">
           <motion.div

@@ -38,14 +38,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setEditingMessageId,
     editMessage,
     regenerateMessage,
-    handleSummarize,
     deleteMessage,
-    messages,
   } = useChatContext();
-
   const [editInput, setEditInput] = useState(message.content);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
-  const [actUrl, setActUrl] = useState<string | null>(null);
   const isGenerating = isLoading && isLastMessage;
 
   const {
@@ -57,22 +53,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setReason,
     handleFeedback,
   } = useFeedbackLogic();
-
-  useEffect(() => {
-    const wrappedLinkRegex = /\*\*\[.*?\]\((https?:\/\/[^\s)]+\.pdf)\)\*\*/;
-    const regularLinkRegex = /\[.*?\]\((https?:\/\/[^\s)]+\.pdf)\)/;
-    const wrappedMatch = message.content.match(wrappedLinkRegex);
-    if (wrappedMatch) {
-      setActUrl(wrappedMatch[1]);
-    } else {
-      const regularMatch = message.content.match(regularLinkRegex);
-      if (regularMatch) {
-        setActUrl(regularMatch[1]);
-      } else {
-        setActUrl(null);
-      }
-    }
-  }, [message.content]);
 
   const handleEditStart = () => {
     setEditingMessageId(message.id);
@@ -94,41 +74,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       setCopiedMessageId(message.id);
       setTimeout(() => setCopiedMessageId(null), 2000);
     });
-  };
-
-  const handleDownloadAndSummarize = async () => {
-    if (actUrl) {
-      await handleSummarize(actUrl, messages[messages.length - 2].content);
-    }
-  };
-
-  const renderActSummaryPrompt = () => {
-    if (
-      !actUrl ||
-      !isLastMessage ||
-      message.role !== "assistant" ||
-      isGenerating ||
-      message.content.startsWith("Podsumowanie") // Already summarized
-    ) {
-      return null;
-    }
-
-    return (
-      <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-        <FileText className="h-4 w-4" />
-        <span>Czy mam przeanalizować wspomniany akt?</span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDownloadAndSummarize}
-          className="ml-2 gap-2"
-          disabled={isLoading}
-        >
-          <FastForward className="h-4 w-4" />
-          Kontynuuj odpowiedź
-        </Button>
-      </div>
-    );
   };
 
   const renderMessageButtons = () => {
@@ -251,7 +196,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 <MarkdownResponse content={message.content} />
               )}
               {renderArtifacts()}
-              {renderActSummaryPrompt()}
               {!isGenerating && renderMessageButtons()}
             </div>
           )}

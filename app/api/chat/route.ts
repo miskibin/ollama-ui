@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
                 role: "assistant" as const,
                 content: progress.content,
                 artifacts: progress.artifacts || [],
+                data: progress.data || [],
               },
             ],
           };

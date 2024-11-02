@@ -8,7 +8,6 @@ import { FirstIrrelevantUserQuestion, PROMPTS } from "./prompts";
 import { LoggerService } from "./logger";
 import { Artifact } from "@/lib/types";
 import { AbstractLLM } from "./llms/LLM";
-import { Chat } from "together-ai/resources/index.mjs";
 
 type AgentProgressType = "status" | "tool_execution" | "response" | "error";
 
@@ -17,8 +16,12 @@ interface AgentProgress {
   content: string;
   artifacts?: Artifact[];
   error?: string;
+  data?: any[];
 }
-
+interface ToolExecutionResult {
+  artifacts?: Artifact[];
+  data?: any[];
+}
 export class AgentRP {
   private logger: LoggerService;
 
@@ -71,25 +74,18 @@ export class AgentRP {
       ? recentMessages.slice(recentMessages.length - 1 - lastArtifactIndex)
       : recentMessages;
   }
-
   private async executeTool(tool: StructuredToolInterface, question: string) {
     try {
-      const result = await tool.invoke({ question });
-      const resultString = result?.toString() || "";
-      try {
-        const parsed = JSON.parse(resultString);
-        return parsed?.artifact
-          ? { result: parsed.result || resultString, artifact: parsed.artifact }
-          : { result: resultString };
-      } catch {
-        return { result: resultString };
-      }
+      const { artifacts, data } = await tool.invoke({ question });
+      return {
+        artifacts: artifacts || null,
+        data: data || null,
+      };
     } catch (error) {
       this.logger.debug(`Error executing tool ${tool.name}: ${error}`);
       return { result: `Error: Failed to execute tool ${tool.name}` };
     }
   }
-
   private async *streamCompletion(
     messages: ChatMessage[],
     type:
@@ -120,7 +116,6 @@ export class AgentRP {
     }
     return response;
   }
-
   async *invoke(messages: ChatMessage[]): AsyncGenerator<AgentProgress> {
     try {
       if (!messages?.length) throw new Error("No messages provided");
@@ -178,21 +173,23 @@ export class AgentRP {
       };
 
       const toolResults = [];
-      const artifacts: Artifact[] = [];
 
+      // Execute all tools and collect results
       for (const tool of relevantTools) {
         yield { type: "status", content: `Korzystam z ${tool.name}...` };
-        const { result, artifact } = await this.executeTool(
+        const { artifacts, data } = await this.executeTool(
           tool,
           query as string
         );
-        if (result) toolResults.push({ tool: tool.name, result });
-        if (artifact) {
-          artifacts.push(artifact);
+
+        if (artifacts) toolResults.push({ tool: tool.name, result: artifacts });
+        console.log("Tool DATTAAAA:", data);
+        if (artifacts || data) {
           yield {
             type: "tool_execution",
-            content: `Narzędzie ${tool.name} zwróciło artefakt`,
-            artifacts: [artifact],
+            content: `Narzędzie ${tool.name} zwróciło wyniki`,
+            artifacts: artifacts,
+            data: data,
           };
         }
       }
@@ -201,27 +198,20 @@ export class AgentRP {
 
       const finalPrompt = await PROMPTS.processDataPrompt.format({
         question: query,
-        dataString: toolResults.map((r) => `${r.tool}: ${r.result}`).join("\n"),
+        dataString: toolResults
+          .map((r) => `${r.tool}: ${JSON.stringify(r.result)}`)
+          .join("\n"),
       });
 
+      // Stream final response without artifacts or data
       for await (const chunk of this.streamCompletion(
         [
           new ChatMessage({ role: "system", content: systemMessage.content }),
-          new ChatMessage({
-            role: "user",
-            content: finalPrompt,
-            additional_kwargs: {
-              artifacts: artifacts.length ? artifacts : undefined,
-            },
-          }),
+          new ChatMessage({ role: "user", content: finalPrompt }),
         ],
         "conversation"
       )) {
-        yield {
-          type: "response",
-          content: chunk,
-          artifacts: artifacts.length ? artifacts : undefined,
-        };
+        yield { type: "response", content: chunk };
       }
     } catch (error) {
       this.logger.debug(`Error in invoke: ${error}`);

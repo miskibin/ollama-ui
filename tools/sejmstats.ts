@@ -8,7 +8,6 @@ import { searchOptimized } from "./sejmstats-server";
 import { TogetherLLM } from "@/lib/llms/TogetherLLm";
 import { PROMPTS } from "@/lib/prompts";
 import { Artifact } from "@/lib/types";
-
 const sejmStatsSchema = z.object({
   question: z
     .string()
@@ -36,12 +35,6 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
                 .replace(/^(Query:|Search query:|Generated query:)/i, "")
                 .trim();
             }
-
-            console.info("SEJM-STATS", {
-              question,
-              searchQuery: cleanedQuery,
-            });
-
             const searchResults = await searchOptimized(cleanedQuery);
             const artifact: Artifact = {
               type: "sejm_stats",
@@ -55,27 +48,24 @@ export const createSejmStatsTool = (model: TogetherLLM) => {
             };
 
             const data = searchResults;
-
+            console.log("Sejm stats data:", data);
             return {
-              result: JSON.stringify(searchResults),
-              artifact,
-              data,
+              artifacts: [artifact],
+              data: data,
             };
           },
         ]);
 
         const result = await sequence.invoke({ question });
-        return JSON.stringify(result);
+        return result; // Return the result directly
       } catch (error) {
         console.error("Error in sejm_stats_analyzer:", error);
-        return JSON.stringify({
+        return {
           result:
             error instanceof Error
               ? `Error analyzing Sejm statistics: ${error.message}`
               : "Error analyzing Sejm statistics: Unknown error",
-          artifact: null,
-          data: null,
-        });
+        };
       }
     },
     returnDirect: false,

@@ -90,7 +90,8 @@ export const useChatStore = create<ChatState>()(
             msg.id === id
               ? {
                   ...updatedMessage,
-                  artifacts: updatedMessage.artifacts || [], // Ensure artifacts array exists
+                  artifacts: updatedMessage.artifacts || msg.artifacts,
+                  data: updatedMessage.data || msg.data,
                 }
               : msg
           ),

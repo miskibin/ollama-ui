@@ -12,7 +12,7 @@ class SejmStatsCommunicator {
       `${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/vector-search`
     );
     url.searchParams.append("q", searchQuery);
-    url.searchParams.append("n", "1");
+    url.searchParams.append("n", "2");
 
     try {
       const response = await fetch(url.toString());
