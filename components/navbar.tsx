@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut, Star, Heart, User2, Paperclip } from "lucide-react";
-
+import { LogOut, Star, Heart, User2 } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenuContent,
@@ -73,7 +72,7 @@ const Navbar: React.FC = () => {
         isPatron
           ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg dark:from-purple-800 dark:to-indigo-900"
           : "bg-card"
-      } border-b border-border md:p-4 p-2 py-3 mx-0`}
+      } border-b border-border p-3 md:p-3`}
     >
       <div className="flex items-center space-x-2">
         <SidebarTrigger
