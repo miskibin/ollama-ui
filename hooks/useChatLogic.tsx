@@ -53,13 +53,14 @@ export const useChatLogic = () => {
       duration: 5000,
     });
   };
-
   const processStreamResponse = async (
     reader: ReadableStreamDefaultReader<Uint8Array>,
     newMessageId: string
   ) => {
     const decoder = new TextDecoder();
     let currentContent = "";
+    let allArtifacts: Artifact[] = [];
+    let allData: any[] = [];
 
     try {
       while (true) {
@@ -71,7 +72,14 @@ export const useChatLogic = () => {
           if (!line.startsWith("data: ")) continue;
 
           try {
-            const data = JSON.parse(line.slice(6)) as ProgressData;
+            let data: ProgressData;
+            try {
+              data = JSON.parse(line.slice(6)) as ProgressData;
+            } catch (error) {
+              console.error("Error parsing JSON:", error, line);
+              continue;
+            }
+
             if (!data?.messages?.[0]) continue;
 
             const message = data.messages[0];
@@ -82,12 +90,20 @@ export const useChatLogic = () => {
 
               case "tool_execution":
                 setStatus(message.content);
+                // Accumulate artifacts and data from chunks
+                if (message.artifacts) {
+                  allArtifacts = [...allArtifacts, ...message.artifacts];
+                }
+                if (message.data) {
+                  allData = [...allData, ...message.data];
+                }
+                // Update message with accumulated artifacts and data
                 updateMessage(newMessageId, {
                   id: newMessageId,
                   role: "assistant",
                   content: currentContent,
-                  artifacts: message.artifacts,
-                  data: message.data,
+                  artifacts: allArtifacts,
+                  data: allData,
                 });
                 break;
 
@@ -107,25 +123,25 @@ export const useChatLogic = () => {
                 break;
             }
           } catch (error) {
-            console.error("Error processing stream chunk:", error);
+            console.error("Error processing stream chunk:", error, line);
             handleError(error);
           }
         }
       }
 
-      // Final content update without artifacts or data
+      // Final update with all accumulated content and data
       updateMessage(newMessageId, {
         id: newMessageId,
         role: "assistant",
         content: currentContent.trim(),
+        artifacts: allArtifacts,
+        data: allData,
       });
-      // show final message
     } catch (error) {
       handleError(error);
       throw error;
     }
   };
-
   const getResponse = async (messageHistory: Message[]) => {
     setIsLoading(true);
     setStatus(null);
