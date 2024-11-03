@@ -10,7 +10,7 @@ import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
 import { OpenAILLM } from "@/lib/llms/OpenAILLm";
 import { AbstractLLM } from "@/lib/llms/LLM";
-const MAX_CHUNK_SIZE = 4000;
+
 const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
   [PluginNames.Wikipedia]: createWikipediaTool,
@@ -31,80 +31,6 @@ function createLLM(modelName: string, options: any) {
     ...options,
   });
 }
-function splitIntoChunks(content: string, maxSize: number): string[] {
-  const chunks: string[] = [];
-  let currentChunk = "";
-
-  // Split by newlines while preserving them
-  const lines = content.split(/(\n)/);
-
-  for (const part of lines) {
-    if ((currentChunk + part).length > maxSize) {
-      if (currentChunk) {
-        chunks.push(currentChunk);
-        currentChunk = "";
-      }
-      // If single part is longer than maxSize, split it while preserving words
-      if (part.length > maxSize) {
-        let remainingText = part;
-        while (remainingText.length > 0) {
-          // Find last space within maxSize limit
-          let splitIndex = maxSize;
-          if (remainingText.length > maxSize) {
-            splitIndex = remainingText.lastIndexOf(" ", maxSize);
-            if (splitIndex === -1) splitIndex = maxSize; // If no space found, split at maxSize
-          }
-
-          chunks.push(remainingText.slice(0, splitIndex));
-          remainingText = remainingText.slice(splitIndex).trimStart();
-        }
-      } else {
-        currentChunk = part;
-      }
-    } else {
-      currentChunk += part;
-    }
-  }
-
-  if (currentChunk) {
-    chunks.push(currentChunk);
-  }
-
-  return chunks;
-}
-
-async function writeChunkedResponse(
-  writer: WritableStreamDefaultWriter,
-  type: string,
-  content: string,
-  artifacts?: any[],
-  data?: any[]
-) {
-  const chunks = splitIntoChunks(content, MAX_CHUNK_SIZE);
-  const encoder = new TextEncoder();
-
-  for (let i = 0; i < chunks.length; i++) {
-    const isLastChunk = i === chunks.length - 1;
-    const response = {
-      type,
-      messages: [
-        {
-          id: generateUniqueId(),
-          role: "assistant" as const,
-          content: chunks[i],
-          // Only include artifacts and data in the last chunk
-          ...(isLastChunk && artifacts ? { artifacts } : {}),
-          ...(isLastChunk && data ? { data } : {}),
-        },
-      ],
-    };
-
-    await writer.write(
-      encoder.encode("data: " + JSON.stringify(response) + "\n\n")
-    );
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
     const referer = req.headers.get("referer");
@@ -116,45 +42,50 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
+
     const { messages, systemPrompt, enabledPluginIds, modelName, options } =
       await req.json();
     const langChainMessages: ChatMessage[] = [
       new ChatMessage({ role: "system", content: systemPrompt }),
       ...messages.map(convertRPMessageToLangChainMessage),
     ];
-
     const llm = createLLM(modelName, options);
     const plugins = enabledPluginIds.map((id: PluginNames) =>
       PLUGIN_MAPPING[id](llm as TogetherLLM)
     );
-    const agent = new AgentRP(llm as AbstractLLM, plugins, true);
+    const agent = new AgentRP(
+      llm as AbstractLLM,
+      plugins,
+      true // or true if you want verbose logging
+    );
 
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
+    const encoder = new TextEncoder();
 
     (async () => {
       try {
         for await (const progress of agent.invoke(langChainMessages)) {
-          switch (progress.type) {
-            case "status":
-            case "response":
-              await writeChunkedResponse(
-                writer,
-                progress.type,
-                progress.content
-              );
-              break;
+          const response = {
+            type: progress.type,
+            messages: [
+              {
+                id: generateUniqueId(),
+                role: "assistant" as const,
+                content: progress.content,
+                artifacts: progress.artifacts || [],
+                data: progress.data || [],
+              },
+            ],
+          };
 
-            case "tool_execution":
-              await writeChunkedResponse(
-                writer,
-                progress.type,
-                progress.content,
-                progress.artifacts,
-                progress.data
-              );
-              break;
-          }
+          const chunk = `data: ${JSON.stringify(response)}\n\n`;
+          const encodedChunk = encoder.encode(chunk);
+          const contentLength = encodedChunk.byteLength;
+          await writer.write(
+            encoder.encode(`Content-Length: ${contentLength}\n`)
+          );
+          await writer.write(encodedChunk);
         }
 
         await writer.close();
@@ -171,7 +102,7 @@ export async function POST(req: NextRequest) {
               : "An unexpected error occurred",
         };
         await writer.write(
-          new TextEncoder().encode(`data: ${JSON.stringify(errorMessage)}\n\n`)
+          encoder.encode(`data: ${JSON.stringify(errorMessage)}\n\n`)
         );
         await writer.close();
       }
