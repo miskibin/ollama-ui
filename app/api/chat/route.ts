@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
             new Promise((resolve) => setTimeout(resolve, ms));
 
           // Update the write operation
-          await sleep(300);
+          await sleep(10);
           await writer.write(
             encoder.encode(`data: ${JSON.stringify(response)}\n\n`)
           );
