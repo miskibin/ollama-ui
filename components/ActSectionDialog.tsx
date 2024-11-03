@@ -111,7 +111,7 @@ export default function ActSectionsDialog({
       <DialogTrigger asChild>
         <Badge
           variant="outline"
-          className="cursor-pointer hover:bg-primary/10 transition-colors duration-200"
+          className="cursor-pointer text-primary border-primary hover:bg-primary/10 transition-colors duration-200"
         >
           <FileText className="w-3 h-3 mr-1.5" />
           Otwórz dokumenty
@@ -133,7 +133,12 @@ export default function ActSectionsDialog({
                 <div className="p-4">
                   <div className="mb-3">
                     <h3 className="text-base font-medium mb-2">
-                      {item.act_title}
+                      <span className=" text-muted-foreground">
+                        {item.act_title.split("tekstu ustawy")[0]} tekstu ustawy
+                      </span>
+                      <span className="font-bold">
+                        {item.act_title.split("tekstu ustawy")[1]}
+                      </span>
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="text-xs">
@@ -156,10 +161,10 @@ export default function ActSectionsDialog({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-2 flex-1 justify-between">
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="ghost"
                       onClick={() => window.open(item.act_url, "_blank")}
                     >
                       <ExternalLink className="mr-1.5 h-3 w-3" />
@@ -168,7 +173,7 @@ export default function ActSectionsDialog({
 
                     <Button
                       size="sm"
-                      variant="secondary"
+                      variant="ghost"
                       onClick={() => toggleSection(index)}
                     >
                       {expandedSections.includes(index) ? (
