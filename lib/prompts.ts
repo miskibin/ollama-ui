@@ -2,11 +2,11 @@ import { PromptTemplate } from "@langchain/core/prompts";
 
 export const PROMPTS = {
   generateSearchQuery: PromptTemplate.fromTemplate(`
-    Task: Rewrite the question in a precise, formal style to generate an input query for a vector database. The query should be direct, specific, and provide essential context for accurate matching. Avoid polite language (e.g., "please") and focus on keywords relevant to Polish law.
-    
-    Original Question: {question}
-    
-    Answer in Polish language:
+Task: Rewrite the question to create a concise, legally-relevant search query for a vector database. Use formal terminology and specific legal keywords directly related to the topic. Exclude unnecessary phrases like "zgodne z polskim prawem" since the context is already Polish law.
+
+Original Question: {question}
+
+Answer with specific keywords in Polish:
     `),
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
       Given:
