@@ -3,7 +3,8 @@
 import { ActResponse } from "@/lib/types";
 
 class SejmStatsCommunicator {
-  private static readonly SEJM_STATS_BASE_URL = process.env.SEJM_STATS_BASE_URL;
+  private static readonly SEJM_STATS_BASE_URL =
+    process.env.NEXT_PUBLIC_SEJM_STATS_BASE_URL;
   async search(searchQuery: string): Promise<ActResponse[]> {
     console.debug("Search function started");
     const url = new URL(
