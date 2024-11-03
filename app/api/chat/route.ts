@@ -79,9 +79,13 @@ export async function POST(req: NextRequest) {
             ],
           };
 
+          const chunk = `data: ${JSON.stringify(response)}\n\n`;
+          const encodedChunk = encoder.encode(chunk);
+          const contentLength = encodedChunk.byteLength;
           await writer.write(
-            encoder.encode(`data: ${JSON.stringify(response)}\n\n`)
+            encoder.encode(`Content-Length: ${contentLength}\n`)
           );
+          await writer.write(encodedChunk);
         }
 
         await writer.close();

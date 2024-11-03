@@ -183,7 +183,6 @@ export class AgentRP {
         );
 
         if (artifacts) toolResults.push({ tool: tool.name, result: artifacts });
-        console.log("Tool DATTAAAA:", data);
         if (artifacts || data) {
           yield {
             type: "tool_execution",
