@@ -3,9 +3,7 @@
 import { ActResponse } from "@/lib/types";
 
 class SejmStatsCommunicator {
-  private static readonly SEJM_STATS_BASE_URL = "http://127.0.0.1:8000/apiInt";
-  //   private static readonly SEJM_STATS_BASE_URL = "https://sejm-stats.pl/apiInt";
-
+  private static readonly SEJM_STATS_BASE_URL = process.env.SEJM_STATS_BASE_URL;
   async search(searchQuery: string): Promise<ActResponse[]> {
     console.debug("Search function started");
     const url = new URL(

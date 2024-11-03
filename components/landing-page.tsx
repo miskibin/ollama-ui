@@ -58,11 +58,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       className="flex flex-col bg-gradient-to-b from-background to-secondary/20"
       style={{ minHeight: windowHeight }}
     >
-      <div className="w-full bg-gradient-to-r from-destructive/10 to-destructive/20 border-b border-destructive/20">
+      <div className="w-full  border-b border-primary/20">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center gap-2">
           <CalendarClock className="w-5 h-5 text-destructive" />
-          <p className="text-sm md:text-base font-medium text-destructive">
-            Trwa aktualizacja.
+          <p className="text-sm md:text-base font-medium text-primary">
+            Asystent właśnie stał się mądrzejszy!
           </p>
         </div>
       </div>

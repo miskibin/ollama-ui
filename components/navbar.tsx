@@ -133,12 +133,6 @@ const Navbar: React.FC = () => {
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Wyloguj</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center cursor-pointer">
-                <Link href="/privacy" className="flex items-center w-full">
-                  <Paperclip className="mr-2 h-4 w-4" />
-                  Polityka prywatności
-                </Link>
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
