@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
           };
 
           // Send each chunk as SSE format
+          console.log(JSON.stringify(response).length)
           await writer.write(
             encoder.encode(`data: ${JSON.stringify(response)}\n\n`)
           );
