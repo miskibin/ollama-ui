@@ -5,7 +5,6 @@ import {
 } from "@langchain/core/messages";
 import { StructuredToolInterface } from "@langchain/core/tools";
 import { FirstIrrelevantUserQuestion, PROMPTS } from "./prompts";
-import { LoggerService } from "./logger";
 import { Artifact } from "@/lib/types";
 import { AbstractLLM } from "./llms/LLM";
 
@@ -23,15 +22,10 @@ interface ToolExecutionResult {
   data?: any[];
 }
 export class AgentRP {
-  private logger: LoggerService;
-
   constructor(
     private llm: AbstractLLM,
     private tools: StructuredToolInterface[],
-    verbose = false
-  ) {
-    this.logger = new LoggerService(verbose);
-  }
+  ) {}
 
   private async checkToolRelevance(
     query: string,
@@ -51,7 +45,7 @@ export class AgentRP {
 
       return result.toLowerCase().includes("yes");
     } catch (error) {
-      this.logger.debug(`Error checking tool relevance: ${error}`);
+      console.debug(`Error checking tool relevance: ${error}`);
       return false;
     }
   }
@@ -80,7 +74,7 @@ export class AgentRP {
         data: data || null,
       };
     } catch (error) {
-      this.logger.debug(`Error executing tool ${tool.name}: ${error}`);
+      console.debug(`Error executing tool ${tool.name}: ${error}`);
       return { result: `Error: Failed to execute tool ${tool.name}` };
     }
   }
@@ -99,7 +93,7 @@ export class AgentRP {
         yield chunk.text;
       }
     } catch (error) {
-      this.logger.debug(`Error in stream completion: ${error}`);
+      console.debug(`Error in stream completion: ${error}`);
       throw error;
     }
   }
@@ -143,7 +137,7 @@ export class AgentRP {
         }
       }
     } catch (error) {
-      this.logger.debug(`Error streaming tool results: ${error}`);
+      console.debug(`Error streaming tool results: ${error}`);
       throw error;
     }
   }
@@ -258,7 +252,7 @@ export class AgentRP {
         yield { type: "response", content: chunk };
       }
     } catch (error) {
-      this.logger.debug(`Error in invoke: ${error}`);
+      console.debug(`Error in invoke: ${error}`);
       yield {
         type: "error",
         content: "An error occurred while processing your request",
@@ -289,7 +283,7 @@ export class AgentRP {
       if (!content) throw new Error("No response generated");
       return { content, artifacts };
     } catch (error) {
-      this.logger.debug(`Error in call: ${error}`);
+      console.debug(`Error in call: ${error}`);
       throw error;
     }
   }

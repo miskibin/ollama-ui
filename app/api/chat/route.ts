@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SystemMessage, ChatMessage } from "@langchain/core/messages";
-import { OpenAI } from "@langchain/openai";
 import { createSejmStatsTool } from "@/tools/sejmstats";
 import { convertRPMessageToLangChainMessage } from "@/lib/utils";
 import { TogetherAPIError, TogetherLLM } from "@/lib/llms/TogetherLLm";
@@ -10,7 +9,7 @@ import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
 import { OpenAILLM } from "@/lib/llms/OpenAILLm";
 import { AbstractLLM } from "@/lib/llms/LLM";
-
+export const runtime = "edge";
 const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
   [PluginNames.Wikipedia]: createWikipediaTool,
@@ -33,6 +32,7 @@ function createLLM(modelName: string, options: any) {
 }
 export async function POST(req: NextRequest) {
   try {
+    // Validate referer
     const referer = req.headers.get("referer");
     const expectedReferer = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
 
@@ -45,26 +45,26 @@ export async function POST(req: NextRequest) {
 
     const { messages, systemPrompt, enabledPluginIds, modelName, options } =
       await req.json();
-    const langChainMessages: ChatMessage[] = [
-      new ChatMessage({ role: "system", content: systemPrompt }),
-      ...messages.map(convertRPMessageToLangChainMessage),
-    ];
-    const llm = createLLM(modelName, options);
-    const plugins = enabledPluginIds.map((id: PluginNames) =>
-      PLUGIN_MAPPING[id](llm as TogetherLLM)
-    );
-    const agent = new AgentRP(
-      llm as AbstractLLM,
-      plugins,
-      true // or true if you want verbose logging
-    );
 
+    // Create transform stream for chunked encoding
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
     const encoder = new TextEncoder();
 
+    // Process messages in background
     (async () => {
       try {
+        const llm = createLLM(modelName, options);
+        const plugins = enabledPluginIds.map((id: PluginNames) =>
+          PLUGIN_MAPPING[id](llm as TogetherLLM)
+        );
+        const agent = new AgentRP(llm as AbstractLLM, plugins, true);
+
+        const langChainMessages: ChatMessage[] = [
+          new ChatMessage({ role: "system", content: systemPrompt }),
+          ...messages.map(convertRPMessageToLangChainMessage),
+        ];
+
         for await (const progress of agent.invoke(langChainMessages)) {
           const response = {
             type: progress.type,
@@ -79,17 +79,13 @@ export async function POST(req: NextRequest) {
             ],
           };
 
-          const chunk = `data: ${JSON.stringify(response)}\n\n`;
-          const encodedChunk = encoder.encode(chunk);
-          const contentLength = encodedChunk.byteLength;
+          // Send each chunk as SSE format
           await writer.write(
-            encoder.encode(`Content-Length: ${contentLength}\n`)
+            encoder.encode(`data: ${JSON.stringify(response)}\n\n`)
           );
-          await writer.write(encodedChunk);
         }
-
-        await writer.close();
       } catch (error) {
+        // Handle errors within the stream
         const errorMessage = {
           type: "error",
           error:
@@ -101,18 +97,22 @@ export async function POST(req: NextRequest) {
               ? error.message
               : "An unexpected error occurred",
         };
+
         await writer.write(
           encoder.encode(`data: ${JSON.stringify(errorMessage)}\n\n`)
         );
+      } finally {
         await writer.close();
       }
     })();
 
+    // Return the stream with proper headers for Edge runtime
     return new Response(stream.readable, {
       headers: {
         "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
       },
     });
   } catch (error) {
