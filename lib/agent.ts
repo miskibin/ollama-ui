@@ -131,9 +131,9 @@ export class AgentRP {
         }
       }
 
-      // Stream data chunks (you can adjust the chunk size as needed)
+      // Stream data 1 by one
       if (data?.length) {
-        const chunkSize = 5; // Adjust based on your needs
+        const chunkSize = 1; // Adjust based on your needs
         for (let i = 0; i < data.length; i += chunkSize) {
           const chunk = data.slice(i, i + chunkSize);
           yield {

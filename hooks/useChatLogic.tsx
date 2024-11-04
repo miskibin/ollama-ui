@@ -72,6 +72,7 @@ export const useChatLogic = () => {
           if (!line.startsWith("data: ")) continue;
 
           try {
+            console.info("Data:", line.length);
             const data = JSON.parse(line.slice(6)) as ProgressData;
             if (!data?.messages?.[0]) continue;
 
