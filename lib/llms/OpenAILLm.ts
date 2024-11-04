@@ -80,7 +80,7 @@ export class OpenAILLM extends AbstractLLM {
   ): AsyncGenerator<GenerationChunk> {
     try {
       const openAIMessages = this.convertMessagesToJSON(messages);
-      console.log("Debug messages", openAIMessages);
+      // console.log("Debug messages", openAIMessages);
 
       const stream = await this.client.chat.completions.create({
         model: this.model,

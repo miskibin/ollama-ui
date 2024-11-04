@@ -11,7 +11,7 @@ class SejmStatsCommunicator {
       `${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/vector-search`
     );
     url.searchParams.append("q", searchQuery);
-    url.searchParams.append("n", "2");
+    url.searchParams.append("n", "4");
 
     try {
       const response = await fetch(url.toString());
@@ -32,7 +32,7 @@ class SejmStatsCommunicator {
   }
   async searchOptimized(searchQuery: string): Promise<ActResponse[]> {
     const data = await this.search(searchQuery);
-    if (data.length === 0 || data[0].similarity_score < 0.70) {
+    if (data.length === 0 || data[0].similarity_score < 0.7) {
       return [
         {
           act_title:
@@ -48,9 +48,9 @@ class SejmStatsCommunicator {
     }
     if (
       data.length > 1 &&
-      data[0].similarity_score - data[1].similarity_score < 0.01
+      data[0].similarity_score - data[1].similarity_score < 0.02
     ) {
-      return data.slice(0, 2);
+      return data;
     }
     return [data[0]];
   }
