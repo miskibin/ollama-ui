@@ -9,7 +9,8 @@ import { PluginNames } from "@/lib/plugins";
 import { createWikipediaTool } from "@/tools/wikipedia";
 import { OpenAILLM } from "@/lib/llms/OpenAILLm";
 import { AbstractLLM } from "@/lib/llms/LLM";
-export const runtime = "edge";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 const PLUGIN_MAPPING: Record<PluginNames, (model: TogetherLLM) => any> = {
   [PluginNames.SejmStats]: createSejmStatsTool,
   [PluginNames.Wikipedia]: createWikipediaTool,
@@ -79,11 +80,6 @@ export async function POST(req: NextRequest) {
             ],
           };
 
-          // Send each chunk as SSE format
-          console.log(
-            JSON.stringify(response).length,
-            JSON.stringify(response).slice(-100)
-          );
           await writer.write(
             encoder.encode(`data: ${JSON.stringify(response)}\n\n`)
           );
@@ -113,7 +109,7 @@ export async function POST(req: NextRequest) {
     // Return the stream with proper headers for Edge runtime
     return new Response(stream.readable, {
       headers: {
-        "Content-Type": "text/event-stream",
+        'Content-Type': 'text/html; charset=utf-8',
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
         "X-Accel-Buffering": "no",
