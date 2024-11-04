@@ -32,13 +32,14 @@ class SejmStatsCommunicator {
   }
   async searchOptimized(searchQuery: string): Promise<ActResponse[]> {
     const data = await this.search(searchQuery);
-    if (data.length === 0 || data[0].similarity_score < 0.70) {
+    if (data.length === 0 || data[0].similarity_score < 0.7) {
       return [
         {
-          act_title: "Nie znalazłem niczego zgodnego, spróbuj napisać pytanie inaczej",
-          similarity_score: 0,
+          act_title:
+            "Nie znalazłem niczego zgodnego, spróbuj napisać pytanie inaczej",
+          similarity_score: data[0].similarity_score,
           act_url: "",
-          summary: "",
+          summary: `Znaleziony akt: ${data[0].summary}`,
           content: "",
           chapters: "",
           act_announcement_date: "",
@@ -47,7 +48,7 @@ class SejmStatsCommunicator {
     }
     if (
       data.length > 1 &&
-      data[0].similarity_score - data[1].similarity_score < 0.02
+      data[0].similarity_score - data[1].similarity_score < 0.01
     ) {
       return data.slice(0, 2);
     }
