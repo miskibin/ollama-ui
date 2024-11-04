@@ -51,7 +51,7 @@ const conversationStarters = [
     icon: <Scale className="text-indigo-600" size={24} />,
     text: "Obrona konieczna i samoobrona",
     action:
-      "W jakich sytuacjach polskie prawo pozwala na obronę konieczną? Jakie są ograniczenia?",
+      "Kiedy mogę użyć broni palnej a kiedy nie? ",
   },
   {
     icon: <DollarSign className="text-green-500" size={24} />,
