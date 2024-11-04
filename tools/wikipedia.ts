@@ -56,9 +56,7 @@ export const createWikipediaTool = (model: TogetherLLM) => {
           new RunnablePassthrough(),
           async ({ question }) => {
             // Generate search query using the model
-            const query = await PROMPTS.generateSearchQuery.format({
-              question: question,
-            });
+            const query = "Search query: " + question;
             const searchQuery = await model.invoke(query);
             const cleanedQuery = searchQuery
               .replace(/^(Query:|Search query:|Generated query:)/i, "")
