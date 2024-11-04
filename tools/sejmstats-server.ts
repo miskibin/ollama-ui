@@ -32,7 +32,7 @@ class SejmStatsCommunicator {
   }
   async searchOptimized(searchQuery: string): Promise<ActResponse[]> {
     const data = await this.search(searchQuery);
-    if (data.length === 0 || data[0].similarity_score < 0.6) {
+    if (data.length === 0 || data[0].similarity_score < 0.70) {
       return [
         {
           act_title: "Nie znalazłem niczego zgodnego, spróbuj napisać pytanie inaczej",
