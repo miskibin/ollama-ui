@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     title: "Asystent RP - Inteligentny asystent prawny",
     description:
       "Analizuj polskie prawo i dane Sejmu RP z pomocą sztucznej inteligencji",
-    creator: "@sejm_stats",
+    creator: "@sejm-stats",
   },
   robots: {
     index: true,
@@ -98,16 +98,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-200 dark:bg-gray-800`}
-        >
-          <ThemeProvider attribute="class" defaultTheme="system">
-            {children}
-          </ThemeProvider>
-          <Analytics />
-          <SpeedInsights />
-          <Toaster />
-        </body>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-200 dark:bg-gray-800`}
+      >
+        <ThemeProvider attribute="class" defaultTheme="system">
+          {children}
+        </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
+        <Toaster />
+      </body>
     </html>
   );
 }
