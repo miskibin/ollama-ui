@@ -50,7 +50,7 @@ export const PROMPTS = {
       3. Return only index or TWO indexes of the chosen acts (e.g., "1" for the first act, "2,3" for second and third.)
       4. If none are relevant, return "NONE"
       
-      Respond with just the number or "NONE".
+      Respond with numbers or "NONE".
       `),
 };
 

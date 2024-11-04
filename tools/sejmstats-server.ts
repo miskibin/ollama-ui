@@ -12,7 +12,7 @@ class SejmStatsCommunicator {
     );
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("n", "4");
-
+    console.log("SEARH URL", url.toString());
     try {
       const response = await fetch(url.toString());
       if (!response.ok) {
@@ -33,6 +33,7 @@ class SejmStatsCommunicator {
   async searchOptimized(searchQuery: string): Promise<ActResponse[]> {
     const data = await this.search(searchQuery);
     if (data.length === 0 || data[0].similarity_score < 0.7) {
+      console.debug(data);
       return [
         {
           act_title:

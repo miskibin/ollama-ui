@@ -17,38 +17,18 @@ interface AgentProgress {
   error?: string;
   data?: any[];
 }
+
 interface ToolExecutionResult {
   artifacts?: Artifact[];
   data?: any[];
 }
+
+interface EnhancedTool extends StructuredToolInterface {
+  relevancePrompt?: string;
+}
+
 export class AgentRP {
-  constructor(
-    private llm: AbstractLLM,
-    private tools: StructuredToolInterface[],
-  ) {}
-
-  private async checkToolRelevance(
-    query: string,
-    tool: StructuredToolInterface,
-    previousResponse?: string
-  ): Promise<boolean> {
-    try {
-      const prompt = await PROMPTS.analyzeToolRelevance.format({
-        query,
-        toolDescription: tool.description,
-        previousResponse: previousResponse?.slice(0, 100) || null,
-      });
-      const result = await this.getCompletion(
-        [new ChatMessage({ role: "user", content: prompt })],
-        "tool_relevance"
-      );
-
-      return result.toLowerCase().includes("yes");
-    } catch (error) {
-      console.debug(`Error checking tool relevance: ${error}`);
-      return false;
-    }
-  }
+  constructor(private llm: AbstractLLM, private tools: EnhancedTool[]) {}
 
   private getMessagesWithLatestArtifacts(
     messages: ChatMessage[]
@@ -66,18 +46,26 @@ export class AgentRP {
       ? recentMessages.slice(recentMessages.length - 1 - lastArtifactIndex)
       : recentMessages;
   }
-  private async executeTool(tool: StructuredToolInterface, question: string) {
+
+  private async executeTool(tool: EnhancedTool, question: string) {
     try {
-      const { artifacts, data } = await tool.invoke({ question });
+      const result = await tool.invoke({ question });
+
+      // Handle case where tool returned irrelevance message
+      if (result.message?.includes("Tool deemed not relevant")) {
+        return { artifacts: null, data: null };
+      }
+
       return {
-        artifacts: artifacts || null,
-        data: data || null,
+        artifacts: result.artifacts || null,
+        data: result.data || null,
       };
     } catch (error) {
       console.debug(`Error executing tool ${tool.name}: ${error}`);
       return { result: `Error: Failed to execute tool ${tool.name}` };
     }
   }
+
   private async *streamCompletion(
     messages: ChatMessage[],
     type:
@@ -108,12 +96,17 @@ export class AgentRP {
     }
     return response;
   }
+
   private async *streamToolResults(
-    tool: StructuredToolInterface,
+    tool: EnhancedTool,
     query: string
   ): AsyncGenerator<ToolExecutionResult> {
     try {
       const { artifacts = [], data = [] } = await this.executeTool(tool, query);
+
+      if (!artifacts && !data) {
+        return;
+      }
 
       // Stream artifacts one by one
       if (artifacts?.length) {
@@ -125,9 +118,9 @@ export class AgentRP {
         }
       }
 
-      // Stream data 1 by one
+      // Stream data one by one
       if (data?.length) {
-        const chunkSize = 1; // Adjust based on your needs
+        const chunkSize = 1;
         for (let i = 0; i < data.length; i += chunkSize) {
           const chunk = data.slice(i, i + chunkSize);
           yield {
@@ -153,29 +146,54 @@ export class AgentRP {
 
       yield { type: "status", content: "Analizuję" };
 
-      const previousResponse = messages
-        .slice()
-        .reverse()
-        .find(
-          (msg) => msg instanceof AIMessage || msg.role === "assistant"
-        )?.content;
+      // Execute all tools in parallel - they now handle their own relevance checks
+      const toolResults = [];
+      const executedTools: EnhancedTool[] = [];
 
-      const relevantTools = (
-        await Promise.all(
-          this.tools.map(async (tool) => ({
-            tool,
-            isRelevant: await this.checkToolRelevance(
-              query as string,
-              tool,
-              previousResponse as string
-            ),
-          }))
-        )
-      )
-        .filter((t) => t.isRelevant)
-        .map((t) => t.tool);
+      for (const tool of this.tools) {
+        yield {
+          type: "status",
+          content: `Sprawdzam narzędzie: ${tool.name}...`,
+        };
 
-      if (!relevantTools.length) {
+        let hasResults = false;
+
+        // Stream artifacts and data separately
+        for await (const result of this.streamToolResults(
+          tool,
+          query as string
+        )) {
+          if (result.artifacts?.length || result.data?.length) {
+            hasResults = true;
+            if (!executedTools.includes(tool)) {
+              executedTools.push(tool);
+            }
+
+            if (result.artifacts?.length) {
+              yield {
+                type: "tool_execution",
+                content: `Narzędzie ${tool.name} zwróciło artefakt`,
+                artifacts: result.artifacts,
+              };
+              toolResults.push({
+                tool: tool.name,
+                result: result.artifacts[0],
+              });
+            }
+
+            if (result.data?.length) {
+              yield {
+                type: "tool_execution",
+                content: `Narzędzie ${tool.name} zwróciło dane`,
+                data: result.data,
+              };
+            }
+          }
+        }
+      }
+
+      // Handle case where no tools provided relevant results
+      if (!executedTools.length) {
         yield {
           type: "status",
           content: "Generuję odpowiedź na podstawie kontekstu...",
@@ -191,46 +209,6 @@ export class AgentRP {
           yield { type: "response", content: chunk };
         }
         return;
-      }
-
-      yield {
-        type: "status",
-        content: `Korzystam z narzędzia: ${relevantTools
-          .map((t) => t.name)
-          .join(", ")}`,
-      };
-
-      const toolResults = [];
-
-      // Execute and stream results from each tool
-      for (const tool of relevantTools) {
-        yield {
-          type: "status",
-          content: `Korzystam z narzędzia: ${tool.name}...`,
-        };
-
-        // Stream artifacts and data separately
-        for await (const result of this.streamToolResults(
-          tool,
-          query as string
-        )) {
-          if (result.artifacts?.length) {
-            yield {
-              type: "tool_execution",
-              content: `Narzędzie ${tool.name} zwróciło artefakt`,
-              artifacts: result.artifacts,
-            };
-            toolResults.push({ tool: tool.name, result: result.artifacts[0] });
-          }
-
-          if (result.data?.length) {
-            yield {
-              type: "tool_execution",
-              content: `Narzędzie ${tool.name} zwróciło dane`,
-              data: result.data,
-            };
-          }
-        }
       }
 
       yield { type: "status", content: "Generuję ostateczną odpowiedź..." };

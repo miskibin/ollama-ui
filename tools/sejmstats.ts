@@ -8,6 +8,12 @@ import { searchOptimized } from "./sejmstats-server";
 import { TogetherLLM } from "@/lib/llms/TogetherLLm";
 import { PROMPTS } from "@/lib/prompts";
 import { Artifact } from "@/lib/types";
+import {
+  createEnhancedTool,
+  RelevanceContext,
+  ToolConfig,
+} from "./enhancedTool";
+import { PromptTemplate } from "@langchain/core/prompts";
 function formatActsForPrompt(acts: any[]): string {
   return acts
     .map(
@@ -53,89 +59,83 @@ const selectRelevantAct = async (
     ? acts[actIndices[0]]
     : actIndices.map((index) => acts[index]);
 };
-
 const sejmStatsSchema = z.object({
   question: z
     .string()
     .describe("The question to analyze about Sejm statistics"),
 });
-export const createSejmStatsTool = (model: TogetherLLM) => {
-  return new DynamicStructuredTool({
-    name: "Baza ustaw",
-    description:
-      "Searches and analyzes laws, legal regulations based on user questions.",
-    schema: sejmStatsSchema,
-    func: async ({ question }: z.infer<typeof sejmStatsSchema>) => {
-      try {
-        const sequence = RunnableSequence.from([
-          new RunnablePassthrough(),
-          async ({ question }) => {
-            let cleanedQuery = question;
-            if (question.length > 10) {
-              const query = await PROMPTS.generateSearchQuery.format({
-                question: question,
-              });
-              const searchQuery = await model.invoke(query);
-              cleanedQuery = searchQuery
-                .replace(/^(Query:|Search query:|Generated query:)/i, "")
-                .trim();
-            }
-            console.log(cleanedQuery);
-            const searchResults = await searchOptimized(cleanedQuery);
 
-            // Update to handle multiple relevant acts
-            const relevantActs = await selectRelevantAct(
-              question,
-              searchResults,
-              model
-            );
+const sejmStatsConfig: ToolConfig = {
+  name: "Baza ustaw",
+  description:
+    "Searches and analyzes laws, legal regulations based on user questions.",
+  schema: sejmStatsSchema,
+  relevancePrompt: PromptTemplate.fromTemplate(`
+    Question Analysis for Legal Search:
+    Question: {query}
+    Tool Purpose: {toolDescription}
 
-            if (!relevantActs || relevantActs.length === 0) {
-              return {
-                artifacts: [],
-                data: [],
-                message: "No relevant acts found for your question.",
-              };
-            }
+    Task:
+    1. Determine if the question relates to Polish legal regulations, laws, or statutes
+    2. Check if it requires searching through legal documents
+    3. Verify if it needs access to official law databases
 
-            // Ensure relevantActs is an array
-            const actsArray = Array.isArray(relevantActs)
-              ? relevantActs
-              : [relevantActs];
+    If the question matches these criteria, also generate a search query:
+    - Use formal legal terminology
+    - Include specific legal keywords
+    - Exclude generic phrases like "zgodnie z prawem", "legalnie"
+    - Focus on the core legal concept
 
-            // Create artifacts and data entries for each relevant act
-            const artifacts = actsArray.map((act) => ({
-              type: "sejm_stats",
-              question,
-              searchQuery: cleanedQuery,
-              data: [
-                {
-                  act_url: act.act_url,
-                  act_title: act.act_title,
-                  content: act.content,
-                },
-              ],
-            }));
+    Format Answer as:
+    RELEVANT: [YES or NO]
+    SEARCH QUERY: [If YES, include optimized search terms in Polish]
+  `),
+};
 
-            return {
-              artifacts,
-              data: actsArray,
-            };
-          },
-        ]);
+export const createSejmStatsTool = (model: any) => {
+  const processQuery = async (
+    { question }: z.infer<typeof sejmStatsSchema>,
+    relevanceContext: RelevanceContext
+  ) => {
+    // Use the optimized search query if available, otherwise fall back to original question
+    const searchQuery = relevanceContext.searchQuery || question;
+    const searchResults = await searchOptimized(searchQuery);
+    const relevantActs = await selectRelevantAct(
+      question,
+      searchResults,
+      model
+    );
 
-        const result = await sequence.invoke({ question });
-        return result;
-      } catch (error) {
-        console.error("Error in sejm_stats_analyzer:", error);
-        return {
-          result:
-            error instanceof Error
-              ? `Error analyzing Sejm statistics: ${error.message}`
-              : "Error analyzing Sejm statistics: Unknown error",
-        };
-      }
-    },
-    returnDirect: false,
-  });
+    if (!relevantActs || relevantActs.length === 0) {
+      return {
+        artifacts: [],
+        data: [],
+        message: "No relevant acts found for your question.",
+      };
+    }
+
+    const actsArray = Array.isArray(relevantActs)
+      ? relevantActs
+      : [relevantActs];
+
+    const artifacts = actsArray.map((act) => ({
+      type: "sejm_stats",
+      question,
+      searchQuery, // Now using the optimized search query
+      data: [
+        {
+          act_url: act.act_url,
+          act_title: act.act_title,
+          content: act.content,
+        },
+      ],
+    }));
+
+    return {
+      artifacts,
+      data: actsArray,
+    };
+  };
+
+  return createEnhancedTool(sejmStatsConfig, model, processQuery);
 };
