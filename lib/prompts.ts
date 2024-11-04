@@ -28,7 +28,7 @@ Answer with specific keywords in Polish:
     1. Use Markdown for clarity.
     2. If a matching quote is found, include it with the document name and article number.
     3. Avoid adding any information beyond the content of the document.
-    4. If the document does not contain relevant information to answer the question, respond with:
+    4. If the document does NOT contain any relevant information to answer the question, respond with:
        "Nie znalazłem odpowiedzi na to pytanie."
     Answer in Polish language:`),
 
