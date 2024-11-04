@@ -42,16 +42,14 @@ export class AgentRP {
       const prompt = await PROMPTS.analyzeToolRelevance.format({
         query,
         toolDescription: tool.description,
-        previousResponse: previousResponse?.slice(0, 100) || "",
+        previousResponse: previousResponse?.slice(0, 100) || null,
       });
-      return (
-        await this.getCompletion(
-          [new ChatMessage({ role: "user", content: prompt })],
-          "tool_relevance"
-        )
-      )
-        .toLowerCase()
-        .includes("yes");
+      const result = await this.getCompletion(
+        [new ChatMessage({ role: "user", content: prompt })],
+        "tool_relevance"
+      );
+
+      return result.toLowerCase().includes("yes");
     } catch (error) {
       this.logger.debug(`Error checking tool relevance: ${error}`);
       return false;
@@ -203,14 +201,19 @@ export class AgentRP {
 
       yield {
         type: "status",
-        content: `Korzystam z: ${relevantTools.map((t) => t.name).join(", ")}`,
+        content: `Korzystam z narzędzia: ${relevantTools
+          .map((t) => t.name)
+          .join(", ")}`,
       };
 
       const toolResults = [];
 
       // Execute and stream results from each tool
       for (const tool of relevantTools) {
-        yield { type: "status", content: `Korzystam z ${tool.name}...` };
+        yield {
+          type: "status",
+          content: `Korzystam z narzędzia: ${tool.name}...`,
+        };
 
         // Stream artifacts and data separately
         for await (const result of this.streamToolResults(

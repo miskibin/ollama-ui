@@ -9,27 +9,18 @@ Original Question: {question}
 Answer with specific keywords in Polish:
     `),
   analyzeToolRelevance: PromptTemplate.fromTemplate(`
-      Given:
-      - User Question: {query}
-      - Last Assistant Response: {previousResponse}
-      - Tool Purpose: {toolDescription}
-      
-      Check two conditions:
-      1. Does the question specifically ask about what this tool provides?
-      2. Is this a new topic (not following up on previous response)?
-      
-      Answer format:
-      RELEVANT: [YES or NO]`),
-  initialToolRelevance: PromptTemplate.fromTemplate(`
-      Given:
-      - User Question: {query}
-      - Tool Purpose: {toolDescription}
-      
-      Does the question specifically ask about what this tool provides?
-      
-      Answer format:
-      RELEVANT: [YES or NO]
-      REASON: [single clear explanation why]`),
+        Given:
+    - User Question: {query}
+    - Last Assistant Response: {previousResponse}
+    - Tool Purpose: {toolDescription}
+
+    Check two conditions:
+    1. Does the question specifically ask about what this tool provides?
+    2. Is this a new topic (not following up on previous response)?
+
+    Answer format:
+    RELEVANT: [YES or NO]
+    `),
   processDataPrompt: PromptTemplate.fromTemplate(`
     Based on the document:\n{dataString}\n
     Answer the question precisely and concisely:\n{question}\n

@@ -16,7 +16,7 @@ const sejmStatsSchema = z.object({
 
 export const createSejmStatsTool = (model: TogetherLLM) => {
   return new DynamicStructuredTool({
-    name: "sejm_stats_analyzer",
+    name: "Baza ustaw",
     description:
       "Searches and analyzes laws, legal regulations based on user questions. Can provide information, and answer questions about various laws.",
     schema: sejmStatsSchema,
