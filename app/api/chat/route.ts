@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         const plugins = enabledPluginIds.map((id: PluginNames) =>
           PLUGIN_MAPPING[id](llm as TogetherLLM)
         );
-        const agent = new AgentRP(llm as AbstractLLM, plugins, true);
+        const agent = new AgentRP(llm as AbstractLLM, plugins);
 
         const langChainMessages: ChatMessage[] = [
           new ChatMessage({ role: "system", content: systemPrompt }),
