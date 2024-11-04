@@ -39,6 +39,7 @@ export function createEnhancedTool(
               query: input.question,
               toolDescription: config.description,
             });
+            console.log("Relevance prompt:", relevanceCheck);
             const relevanceResponse = await model.invoke(relevanceCheck);
             console.log("Relevance response:", relevanceResponse);
 

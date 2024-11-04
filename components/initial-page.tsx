@@ -22,82 +22,84 @@ import {
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { FaWater } from "react-icons/fa";
-
 const conversationStarters = [
   {
     icon: <Map className="text-green-600" size={24} />,
-    text: "Prawo własności gruntów",
+    text: "Prawo własności nieruchomości",
     action:
-      "Jakie są przepisy dotyczące przekształcenia gruntów rolnych? Wyjaśnij procedurę zmiany przeznaczenia gruntu.",
+      "Jakie są kroki do sprawdzenia legalności nieruchomości przed zakupem? Jak uniknąć problemów z prawem własności?",
   },
   {
-    icon: <Ruler className="text-blue-500" size={24} />,
-    text: "Odległość domu od płotu",
+    icon: <Building2 className="text-blue-500" size={24} />,
+    text: "Wynajem mieszkań",
     action:
-      "Jakie są wymagane odległości budynku mieszkalnego od granicy działki według prawa budowlanego?",
-  },
-  {
-    icon: <Cigarette className="text-gray-500" size={24} />,
-    text: "Palenie w miejscach publicznych",
-    action:
-      "Gdzie według prawa można palić papierosy? Jakie są kary za palenie w miejscach niedozwolonych?",
+      "Jakie są prawa najemcy w Polsce? Co zrobić, gdy właściciel chce nielegalnie podnieść czynsz?",
   },
   {
     icon: <Trees className="text-green-700" size={24} />,
-    text: "Wycinka drzew - przepisy",
+    text: "Wycinka drzew - przepisy 2024",
     action:
-      "Jakie są aktualne przepisy dotyczące wycinki drzew na własnej działce? Kiedy potrzebne jest zezwolenie?",
-  },
-  {
-    icon: <CarFront className="text-red-600" size={24} />,
-    text: "Import samochodów",
-    action:
-      "Jakie przepisy regulują import samochodów do Polski? Jakie są wymogi celne i techniczne?",
-  },
-  {
-    icon: <Scale className="text-indigo-600" size={24} />,
-    text: "Prawo do samoobrony",
-    action:
-      "W jakich sytuacjach prawo pozwala na samoobronę? Jakie są granice obrony koniecznej?",
-  },
-  {
-    icon: <Angry className="text-amber-600" size={24} />,
-    text: "Przemoc w rodzinie",
-    action:
-      "Jakie są kary za przemoc w rodzinie? Jakie są prawa ofiar przemocy domowej?",
-  },
-  {
-    icon: <Camera className="text-blue-400" size={24} />,
-    text: "Nagrywanie przez policję",
-    action: "Czy Policja może mnie nagrywać bez mojej zgody?",
-  },
-  {
-    icon: <DollarSign className="text-green-500" size={24} />,
-    text: "Dziedziczenie długów",
-    action:
-      "Czy trzeba spłacać długi po zmarłych rodzicach? Jak się bronić przed dziedziczeniem długów?",
-  },
-  {
-    icon: <PiggyBank className="text-purple-500" size={24} />,
-    text: "Wysokość alimentów",
-    action: "Jakie są zasady naliczania alimentów w Polsce?",
-  },
-  {
-    icon: <Car className="text-cyan-500" size={24} />,
-    text: "Wyprzedzanie na autostradzie",
-    action: "Czy można wyprzedzać prawym pasem na autostradach?",
+      "Jakie zmiany zaszły w przepisach o wycince drzew? Kiedy właściciel potrzebuje pozwolenia?",
   },
   {
     icon: <Heart className="text-red-500" size={24} />,
-    text: "Związki partnerskie",
+    text: "Prawo do opieki nad dzieckiem",
     action:
-      "Jakie prawa mają osoby w nieformalnych związkach? Co ze spadkiem i majątkiem?",
+      "Jak ustala się opiekę nad dziećmi po rozwodzie? Co zrobić, gdy jeden rodzic ogranicza kontakt?",
+  },
+  {
+    icon: <Scale className="text-indigo-600" size={24} />,
+    text: "Obrona konieczna i samoobrona",
+    action:
+      "W jakich sytuacjach polskie prawo pozwala na obronę konieczną? Jakie są ograniczenia?",
+  },
+  {
+    icon: <DollarSign className="text-green-500" size={24} />,
+    text: "Opodatkowanie spadków i darowizn",
+    action:
+      "Jakie są stawki podatkowe na spadki i darowizny? Kto jest zwolniony z płacenia podatku?",
+  },
+  {
+    icon: <Dog className="text-amber-600" size={24} />,
+    text: "Prawo dotyczące zwierząt domowych",
+    action:
+      "Jakie przepisy obowiązują właścicieli zwierząt domowych? Czy można zabronić posiadania psa w wynajętym mieszkaniu?",
+  },
+  {
+    icon: <Car className="text-red-600" size={24} />,
+    text: "Odszkodowanie po wypadku drogowym",
+    action:
+      "Jakie są kroki do uzyskania odszkodowania po wypadku drogowym? Czy potrzebne jest orzeczenie lekarskie?",
   },
   {
     icon: <FaWater className="text-orange-500" size={24} />,
-    text: "Pomoc powodzianom",
+    text: "Ochrona środowiska",
     action:
-      "Jak polski rząd pomaga ofiarom powodzi w 2024? Jakie są dostępne programy wsparcia?",
+      "Jakie są nowe regulacje dotyczące ochrony środowiska? Co zrobić, gdy sąsiad zatruwa okolicę?",
+  },
+  {
+    icon: <Bike className="text-blue-500" size={24} />,
+    text: "Prawa rowerzystów",
+    action:
+      "Jakie prawa mają rowerzyści w Polsce? Czy można jeździć rowerem po chodniku?",
+  },
+  {
+    icon: <PiggyBank className="text-purple-500" size={24} />,
+    text: "Ustalanie wysokości alimentów",
+    action:
+      "Jak ustalana jest wysokość alimentów na dziecko? Czy można domagać się podwyżki alimentów?",
+  },
+  {
+    icon: <Wifi className="text-cyan-600" size={24} />,
+    text: "Ochrona danych osobowych",
+    action:
+      "Jakie są przepisy dotyczące ochrony danych osobowych w Polsce? Kiedy można żądać ich usunięcia?",
+  },
+  {
+    icon: <Volume2 className="text-red-400" size={24} />,
+    text: "Hałas i zakłócenie spokoju",
+    action:
+      "Jakie są regulacje dotyczące hałasu? Co zrobić, gdy sąsiad ciągle zakłóca ciszę nocną?",
   },
 ];
 

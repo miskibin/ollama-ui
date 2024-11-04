@@ -48,6 +48,7 @@ export class OpenAILLM extends AbstractLLM {
     runManager?: CallbackManagerForLLMRun
   ): Promise<string> {
     try {
+      console.log("TOKENS", prompt.length / 3);
       const response = await this.client.chat.completions.create({
         model: this.model,
         messages: [{ role: "user", content: prompt }],
@@ -81,7 +82,10 @@ export class OpenAILLM extends AbstractLLM {
     try {
       const openAIMessages = this.convertMessagesToJSON(messages);
       // console.log("Debug messages", openAIMessages);
-
+      console.log(
+        "TOKENS",
+        messages.map((m) => m.content).join(" ").length / 3
+      );
       const stream = await this.client.chat.completions.create({
         model: this.model,
         messages: openAIMessages,

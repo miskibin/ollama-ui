@@ -1,27 +1,6 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
 export const PROMPTS = {
-  generateSearchQuery: PromptTemplate.fromTemplate(`
-    Task: Rewrite the question to create a concise, legally-relevant search query for a vector database. Use formal terminology and specific legal keywords directly related to the topic. Exclude unnecessary phrases like "zgodnie z prawem", "legalnie," and irrelevant legal codes or acts unless specifically pertinent to the question context.
-    
-    Original Question: {question}
-    
-    Answer with specific keywords in Polish, omitting any irrelevant legal references:
-    `),
-
-  analyzeToolRelevance: PromptTemplate.fromTemplate(`
-        Given:
-    - User Question: {query}
-    - Last Assistant Response: {previousResponse}
-    - Tool Purpose: {toolDescription}
-
-    Check two conditions:
-    1. Does the question specifically ask about what this tool provides?
-    2. Is this a new topic (not following up on previous response)?
-
-    Answer format:
-    RELEVANT: [YES or NO]
-    `),
   processDataPrompt: PromptTemplate.fromTemplate(`
       Based on the document:\n{dataString}\n
       Answer the question precisely and concisely:\n{question}\n
@@ -47,7 +26,7 @@ export const PROMPTS = {
       Instructions:
       1. Consider only the high-level information (titles, chapters, summaries)
       2. Select the one or two most relevant acts
-      3. Return only index or TWO indexes of the chosen acts (e.g., "1" for the first act, "2,3" for second and third.)
+      3. Return only index or in rare cases TWO indexes of the chosen acts (e.g., "1" for the first act, "2,3" for second and third.)
       4. If none are relevant, return "NONE"
       
       Respond with numbers or "NONE".

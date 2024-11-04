@@ -12,7 +12,7 @@ class SejmStatsCommunicator {
     );
     url.searchParams.append("q", searchQuery);
     url.searchParams.append("n", "4");
-    console.log("SEARH URL", url.toString());
+    console.log("SEARCH URL", url.toString());
     try {
       const response = await fetch(url.toString());
       if (!response.ok) {
@@ -60,11 +60,9 @@ class SejmStatsCommunicator {
 export const searchOptimized = async (
   searchQuery: string
 ): Promise<ActResponse[]> => {
-  console.debug("searchOptimized function started");
   const communicator = new SejmStatsCommunicator();
   try {
     const result = await communicator.searchOptimized(searchQuery);
-    console.debug("searchOptimized completed successfully");
     return result;
   } catch (error) {
     console.error(`Error in searchOptimized:`, error);

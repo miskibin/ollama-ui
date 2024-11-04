@@ -14,12 +14,13 @@ import {
   ToolConfig,
 } from "./enhancedTool";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { getActName } from "./sejmstats-utils";
 function formatActsForPrompt(acts: any[]): string {
   return acts
     .map(
       (act, index) => `
   [${index + 1}]
-  Title: ${act.act_title}
+  Title: ${getActName(act.act_title)}
   Chapter: ${act.chapters}
   Summary: ${act.summary}
   `
@@ -38,10 +39,7 @@ const selectRelevantAct = async (
     question,
     acts: formattedActs,
   });
-  console.log(prompt);
   const response = await model.invoke(prompt);
-  console.log(response);
-
   // Parse response, handling multiple indices (e.g., "2,3") or a single index
   const actIndices = response
     .trim()
@@ -74,18 +72,16 @@ const sejmStatsConfig: ToolConfig = {
     Question Analysis for Legal Search:
     Question: {query}
     Tool Purpose: {toolDescription}
-
     Task:
     1. Determine if the question relates to Polish legal regulations, laws, or statutes
     2. Check if it requires searching through legal documents
-    3. Verify if it needs access to official law databases
+    3. If the question is not follow up for a previous legal search, generate a search query
 
     If the question matches these criteria, also generate a search query:
     - Use formal legal terminology
     - Include specific legal keywords
     - Exclude generic phrases like "zgodnie z prawem", "legalnie"
-    - Focus on the core legal concept
-
+    - Don't include phrases like "kodeks karny","ustawa" unless it is in the question
     Format Answer as:
     RELEVANT: [YES or NO]
     SEARCH QUERY: [If YES, include optimized search terms in Polish]
@@ -125,7 +121,7 @@ export const createSejmStatsTool = (model: any) => {
       data: [
         {
           act_url: act.act_url,
-          act_title: act.act_title,
+          act_title: getActName(act.act_title),
           content: act.content,
         },
       ],

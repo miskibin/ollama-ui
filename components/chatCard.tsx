@@ -174,7 +174,11 @@ export function ChatCard() {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder={
-                isLoading ? "Czekam na odpowiedź..." : "Wpisz wiadomość..."
+                isLoading
+                  ? "Czekam na odpowiedź..."
+                  : messages.some((message) => (message.artifacts?.length ?? 0) > 0)
+                  ? "Zadaj pytanie dot. konteksu"
+                  : "Zapytaj mnie o kwestię prawną"
               }
               disabled={isLoading || isPdfParsing}
               className="pr-24 pl-4 py-3 resize-none min-h-[56px] max-h-[200px] w-full rounded-2xl border-2 focus:ring-2 focus:ring-primary/50 transition-all overflow-y-auto scrollbar-hide hover:scrollbar-default"
@@ -231,6 +235,7 @@ export function ChatCard() {
               )}
             </div>
           </div>
+         
         </form>
       </CardFooter>
     </Card>
