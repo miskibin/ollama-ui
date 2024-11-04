@@ -138,6 +138,11 @@ export default function ActSectionsDialog({
                       </span>
                       <span className="font-bold">
                         {item.act_title.split("tekstu ustawy")[1]}
+                      </span>{" "}
+                      /{" "}
+                      <span className="text-sm text-muted-foreground">
+                        {item.chapters.split(" ").slice(0, 8).join(" ")}
+                        {item.chapters.split(" ").length > 8 && "..."}
                       </span>
                     </h3>
                     <div className="flex flex-wrap gap-2">
