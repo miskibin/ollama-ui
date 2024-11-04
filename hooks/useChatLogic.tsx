@@ -5,6 +5,7 @@ import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
 import { useToast } from "./use-toast";
 import { useMessageLimits } from "@/lib/prompt-tracking";
+import { error } from "console";
 
 type ProgressData = {
   type: "status" | "tool_execution" | "response" | "error";
@@ -73,7 +74,13 @@ export const useChatLogic = () => {
 
           try {
             console.info("Data:", line.length);
-            const data = JSON.parse(line.slice(6)) as ProgressData;
+            let data;
+            try {
+              data = JSON.parse(line.slice(6)) as ProgressData;
+            } catch (error) {
+              console.log(error, line);
+              continue;
+            }
             if (!data?.messages?.[0]) continue;
 
             const message = data.messages[0];
