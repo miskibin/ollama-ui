@@ -116,6 +116,40 @@ export class AgentRP {
     }
     return response;
   }
+  private async *streamToolResults(
+    tool: StructuredToolInterface,
+    query: string
+  ): AsyncGenerator<ToolExecutionResult> {
+    try {
+      const { artifacts = [], data = [] } = await this.executeTool(tool, query);
+
+      // Stream artifacts one by one
+      if (artifacts?.length) {
+        for (const artifact of artifacts) {
+          yield {
+            artifacts: [artifact],
+            data: undefined,
+          };
+        }
+      }
+
+      // Stream data chunks (you can adjust the chunk size as needed)
+      if (data?.length) {
+        const chunkSize = 5; // Adjust based on your needs
+        for (let i = 0; i < data.length; i += chunkSize) {
+          const chunk = data.slice(i, i + chunkSize);
+          yield {
+            artifacts: undefined,
+            data: chunk,
+          };
+        }
+      }
+    } catch (error) {
+      this.logger.debug(`Error streaming tool results: ${error}`);
+      throw error;
+    }
+  }
+
   async *invoke(messages: ChatMessage[]): AsyncGenerator<AgentProgress> {
     try {
       if (!messages?.length) throw new Error("No messages provided");
@@ -174,22 +208,31 @@ export class AgentRP {
 
       const toolResults = [];
 
-      // Execute all tools and collect results
+      // Execute and stream results from each tool
       for (const tool of relevantTools) {
         yield { type: "status", content: `Korzystam z ${tool.name}...` };
-        const { artifacts, data } = await this.executeTool(
+
+        // Stream artifacts and data separately
+        for await (const result of this.streamToolResults(
           tool,
           query as string
-        );
+        )) {
+          if (result.artifacts?.length) {
+            yield {
+              type: "tool_execution",
+              content: `Narzędzie ${tool.name} zwróciło artefakt`,
+              artifacts: result.artifacts,
+            };
+            toolResults.push({ tool: tool.name, result: result.artifacts[0] });
+          }
 
-        if (artifacts) toolResults.push({ tool: tool.name, result: artifacts });
-        if (artifacts || data) {
-          yield {
-            type: "tool_execution",
-            content: `Narzędzie ${tool.name} zwróciło wyniki`,
-            artifacts: artifacts,
-            data: data,
-          };
+          if (result.data?.length) {
+            yield {
+              type: "tool_execution",
+              content: `Narzędzie ${tool.name} zwróciło dane`,
+              data: result.data,
+            };
+          }
         }
       }
 
@@ -202,7 +245,6 @@ export class AgentRP {
           .join("\n"),
       });
 
-      // Stream final response without artifacts or data
       for await (const chunk of this.streamCompletion(
         [
           new ChatMessage({ role: "system", content: systemMessage.content }),

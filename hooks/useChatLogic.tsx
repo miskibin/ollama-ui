@@ -53,13 +53,14 @@ export const useChatLogic = () => {
       duration: 5000,
     });
   };
-
   const processStreamResponse = async (
     reader: ReadableStreamDefaultReader<Uint8Array>,
     newMessageId: string
   ) => {
     const decoder = new TextDecoder();
     let currentContent = "";
+    let currentArtifacts: Artifact[] = [];
+    let currentData: any[] = [];
 
     try {
       while (true) {
@@ -82,12 +83,23 @@ export const useChatLogic = () => {
 
               case "tool_execution":
                 setStatus(message.content);
+                // Accumulate artifacts and data
+                if (message.artifacts?.length) {
+                  currentArtifacts = [
+                    ...currentArtifacts,
+                    ...message.artifacts,
+                  ];
+                }
+                if (message.data?.length) {
+                  currentData = [...currentData, ...message.data];
+                }
+                // Update message with accumulated artifacts and data
                 updateMessage(newMessageId, {
                   id: newMessageId,
                   role: "assistant",
                   content: currentContent,
-                  artifacts: message.artifacts,
-                  data: message.data,
+                  artifacts: currentArtifacts,
+                  data: currentData,
                 });
                 break;
 
@@ -98,6 +110,8 @@ export const useChatLogic = () => {
                     id: newMessageId,
                     role: "assistant",
                     content: currentContent,
+                    artifacts: currentArtifacts,
+                    data: currentData,
                   });
                 }
                 break;
@@ -113,13 +127,14 @@ export const useChatLogic = () => {
         }
       }
 
-      // Final content update without artifacts or data
+      // Final update with all accumulated content, artifacts, and data
       updateMessage(newMessageId, {
         id: newMessageId,
         role: "assistant",
         content: currentContent.trim(),
+        artifacts: currentArtifacts,
+        data: currentData,
       });
-      // show final message
     } catch (error) {
       handleError(error);
       throw error;
