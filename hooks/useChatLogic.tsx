@@ -5,12 +5,7 @@ import { useChatStore } from "@/lib/store";
 import { checkEasterEggs } from "@/lib/utils";
 import { useToast } from "./use-toast";
 import { useMessageLimits } from "@/lib/prompt-tracking";
-import { error } from "console";
-
-type ProgressData = {
-  type: "status" | "tool_execution" | "response" | "error";
-  messages: Message[];
-};
+import { StreamProcessor } from "./streamProcessor";
 
 export const useChatLogic = () => {
   const {
@@ -49,104 +44,10 @@ export const useChatLogic = () => {
 
     toast({
       title: "Błąd podczas odpowiadania",
-      description: `Location: ${errorSource}\nError: ${error} - ${errorMessage}`,
+      description: `Location: ${errorSource}\nError: ${errorMessage}`,
       variant: "destructive",
       duration: 5000,
     });
-  };
-  const processStreamResponse = async (
-    reader: ReadableStreamDefaultReader<Uint8Array>,
-    newMessageId: string
-  ) => {
-    const decoder = new TextDecoder();
-    let currentContent = "";
-    let currentArtifacts: Artifact[] = [];
-    let currentData: any[] = [];
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const lines = decoder.decode(value).split("\n");
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-
-          try {
-            console.info("Data:", line.length);
-            let data;
-            try {
-              data = JSON.parse(line.slice(6)) as ProgressData;
-            } catch (error) {
-              console.log(error, line.slice(-100));
-              continue;
-            }
-            if (!data?.messages?.[0]) continue;
-
-            const message = data.messages[0];
-            switch (data.type) {
-              case "status":
-                setStatus(message.content);
-                break;
-
-              case "tool_execution":
-                setStatus(message.content);
-                // Accumulate artifacts and data
-                if (message.artifacts?.length) {
-                  currentArtifacts = [
-                    ...currentArtifacts,
-                    ...message.artifacts,
-                  ];
-                }
-                if (message.data?.length) {
-                  currentData = [...currentData, ...message.data];
-                }
-                // Update message with accumulated artifacts and data
-                updateMessage(newMessageId, {
-                  id: newMessageId,
-                  role: "assistant",
-                  content: currentContent,
-                  artifacts: currentArtifacts,
-                  data: currentData,
-                });
-                break;
-
-              case "response":
-                if (message.content) {
-                  currentContent += message.content;
-                  updateMessage(newMessageId, {
-                    id: newMessageId,
-                    role: "assistant",
-                    content: currentContent,
-                    artifacts: currentArtifacts,
-                    data: currentData,
-                  });
-                }
-                break;
-
-              case "error":
-                if (message.content) throw new Error(message.content);
-                break;
-            }
-          } catch (error) {
-            console.error("Error processing stream chunk:", error);
-            handleError(error);
-          }
-        }
-      }
-
-      // Final update with all accumulated content, artifacts, and data
-      updateMessage(newMessageId, {
-        id: newMessageId,
-        role: "assistant",
-        content: currentContent.trim(),
-        artifacts: currentArtifacts,
-        data: currentData,
-      });
-    } catch (error) {
-      handleError(error);
-      throw error;
-    }
   };
 
   const getResponse = async (messageHistory: Message[]) => {
@@ -182,16 +83,19 @@ export const useChatLogic = () => {
       }
 
       if (response.body) {
-        console.log("Response body:", response.body);
-        await processStreamResponse(response.body.getReader(), newMessageId);
+        const streamProcessor = new StreamProcessor(
+          updateMessage,
+          setStatus,
+          handleError
+        );
+        await streamProcessor.processStream(
+          response.body.getReader(),
+          newMessageId
+        );
       }
     } catch (error) {
       handleError(error);
     } finally {
-      console.log(
-        "Final message:",
-        messages.find((m) => m.id === newMessageId)
-      );
       setIsLoading(false);
       setStatus(null);
       abortControllerRef.current = null;
