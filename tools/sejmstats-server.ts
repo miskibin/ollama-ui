@@ -11,7 +11,7 @@ class SejmStatsCommunicator {
       `${SejmStatsCommunicator.SEJM_STATS_BASE_URL}/vector-search`
     );
     url.searchParams.append("q", searchQuery);
-    url.searchParams.append("n", "1");
+    url.searchParams.append("n", "2");
 
     try {
       const response = await fetch(url.toString());
@@ -30,20 +30,28 @@ class SejmStatsCommunicator {
       throw error;
     }
   }
-
-  //   optimizeForLLM(acts: ActResponse[]): ActResponse[] {
-  //     return acts.map((act) => ({
-  //       url: act.url,
-  //       content: act.content,
-  //       title: act.act_title.split("jednolitego tekstu ustawy - ")[1],
-  //       //   announcementDate: new Date(act.announcementDate).toISOString(),
-  //     }));
-  //   }
-
   async searchOptimized(searchQuery: string): Promise<ActResponse[]> {
     const data = await this.search(searchQuery);
-    // return this.optimizeForLLM(data);
-    return data;
+    if (data.length === 0 || data[0].similarity_score < 0.6) {
+      return [
+        {
+          act_title: "Nie znalazłem niczego zgodnego, spróbuj napisać pytanie inaczej",
+          similarity_score: 0,
+          act_url: "",
+          summary: "",
+          content: "",
+          chapters: "",
+          act_announcement_date: "",
+        },
+      ];
+    }
+    if (
+      data.length > 1 &&
+      data[0].similarity_score - data[1].similarity_score < 0.02
+    ) {
+      return data.slice(0, 2);
+    }
+    return [data[0]];
   }
 }
 
