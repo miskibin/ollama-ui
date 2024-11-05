@@ -54,8 +54,8 @@ const EvolutionSection = () => {
       features: [
         "Automatyczne wykrywanie powiązań między ustawami",
         "System rekomendacji podobnych przepisów",
-        "Zaawansowana analiza kontekstowa",
-        "Personalizowane widoki i filtry",
+        "Zrozumienie przepisów podatkowych",
+        "Integracja z api interpreatcji przepisów prawnych"
       ],
       disclaimer: (
         <span className="flex items-center gap-2">
