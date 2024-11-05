@@ -5,11 +5,11 @@ export const PROMPTS = {
       Based on the document:\n{dataString}\n
       Answer the question precisely and concisely:\n{question}\n
       Instructions:
-      1. Use Markdown for clarity.
-      2. Cross-check relevant terms from the question with similar terms or concepts in the document (e.g., "przemoc domowa," "sprawca," "ofiara") to determine if an answer can be implied.
-      3. If a matching quote is found, include it with the document name and article number.
-      4. Avoid adding any information beyond the content of the document.
-      Answer in Polish language:
+      2. Cross-reference key terms in the question with related sections in the document to determine applicable rules.
+      3. If the question implies a context (e.g., multi-lane traffic for "autostrada"), apply relevant rules or exceptions in that context.
+      4. For direct article references, quote the article with the document name and article number.
+      5. AVOID adding information beyond the document but apply general implications as needed.
+      Answer in Polish:
   `),
 
   generateResponse: PromptTemplate.fromTemplate(`

@@ -44,7 +44,7 @@ export const useChatStore = create<ChatState>()(
         maxTokens: 512,
       },
       systemPrompt:
-        "You are a specialized keyword extractor for Polish legislative topics. Your answers are short and precise. You use rich markdown syntax to format your answers.",
+        "You are a polish legal assistant. Your answers are SHORT and precise. You use rich markdown syntax to format your answers.",
       input: "",
       plugins: plugins,
       memory: new BufferMemory({
