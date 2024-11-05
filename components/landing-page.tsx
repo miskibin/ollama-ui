@@ -10,7 +10,9 @@ export type AuthProvider = "google" | "discord" | "github";
 // Lazy load non-critical sections
 const FlowDiagram = lazy(() => import("./landing-page/diagram"));
 const EvolutionSection = lazy(() => import("./landing-page/about"));
-const ComparisonSection = lazy(() => import("./landing-page/comparsion-section"));
+const ComparisonSection = lazy(
+  () => import("./landing-page/comparsion-section")
+);
 // Loading fallback component
 const SectionLoader = () => (
   <div className="w-full h-48 flex items-center justify-center">
@@ -119,11 +121,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         <Suspense fallback={<SectionLoader />}>
           <ComparisonSection />
         </Suspense>
-      
 
-        <Suspense fallback={<SectionLoader />}>
-          <FlowDiagram />
-        </Suspense>
+        <div className="hidden md:block">
+          <Suspense fallback={<SectionLoader />}>
+            <FlowDiagram />
+          </Suspense>
+        </div>
 
         <Suspense fallback={<SectionLoader />}>
           <EvolutionSection />

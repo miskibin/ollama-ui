@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { ArrowDownIcon, ArrowRightIcon } from "lucide-react";
 import {
   MessageSquare,
@@ -40,29 +39,18 @@ const FlowItem = ({ item }: FlowItemProps) => (
 const DescriptionSection = ({
   title,
   content,
-  index,
   isIntro,
 }: {
   title: string;
   content: string;
-  index: number;
   isIntro?: boolean;
 }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -100 }}
-    whileInView={{ opacity: 1, x: 0 }}
-    viewport={{ once: true, margin: "-100px" }}
-    transition={{
-      duration: 0.7,
-      delay: index * 0.2, // Each section will start animating 0.2s after the previous one
-    }}
-    className="space-y-2 overflow-hidden"
-  >
+  <div className="space-y-2">
     <h3 className={`${isIntro ? "text-lg font-semibold" : "font-medium"}`}>
       {title}
     </h3>
     <p className="text-sm text-muted-foreground">{content}</p>
-  </motion.div>
+  </div>
 );
 
 const Description = () => {
@@ -92,12 +80,11 @@ const Description = () => {
 
   return (
     <div className="space-y-8">
-      {sections.map((section, index) => (
+      {sections.map((section) => (
         <DescriptionSection
           key={section.title}
           title={section.title}
           content={section.content}
-          index={index}
           isIntro={section.isIntro}
         />
       ))}

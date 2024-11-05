@@ -175,7 +175,7 @@ export function ChatCard() {
               onKeyDown={handleKeyDown}
               placeholder={
                 isLoading
-                  ? "Czekam na odpowiedź..."
+                  ? "Odpowiadam! Nie przerwaj mi proszę..."
                   : messages.some((message) => (message.artifacts?.length ?? 0) > 0)
                   ? "Zadaj pytanie dot. konteksu"
                   : "Zapytaj mnie o kwestię prawną"

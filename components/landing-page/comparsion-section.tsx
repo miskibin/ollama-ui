@@ -68,7 +68,7 @@ export const ComparisonSection = () => {
   ];
 
   return (
-    <section className="py-12 lg:py-24 bg-gradient-to-b from-background to-secondary/20">
+    <section className="py-12 w-full mx-0 px-0 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <motion.div 
           className="text-center mb-12 lg:mb-16 px-4"
