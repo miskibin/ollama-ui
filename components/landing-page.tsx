@@ -11,7 +11,7 @@ export type AuthProvider = "google" | "discord" | "github";
 const FlowDiagram = lazy(() => import("./landing-page/diagram"));
 const AboutSection = lazy(() => import("./landing-page/about"));
 const CapabilitiesSection = lazy(() => import("./landing-page/capabilities"));
-
+const ComparisonSection = lazy(() => import("./landing-page/comparsion-section"));
 // Loading fallback component
 const SectionLoader = () => (
   <div className="w-full h-48 flex items-center justify-center">
@@ -117,6 +117,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
         </div>
 
+        <Suspense fallback={<SectionLoader />}>
+          <ComparisonSection />
+        </Suspense>
         <Suspense fallback={<SectionLoader />}>
           <CapabilitiesSection />
         </Suspense>
