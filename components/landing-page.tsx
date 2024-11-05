@@ -9,8 +9,7 @@ export type AuthProvider = "google" | "discord" | "github";
 
 // Lazy load non-critical sections
 const FlowDiagram = lazy(() => import("./landing-page/diagram"));
-const AboutSection = lazy(() => import("./landing-page/about"));
-const CapabilitiesSection = lazy(() => import("./landing-page/capabilities"));
+const EvolutionSection = lazy(() => import("./landing-page/about"));
 const ComparisonSection = lazy(() => import("./landing-page/comparsion-section"));
 // Loading fallback component
 const SectionLoader = () => (
@@ -96,7 +95,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <motion.div variants={stagger} className="space-y-4">
               <FeatureCard
                 icon={MessageSquare}
-                title="Inteligentna Analiza"
+                title="Inteligentna Analiza z GPT-4"
                 description="Zamiast przeszukiwania setki aktów, poprostu spytaj"
               />
               <FeatureCard
@@ -120,16 +119,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         <Suspense fallback={<SectionLoader />}>
           <ComparisonSection />
         </Suspense>
-        <Suspense fallback={<SectionLoader />}>
-          <CapabilitiesSection />
-        </Suspense>
+      
 
         <Suspense fallback={<SectionLoader />}>
           <FlowDiagram />
         </Suspense>
 
         <Suspense fallback={<SectionLoader />}>
-          <AboutSection />
+          <EvolutionSection />
         </Suspense>
       </div>
 

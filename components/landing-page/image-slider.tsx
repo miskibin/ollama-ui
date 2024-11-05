@@ -14,19 +14,19 @@ const ImageComparison = ({
     <div className="w-full max-w-4xl mx-auto space-y-4">
       <h3 className="text-2xl font-bold text-center">{alt}</h3>
 
-      <div className="relative aspect-video rounded-lg overflow-hidden group border-2 border-dashed border-gray-200 hover:border-primary transition-colors duration-300">
+      <div className="relative aspect-video rounded-lg overflow-hidden group border-4  border-gray-200 hover:border-primary transition-colors duration-200">
         {/* Images */}
         <img
           src={beforeImage}
           alt={`${alt} - ${beforeLabel}`}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
+          className={`w-full h-full object-cover transition-opacity duration-200 ${
             showAfter ? "opacity-0" : "opacity-100"
           }`}
         />
         <img
           src={afterImage}
           alt={`${alt} - ${afterLabel}`}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${
             showAfter ? "opacity-100" : "opacity-0"
           }`}
         />

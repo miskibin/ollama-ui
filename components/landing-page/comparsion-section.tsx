@@ -75,7 +75,7 @@ export const ComparisonSection = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.4 }}
         >
           <h2 className="text-3xl lg:text-4xl font-bold mb-4 lg:mb-6">Dlaczego nie google?</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-base lg:text-lg">
@@ -101,8 +101,8 @@ export const ComparisonSection = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ 
-                  duration: 0.8,
-                  delay: 0.2
+                  duration: 0.4,
+                  delay: 0.4
                 }}
               >
                 <div className="w-full aspect-[4/3] sm:aspect-[16/10]">
@@ -123,7 +123,7 @@ export const ComparisonSection = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ 
-                  duration: 0.8,
+                  duration: 0.4,
                   delay: 0.4
                 }}
               >
