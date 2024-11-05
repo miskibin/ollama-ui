@@ -38,17 +38,6 @@ const fadeIn = {
   visible: { opacity: 1 },
 };
 
-const bannerAnimation = {
-  hidden: { opacity: 0, y: -20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
-};
 
 export const LoginPage: React.FC<LoginPageProps> = ({
   onOAuthSignIn,
@@ -59,7 +48,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       className="flex flex-col bg-gradient-to-b from-background to-secondary/20 overflow-x-hidden "
       style={{ minHeight: windowHeight }}
     >
-      <div className="w-full  border-b border-primary/20">
+      <div className="w-full border-b border-primary/20">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center gap-2">
           <CalendarClock className="w-5 h-5 text-destructive" />
           <p className="text-sm md:text-base font-medium text-primary">
@@ -68,7 +57,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         </div>
       </div>
       <div className="w-full mx-auto px-0.5  md:px-4 mb-12">
-        <div className="grid md:grid-cols-2 py-8 md:py-12 gap-12 items-center min-h-screen max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 px-2  py-8 md:py-12 gap-12 items-center min-h-screen max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
             animate="visible"

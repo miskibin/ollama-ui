@@ -12,7 +12,7 @@ const ImageComparison = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-2 px-0">
-      <h3 className="text-xl md:text-2xl font-bold text-center">{alt}</h3>
+      <h3 className="text-xl md:text-2xl px-2 font-bold text-center">{alt}</h3>
 
       <div className="relative aspect-video rounded-lg overflow-hidden group border-2 md:border-4 border-gray-200 hover:border-primary transition-colors duration-200">
         {/* Images with mobile zoom */}

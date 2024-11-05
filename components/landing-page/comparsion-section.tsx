@@ -13,7 +13,7 @@ export const ComparisonSection = () => {
       description: "Asystent RP zawsze odpowie w kontekście prawa",
       content: (
         <>
-          <h3 className="text-xl font-semibold mb-3">
+          <h3 className="text-lg font-semibold mb-3">
             Prawne podejście do problemu
           </h3>
           <p className="text-muted-foreground leading-relaxed">
@@ -35,7 +35,7 @@ export const ComparisonSection = () => {
       description: "Informacje w internecie mogą być przeterminowane",
       content: (
         <>
-          <h3 className="text-xl font-semibold mb-3">
+          <h3 className="text-lg font-semibold mb-3">
             Aktualne informacje prawne
           </h3>
           <p className="text-muted-foreground leading-relaxed">
@@ -55,7 +55,7 @@ export const ComparisonSection = () => {
         "Asystent RP zawsze poda źródło odpowiedzi wraz z linkiem i streszczeniem dokumentów",
       content: (
         <>
-          <h3 className="text-xl font-semibold mb-3">
+          <h3 className="text-lg font-semibold mb-3">
             Wiarygodne źródła i transparentność
           </h3>
           <p className="text-muted-foreground leading-relaxed">
@@ -77,8 +77,8 @@ export const ComparisonSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
         >
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4 lg:mb-6">Dlaczego nie google?</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-base lg:text-lg">
+          <h2 className="text-3xl lg:text-4xl px-4 font-bold mb-4 lg:mb-6">Dlaczego nie google?</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto px-2 text-base lg:text-lg">
             Porównaj odpowiedzi tradycyjnych wyszukiwarek z Asystentem RP. Na
             tych paru przykładach chciałbym Ci pokazać dlaczego "poprostu
             wygooglować" nie zawsze jest najlepszym rozwiązaniem.
@@ -127,7 +127,7 @@ export const ComparisonSection = () => {
                   delay: 0.4
                 }}
               >
-                <div className="w-full">{comparison.content}</div>
+                <div className="w-full mt-0">{comparison.content}</div>
               </motion.div>
             </div>
           ))}
