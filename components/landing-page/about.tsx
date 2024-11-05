@@ -24,13 +24,13 @@ const EvolutionSection = () => {
       title: "Pierwsze kroki",
       status: "Ukończone",
       features: [
-        "Podstawowa analiza dokumentów prawnych oparta o wstępne streszczenia",
-        "Prosta selekcja odpowiednich fragmentów ustaw",
-        "Ograniczona dokładność i brak zaawansowanej weryfikacji",
-        "Analiza pojedynczych dokumentów bez kontekstu innych ustaw",
+        "Podstawowa analiza ustaw oparta o wstępne streszczenia",
+        "Prosta analiza początków dokumentów",
+        "Brak zaawansowanej weryfikacji wyników",
+        "Ograniczone możliwości filtrowania danych",
       ],
       disclaimer:
-        "Ten etap pokazał nam, jak ważna jest precyzyjna weryfikacja i potrzeba głębszej analizy kontekstowej.",
+        "Ten etap pozwolił mi zebrać feedback od użytkowników i zidentyfikować kluczowe obszary do rozwoju.",
     },
     {
       icon: FlaskConical,
@@ -38,10 +38,10 @@ const EvolutionSection = () => {
       title: "Obecny etap",
       status: "W fazie testów",
       features: [
-        "Zaawansowana segmentacja dokumentów na logiczne fragmenty",
-        "System ponad 60 testów weryfikujących poprawność odpowiedzi",
-        "Inteligentne tagowanie i kategoryzacja treści prawnej",
-        "Możliwość analizy wielu dokumentów jednocześnie",
+        "Kompleksowy system 60+ testów weryfikacyjnych",
+        "Inteligentny podział ustaw na części logiczne",
+        "Zaawansowane metadane: tagi, streszczenia, struktura",
+        "Analiza wielu ustaw jednocześnie",
       ],
       disclaimer:
         "Mimo znacznych ulepszeń, system wciąż może popełniać błędy. Każda odpowiedź powinna być zweryfikowana w źródłowych dokumentach prawnych.",
@@ -52,14 +52,14 @@ const EvolutionSection = () => {
       title: "Przyszłe funkcje",
       status: "Zaplanowane",
       features: [
-        "System feedbacku od użytkowników",
-        "Integracja z Konstytucją RP",
-        "Rozpoznawanie pytań wymagających konsultacji prawnika",
-        "Historia konwersacji i zapisywanie ulubionych odpowiedzi",
+        "Automatyczne wykrywanie powiązań między ustawami",
+        "System rekomendacji podobnych przepisów",
+        "Zaawansowana analiza kontekstowa",
+        "Personalizowane widoki i filtry",
       ],
       disclaimer: (
         <span className="flex items-center gap-2">
-          Zobacz pełną listę planowanych funkcji na GitHubie
+          
           <a
             href="https://github.com/miskibin/sejm-stats/milestone/1"
             target="_blank"
@@ -67,7 +67,7 @@ const EvolutionSection = () => {
             className="inline-flex items-center gap-1 text-primary hover:underline"
           >
             <ExternalLink className="w-4 h-4" />
-            Śledź postępy
+            Śledź postępy na github
           </a>
         </span>
       ),
@@ -75,11 +75,11 @@ const EvolutionSection = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-0 md:px-4 py-16">
+    <div className="max-w-6xl mx-auto px-1 md:px-4 py-16">
       <div className="text-center mb-16">
         <h2 className="text-3xl font-bold mb-4">Ewolucja systemu</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Zobacz jak rozwijamy nasz system, aby zapewnić najwyższą jakość i
+          Zobacz jak rozwijam system, aby zapewnić najwyższą jakość i
           precyzję odpowiedzi w kwestiach prawnych. Pamiętaj, że to wciąż
           narzędzie w fazie rozwoju i wymaga weryfikacji odpowiedzi.
         </p>

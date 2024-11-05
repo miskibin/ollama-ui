@@ -56,7 +56,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 }) => {
   return (
     <div
-      className="flex flex-col bg-gradient-to-b from-background to-secondary/20"
+      className="flex flex-col bg-gradient-to-b from-background to-secondary/20 overflow-x-hidden "
       style={{ minHeight: windowHeight }}
     >
       <div className="w-full  border-b border-primary/20">
@@ -67,7 +67,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </p>
         </div>
       </div>
-      <div className="w-full mx-auto px-4 mb-12">
+      <div className="w-full mx-auto px-0.5  md:px-4 mb-12">
         <div className="grid md:grid-cols-2 py-8 md:py-12 gap-12 items-center min-h-screen max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
