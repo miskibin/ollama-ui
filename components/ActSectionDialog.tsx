@@ -114,7 +114,7 @@ export default function ActSectionsDialog({
           className="cursor-pointer text-primary border-primary hover:bg-primary/10 transition-colors duration-200"
         >
           <FileText className="w-3 h-3 mr-1.5" />
-          Otwórz dokumenty
+          Użyte fragmenty ustaw
         </Badge>
       </DialogTrigger>
 
@@ -169,7 +169,7 @@ export default function ActSectionsDialog({
                   <div className="flex flex-wrap gap-2 flex-1 justify-between">
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="default"
                       onClick={() => window.open(item.act_url, "_blank")}
                     >
                       <ExternalLink className="mr-1.5 h-3 w-3" />

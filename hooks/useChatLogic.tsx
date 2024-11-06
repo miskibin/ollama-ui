@@ -107,43 +107,24 @@ export const useChatLogic = () => {
     const inputText = text || input;
     if (!inputText.trim()) return;
 
-    const isPaidModel = !selectedModel.includes("free");
-    const { canSendMessage, shouldSwitchModel, message } =
-      await checkMessageLimits(isPaidModel);
+    // Set loading state immediately
+    setIsLoading(true);
 
-    if (!canSendMessage) {
-      toast({
-        title: "Limit wiadomości",
-        description: message,
-        variant: "destructive",
-        duration: 5000,
-      });
-      return;
-    }
-
-    if (shouldSwitchModel) {
-      setSelectedModel("meta-llama/Llama-Vision-Free");
-      toast({
-        title: "Limit wiadomości osiągnięty",
-        description: message,
-        duration: 5000,
-      });
-    }
-
+    // Create and display user message immediately
     const userMessage: Message = {
       id: generateUniqueId(),
       role: "user",
       content: inputText,
       artifacts: [],
     };
-
     addMessage(userMessage);
     setInput("");
 
     try {
+      // Check for easter eggs first since it's quick
       const easterEgg = checkEasterEggs(inputText);
       if (easterEgg) {
-        setIsLoading(true);
+        // Short delay for visual feedback
         await new Promise((resolve) => setTimeout(resolve, 400));
         addMessage({
           id: generateUniqueId(),
@@ -151,13 +132,92 @@ export const useChatLogic = () => {
           content: `![Easter Egg](${easterEgg})`,
           artifacts: [],
         });
-      } else {
-        await getResponse([...messages, userMessage]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Run message limits check in parallel with other operations
+      const isPaidModel = !selectedModel.includes("free");
+      const limitsPromise = checkMessageLimits(isPaidModel);
+
+      // Prepare the assistant's pending message
+      const newAssistantMessage: Message = {
+        id: generateUniqueId(),
+        role: "assistant",
+        content: "",
+        artifacts: [],
+        data: [],
+      };
+      addMessage(newAssistantMessage);
+
+      // Check message limits
+      const { canSendMessage, shouldSwitchModel, message } =
+        await limitsPromise;
+
+      if (!canSendMessage) {
+        // Remove the pending assistant message
+        const updatedMessages = messages.filter(
+          (msg) => msg.id !== newAssistantMessage.id
+        );
+        clearMessages();
+        updatedMessages.forEach(addMessage);
+
+        toast({
+          title: "Limit wiadomości",
+          description: message,
+          variant: "destructive",
+          duration: 5000,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (shouldSwitchModel) {
+        setSelectedModel("meta-llama/Llama-Vision-Free");
+        toast({
+          title: "Limit wiadomości osiągnięty",
+          description: message,
+          duration: 5000,
+        });
+      }
+
+      // Set up abort controller
+      abortControllerRef.current = new AbortController();
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          systemPrompt,
+          enabledPluginIds: plugins.filter((p) => p.enabled).map((p) => p.name),
+          modelName: selectedModel,
+          options,
+        }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      if (response.body) {
+        const streamProcessor = new StreamProcessor(
+          updateMessage,
+          setStatus,
+          handleError
+        );
+        await streamProcessor.processStream(
+          response.body.getReader(),
+          newAssistantMessage.id
+        );
       }
     } catch (error) {
       handleError(error);
     } finally {
       setIsLoading(false);
+      setStatus(null);
+      abortControllerRef.current = null;
     }
   };
 

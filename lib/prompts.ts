@@ -36,19 +36,10 @@ export const PROMPTS = {
 export const SummarizePromptPlaceholder = `Streść mi to`;
 export const ContinuePromptPlaceholder = `Kontynuuj`;
 
-export const FirstIrrelevantUserQuestion = `
-Przepraszam Aktualnie potrafię odpowiadać tylko na pytania dotyczące **obowiązujących aktów prawnych** znajdujących się w [Monitorze Polskim](https://monitorpolski.gov.pl/MP) oraz [Dzienniku ustaw](https://monitorpolski.gov.pl/MP)
+export const FirstIrrelevantUserQuestion = `Przepraszam, nie znalazłem odpowiedzi na to pytanie. Zostałem stworzony by rozmawiać o [polskim prawie](https://monitorpolski.gov.pl/DU).
 
----
+**Co możesz zrobić:**
+* Jeśli pytasz o prawo - kliknij ✍ pod poprzednią wiadomością. Użyj słów kluczowych związanych z przepisami.
+* Jeśli to nie pomoże - użyj innego modelu
 
-W przyszłości będę umiał rozmawiać również o:
-- 🗳️ głosowaniach
-- 🏛️ posiedzeniach sejmu 
-- 📝 interpelacjach poselskich
-- 📊 i innych danych
-
-
-> **Wskazówka**: Jeśli uważasz, że twoje pytanie dotyczy prawa
-1. Użyj lepszego modelu.
-2. Użyj słów kluczowych abym zrozumiał, że pytasz o obowiązujące prawo w polsce
-3. kliknij przycisk 🔁 poniżej`;
+Wciąż się uczę, więc jeśli odpowiedź nie jest pomocna, użyj 👎 pod odpowiedzią.`;

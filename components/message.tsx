@@ -39,6 +39,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     editMessage,
     regenerateMessage,
     deleteMessage,
+    clearMessages,
   } = useChatContext();
   const [editInput, setEditInput] = useState(message.content);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
@@ -139,10 +140,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     }
 
     return (
-      <div className="flex flex-wrap gap-2 mt-2">
-        <PluginDataDialog artifacts={message.artifacts} />
-        <SummarableTextDialog actSections={message.data || []} />
-      </div>
+      <>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <PluginDataDialog artifacts={message.artifacts} />
+          <SummarableTextDialog actSections={message.data || []} />
+        </div>
+       
+      </>
     );
   };
 

@@ -27,6 +27,7 @@ export function ChatCard() {
     isPdfParsing,
     stopGenerating,
     handleFileChange,
+    clearMessages, // Used when clicking `Zapytaj o coś innego`
   } = useChatContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,8 +146,17 @@ export function ChatCard() {
         )}
         <div ref={messagesEndRef} />
       </CardContent>
+      {!isLoading && messages.length >= 2 && (
+          <Button
+            onClick={clearMessages}
+            variant="ghost"
+            className=" mb-2 sm:mb-4 text-primary underline "
+          >
+            Zapytaj o coś innego
+          </Button>
+        )}
       {isLoading && (
-        <div className="w-full max-w-3xl mx-auto px-4 mb-4">
+        <div className="w-full max-w-3xl mx-auto px-4 mb-2 sm:mb-4">
           <div className="flex items-start gap-3 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
             <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
@@ -159,7 +169,7 @@ export function ChatCard() {
         </div>
       )}
 
-      <CardFooter className="w-full mt-1 items-center justify-center sticky bottom-0">
+      <CardFooter className="w-full mt-0 sm:mt-1 items-center justify-center sticky bottom-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -177,7 +187,7 @@ export function ChatCard() {
                 isLoading
                   ? "Odpowiadam! Nie przerwaj mi proszę..."
                   : messages.some((message) => (message.artifacts?.length ?? 0) > 0)
-                  ? "Zadaj pytanie dot. konteksu"
+                  ? "Dopytaj o coś w tej sprawie"
                   : "Zapytaj mnie o kwestię prawną"
               }
               disabled={isLoading || isPdfParsing}
@@ -187,7 +197,7 @@ export function ChatCard() {
             />
             <div className="absolute bottom-2 right-2 flex items-center space-x-1">
               <div className="relative">
-                <Button
+                {/* <Button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading || isPdfParsing}
@@ -202,7 +212,7 @@ export function ChatCard() {
                   ) : (
                     <FileText className="h-5 w-5" />
                   )}
-                </Button>
+                </Button> */}
                 <input
                   type="file"
                   accept=".pdf"
@@ -211,7 +221,7 @@ export function ChatCard() {
                   className="hidden"
                 />
               </div>
-
+      
               {isLoading ? (
                 <Button
                   type="button"
@@ -235,8 +245,8 @@ export function ChatCard() {
               )}
             </div>
           </div>
-         
         </form>
+      
       </CardFooter>
     </Card>
   );
