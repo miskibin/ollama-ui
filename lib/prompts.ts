@@ -5,17 +5,17 @@ export const PROMPTS = {
       Based on the document:\n{dataString}\n
       Answer the question precisely and concisely:\n{question}\n
       Instructions:
-      1. If question is completely irrelevant, write "Zacznij nowy czat, by zapytać o nową kwestię."
-      2. Cross-reference key terms in the question with related sections in the document to determine applicable rules.
-      3. If the question implies a context (e.g., multi-lane traffic for "autostrada"), apply relevant rules or exceptions in that context.
-      4. For direct article references, quote the article with the document name and article number.
-      5. AVOID adding information beyond the document but apply general implications as needed.
+      1. Cross-reference key terms in the question with related sections in the document to determine applicable rules.
+      2. If the question implies a context (e.g., multi-lane traffic for "autostrada"), apply relevant rules or exceptions in that context.
+      3. For direct article references, quote the article with the document name and article number.
+      4. AVOID adding information beyond the document but apply general implications as needed.
       Answer in Polish:
   `),
 
-  generateResponse: PromptTemplate.fromTemplate(`
+  respondWithContextPrompt: PromptTemplate.fromTemplate(`
+    Given a context, respond to user question. If question is completly irrelevant write 'Zacznij nowy czat, by rozmawiać o czymś nowym.
     Question: {question}
-    Tool Results: {tool_results}`),
+    `),
   selectRelevantItem: PromptTemplate.fromTemplate(`
       Given a list of legal acts, analyze their titles, chapters, and summaries to identify the SINGLE most relevant one for answering the question.
       

@@ -30,10 +30,9 @@ interface EnhancedTool extends StructuredToolInterface {
 
 export class AgentRP {
   constructor(private llm: AbstractLLM, private tools: EnhancedTool[]) {}
-
-  private getMessagesWithLatestArtifacts(
+  private async getMessagesWithLatestArtifacts(
     messages: ChatMessage[]
-  ): ChatMessage[] {
+  ): Promise<ChatMessage[]> {
     const recentMessages = messages.slice(-10);
     const lastArtifactIndex = recentMessages
       .slice()
@@ -43,11 +42,25 @@ export class AgentRP {
           Array.isArray(msg.additional_kwargs?.artifacts) &&
           msg.additional_kwargs.artifacts.length > 0
       );
-    return lastArtifactIndex !== -1
-      ? recentMessages.slice(recentMessages.length - 1 - lastArtifactIndex)
-      : recentMessages;
-  }
 
+    const relevantMessages =
+      lastArtifactIndex !== -1
+        ? recentMessages.slice(recentMessages.length - 2 - lastArtifactIndex)
+        : recentMessages;
+
+    const latestMessage = relevantMessages[relevantMessages.length - 1];
+    const wrappedContent = await PROMPTS.respondWithContextPrompt.format({
+      question: latestMessage.content,
+    });
+    return [
+      ...relevantMessages.slice(0, -1),
+      new ChatMessage({
+        role: latestMessage.role,
+        content: wrappedContent,
+        additional_kwargs: latestMessage.additional_kwargs,
+      }),
+    ];
+  }
   private async executeTool(
     tool: EnhancedTool,
     question: string,
@@ -214,7 +227,10 @@ export class AgentRP {
           return;
         }
         for await (const chunk of this.streamCompletion(
-          [systemMessage, ...this.getMessagesWithLatestArtifacts(messages)],
+          [
+            systemMessage,
+            ...(await this.getMessagesWithLatestArtifacts(messages)),
+          ],
           "contextual"
         )) {
           yield { type: "response", content: chunk };

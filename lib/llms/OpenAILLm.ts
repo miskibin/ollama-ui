@@ -81,7 +81,7 @@ export class OpenAILLM extends AbstractLLM {
   ): AsyncGenerator<GenerationChunk> {
     try {
       const openAIMessages = this.convertMessagesToJSON(messages);
-      // console.log("Debug messages", openAIMessages);
+      console.log("Debug messages", openAIMessages);
       console.log(
         "TOKENS",
         messages.map((m) => m.content).join(" ").length / 3
