@@ -13,8 +13,10 @@ export const PROMPTS = {
   `),
 
   respondWithContextPrompt: PromptTemplate.fromTemplate(`
-    Given a context, respond to user question. If question is completly irrelevant write 'Zacznij nowy czat, by rozmawiać o czymś nowym.
+    Respond to question:
     Question: {question}
+    If question is Relevant to the context: Respond based on context
+    If Off-Topic: Reply with, "Zacznij nowy czat, aby rozmawiać o czymś nowym."
     `),
   selectRelevantItem: PromptTemplate.fromTemplate(`
       Given a list of legal acts, analyze their titles, chapters, and summaries to identify the SINGLE most relevant one for answering the question.
