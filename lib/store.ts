@@ -57,18 +57,18 @@ export const useChatStore = create<ChatState>()(
       models: [
         {
           name: "meta-llama/Llama-Vision-Free",
-          description: "Prymitywny",
+          description: "Nie zalecany",
           short: "Llama-Vision-Free",
         },
         {
           name: "gpt-4o-mini",
-          description: "",
+          description: "optymalny",
           short: "gpt-4o-mini",
         },
         {
           short: "Llama-3.2-11B",
           name: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
-          description: "",
+          description: "powolny",
         },
       ],
       selectedModel: "gpt-4o-mini",
@@ -157,7 +157,6 @@ export const useChatStore = create<ChatState>()(
           artifacts: msg.artifacts || [], // Ensure artifacts are persisted
         })),
         options: state.options,
-        selectedModel: state.selectedModel,
       }),
     }
   )

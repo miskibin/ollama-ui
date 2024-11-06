@@ -173,12 +173,13 @@ export const useChatLogic = () => {
       }
 
       if (shouldSwitchModel) {
-        setSelectedModel("meta-llama/Llama-Vision-Free");
+        // setSelectedModel("meta-llama/Llama-Vision-Free");
         toast({
           title: "Limit wiadomości osiągnięty",
           description: message,
           duration: 5000,
         });
+        return;
       }
 
       // Set up abort controller

@@ -8,8 +8,8 @@ export const useMessageLimits = (selectedModel: string) => {
 
   const LIMITS = {
     PATRON_TOTAL_LIMIT: 40,
-    FREE_GPT_LIMIT: 4,
-    FREE_TOTAL_LIMIT: 40,
+    FREE_GPT_LIMIT: 5,
+    FREE_TOTAL_LIMIT: 5,
   };
 
   const LIMIT_TYPES: { [key: string]: LimitType } = {
@@ -57,7 +57,7 @@ export const useMessageLimits = (selectedModel: string) => {
         p_limit_type: LIMIT_TYPES.TOTAL,
       }
     );
-
+    console.log("Total count", totalCount);
     if (totalCount > totalLimit) {
       return {
         canSendMessage: false,
