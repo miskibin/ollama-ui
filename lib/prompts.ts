@@ -5,6 +5,7 @@ export const PROMPTS = {
       Based on the document:\n{dataString}\n
       Answer the question precisely and concisely:\n{question}\n
       Instructions:
+      1. If question is completely irrelevant, write "Zacznij nowy czat, by zapytać o nową kwestię."
       2. Cross-reference key terms in the question with related sections in the document to determine applicable rules.
       3. If the question implies a context (e.g., multi-lane traffic for "autostrada"), apply relevant rules or exceptions in that context.
       4. For direct article references, quote the article with the document name and article number.
